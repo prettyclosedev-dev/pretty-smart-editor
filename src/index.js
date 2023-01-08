@@ -1,13 +1,25 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
+import { createBrowserHistory } from "history";
+import { syncHistoryWithStore } from "react-router-redux";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+import App from "./containers/App";
+import configureStore from "./data/redux/configureStore";
+import "./ui/index.css";
+import reportWebVitals from "./reportWebVitals";
+
+const store = configureStore();
+
+// Create an enhanced history that syncs navigation events with the store
+const history = syncHistoryWithStore(createBrowserHistory(), store);
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      <App history={history} />
+    </Provider>
   </React.StrictMode>
 );
 

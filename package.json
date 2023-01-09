@@ -1,8 +1,8 @@
 {
-  "name": "polotno-studio",
+  "name": "pretty-smart-editor",
   "version": "0.1.1",
-  "author": "Anton Lavrenov",
-  "description": "Free design editor",
+  "author": "Chaim Paneth",
+  "description": "Design editor",
   "private": true,
   "dependencies": {
     "@auth0/auth0-react": "^1.12.0",

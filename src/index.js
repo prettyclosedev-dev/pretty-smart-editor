@@ -1,29 +1,42 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { Provider } from "react-redux";
-import { createBrowserHistory } from "history";
-import { syncHistoryWithStore } from "react-router-redux";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 
-import App from "./containers/App";
-import configureStore from "./data/redux/configureStore";
-import "./ui/index.css";
-import reportWebVitals from "./reportWebVitals";
+import { createStore } from 'polotno/model/store';
+import { unstable_setRemoveBackgroundEnabled } from 'polotno/config';
+import { Auth0Provider } from '@auth0/auth0-react';
+import { createProject, ProjectContext } from './project';
+import { SubscriptionProvider } from './subscription-context';
 
-const store = configureStore();
+import './index.css';
+import App from './App';
 
-// Create an enhanced history that syncs navigation events with the store
-const history = syncHistoryWithStore(createBrowserHistory(), store);
+unstable_setRemoveBackgroundEnabled(true);
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const store = createStore({ key: 'FA29LdEvOAJdMenXqqEy' });
+window.store = store;
+store.addPage();
+
+const project = createProject({ store });
+window.project = project;
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+const AUTH_DOMAIN = 'polotno-studio.eu.auth0.com';
+const PRODUCTION_ID = '';
+const LOCAL_ID = '';
+const isLocalhost =
+  typeof window !== undefined && window.location.href.indexOf('localhost') >= 0;
+const ID = isLocalhost ? LOCAL_ID : PRODUCTION_ID;
+const REDIRECT = isLocalhost
+  ? 'http://localhost:3000'
+  : 'https://studio.polotno.com';
+
 root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <App history={history} />
-    </Provider>
-  </React.StrictMode>
+  <ProjectContext.Provider value={project}>
+    <Auth0Provider domain={AUTH_DOMAIN} clientId={ID} redirectUri={REDIRECT}>
+      <SubscriptionProvider>
+        <App store={store} />
+      </SubscriptionProvider>
+    </Auth0Provider>
+  </ProjectContext.Provider>
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

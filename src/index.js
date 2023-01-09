@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { createStore } from 'polotno/model/store';
 import { unstable_setRemoveBackgroundEnabled } from 'polotno/config';
 import { Auth0Provider } from '@auth0/auth0-react';
-import { createProject, ProjectContext } from './project';
+import { createProject, ProjectContext } from './data/graphql/project';
 import { SubscriptionProvider } from './subscription-context';
 
 import './index.css';

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { Button, Dialog, Classes } from '@blueprintjs/core';
 import { useAuth0 } from '@auth0/auth0-react';
-import * as api from '../api';
+import * as api from '../data/graphql/api';
 import { SubscribeButton } from '../subscribe-button';
 
 export const SubscriptionModal = observer(({ store, onClose, isOpen }) => {

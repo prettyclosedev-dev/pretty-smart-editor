@@ -28,6 +28,8 @@ export async function getDesignById({ id, authToken }) {
 }
 
 export async function listDesigns({ accessToken }) {
+  // const {data, loading, error} = await useQuery(getDesigns)
+  // return data
   const req = await fetch(API + '/designs/list', {
     method: 'GET',
     headers: {

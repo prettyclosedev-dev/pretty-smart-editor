@@ -13,9 +13,9 @@ import { Popover2 } from '@blueprintjs/popover2';
 
 import { SectionTab } from 'polotno/side-panel';
 import FaFolder from '@meronex/icons/fa/FaFolder';
-import * as api from '../api';
+import * as api from '../data/graphql/api';
 
-import { useProject } from '../project';
+import { useProject } from '../data/graphql/project';
 
 import { SubscribeButton } from '../subscribe-button';
 

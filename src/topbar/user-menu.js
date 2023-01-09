@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Button, Position, Menu, MenuItem } from '@blueprintjs/core';
 import { Popover2 } from '@blueprintjs/popover2';
 import { useAuth0 } from '@auth0/auth0-react';
-import * as api from '../api';
+import * as api from '../data/graphql/api';
 import { SubscriptionModal } from './subscription-modal';
 
 export const UserMenu = observer(({ store }) => {

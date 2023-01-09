@@ -13,7 +13,7 @@ import BiCodeBlock from '@meronex/icons/bi/BiCodeBlock';
 import { useAuth0 } from '@auth0/auth0-react';
 import styled from 'polotno/utils/styled';
 
-import { useProject } from '../project';
+import { useProject } from '../data/graphql/project';
 
 import { FileMenu } from './file-menu';
 import { DownloadButton } from './download-button';

@@ -14,7 +14,7 @@ import { IconsSection } from './sections/icons-section';
 import { ShapesSection } from './sections/shapes-section';
 import { StableDiffusionSection } from './sections/stable-diffusion-section';
 import { MyDesignsSection } from './sections/my-designs-section';
-import { useProject } from './project';
+import { useProject } from './data/graphql/project';
 
 import { ImageRemoveBackground } from './background-remover';
 

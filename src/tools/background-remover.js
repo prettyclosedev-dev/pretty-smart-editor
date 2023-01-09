@@ -4,7 +4,7 @@ import { Button, Dialog, Classes } from '@blueprintjs/core';
 
 import { t } from 'polotno/utils/l10n';
 import { getKey } from 'polotno/utils/validate-key';
-import { useCredits } from './credits';
+import { useCredits } from '../sections/credits';
 
 let removeBackgroundFunc = async (url) => {
   const req = await fetch(

@@ -6,7 +6,7 @@ import { SidePanel, DEFAULT_SECTIONS } from 'polotno/side-panel';
 import { Workspace } from 'polotno/canvas/workspace';
 import { useAuth0 } from '@auth0/auth0-react';
 
-import { loadFile } from './file';
+import { loadFile } from './tools/file';
 import { QrSection } from './sections/qr-section';
 // import { ThenounprojectSection } from './thenounproject-section';
 import { QuotesSection } from './sections/quotes-section';
@@ -16,7 +16,7 @@ import { StableDiffusionSection } from './sections/stable-diffusion-section';
 import { MyDesignsSection } from './sections/my-designs-section';
 import { useProject } from './data/graphql/project';
 
-import { ImageRemoveBackground } from './background-remover';
+import { ImageRemoveBackground } from './tools/background-remover';
 
 import Topbar from './topbar/topbar';
 

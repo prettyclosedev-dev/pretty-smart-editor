@@ -17,9 +17,9 @@ import * as api from '../data/graphql/api';
 
 import { useProject } from '../data/graphql/project';
 
-import { SubscribeButton } from '../subscribe-button';
+import { SubscribeButton } from '../tools/subscribe-button';
 
-import { useSubscription } from '../subscription-context';
+import { useSubscription } from '../tools/subscription-context';
 
 const DesignCard = observer(({ design, project, onDelete }) => {
   const [loading, setLoading] = React.useState(false);

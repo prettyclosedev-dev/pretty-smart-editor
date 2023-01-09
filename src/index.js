@@ -5,9 +5,9 @@ import { createStore } from 'polotno/model/store';
 import { unstable_setRemoveBackgroundEnabled } from 'polotno/config';
 import { Auth0Provider } from '@auth0/auth0-react';
 import { createProject, ProjectContext } from './data/graphql/project';
-import { SubscriptionProvider } from './subscription-context';
+import { SubscriptionProvider } from './tools/subscription-context'; // TODO: - REMOVE
 
-import './index.css';
+import './ui/index.css';
 import App from './App';
 
 unstable_setRemoveBackgroundEnabled(true);
@@ -21,19 +21,12 @@ window.project = project;
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-const AUTH_DOMAIN = 'polotno-studio.eu.auth0.com';
-const PRODUCTION_ID = '';
-const LOCAL_ID = '';
-const isLocalhost =
-  typeof window !== undefined && window.location.href.indexOf('localhost') >= 0;
-const ID = isLocalhost ? LOCAL_ID : PRODUCTION_ID;
-const REDIRECT = isLocalhost
-  ? 'http://localhost:3000'
-  : 'https://studio.polotno.com';
+const AUTH_DOMAIN = 'prettysmart.us.auth0.com';
+const AUTH_ID = 'ioDLFKxzfv1TprtHgwB0lZy4Vy5pQlN1';
 
 root.render(
   <ProjectContext.Provider value={project}>
-    <Auth0Provider domain={AUTH_DOMAIN} clientId={ID} redirectUri={REDIRECT}>
+    <Auth0Provider domain={AUTH_DOMAIN} clientId={AUTH_ID} redirectUri={window.location.origin}>
       <SubscriptionProvider>
         <App store={store} />
       </SubscriptionProvider>

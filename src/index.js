@@ -1,35 +1,52 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-import { createStore } from 'polotno/model/store';
-import { unstable_setRemoveBackgroundEnabled } from 'polotno/config';
-import { Auth0Provider } from '@auth0/auth0-react';
-import { createProject, ProjectContext } from './data/graphql/project';
-import { SubscriptionProvider } from './tools/subscription-context'; // TODO: - REMOVE
+// polotno
+import { createStore } from "polotno/model/store";
+import { unstable_setRemoveBackgroundEnabled } from "polotno/config";
 
-import './ui/index.css';
-import App from './App';
+// auth
+import { Auth0Provider } from "@auth0/auth0-react";
+
+/* redux */
+import { Provider } from "react-redux";
+import reduxStore from "./data/redux/store";
+
+/* graphql */
+import {client} from "./data/graphql/client";
+import { ApolloProvider } from "react-apollo";
+import { createProject, ProjectContext } from "./data/graphql/project";
+import { SubscriptionProvider } from "./tools/subscription-context"; // TODO: - REMOVE
+
+import "./ui/index.css";
+import App from "./App";
+import { AUTH_DOMAIN, AUTH_ID, POLOTNO_KEY } from "./data/config";
 
 unstable_setRemoveBackgroundEnabled(true);
 
-const store = createStore({ key: 'FA29LdEvOAJdMenXqqEy' });
+const store = createStore({ key: POLOTNO_KEY });
 window.store = store;
 store.addPage();
 
 const project = createProject({ store });
 window.project = project;
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-
-const AUTH_DOMAIN = process.env.NODE_ENV === "production" ? 'prettysmart.us.auth0.com' : "prettysmart-dev.us.auth0.com";
-const AUTH_ID = process.env.NODE_ENV === "production" ? 'ioDLFKxzfv1TprtHgwB0lZy4Vy5pQlN1' : "l2EdgB8cAh3swlNTBO476nqUlfzJvg2W";
+const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
-  <ProjectContext.Provider value={project}>
-    <Auth0Provider domain={AUTH_DOMAIN} clientId={AUTH_ID} redirectUri={window.location.origin}>
-      <SubscriptionProvider>
-        <App store={store} />
-      </SubscriptionProvider>
-    </Auth0Provider>
-  </ProjectContext.Provider>
+  <Provider store={reduxStore}>
+    <ApolloProvider client={client}>
+      <ProjectContext.Provider value={project}>
+        <Auth0Provider
+          domain={AUTH_DOMAIN}
+          clientId={AUTH_ID}
+          redirectUri={window.location.origin}
+        >
+          <SubscriptionProvider>
+            <App store={store} />
+          </SubscriptionProvider>
+        </Auth0Provider>
+      </ProjectContext.Provider>
+    </ApolloProvider>
+  </Provider>
 );

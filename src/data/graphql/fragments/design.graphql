@@ -1,0 +1,26 @@
+#import './user.graphql'
+#import './category.graphql'
+#import './page.graphql'
+
+fragment Design on Design {
+    id           
+    polotnoId    
+    name         
+    preview      
+    pages {
+        ...Page
+    }        
+    width        
+    height       
+    fonts        
+    unit         
+    dpi          
+    publishedDate
+    editedDate   
+    category {
+        ...Category
+    }       
+    user {
+        ...User
+    }               
+}

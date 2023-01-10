@@ -1,0 +1,17 @@
+#import './user.graphql'
+#import './category.graphql'
+
+fragment CompactDesign on Design {
+    id           
+    polotnoId    
+    name         
+    preview     
+    publishedDate
+    editedDate   
+    category {
+        ...Category
+    }       
+    user {
+        ...User
+    }               
+}

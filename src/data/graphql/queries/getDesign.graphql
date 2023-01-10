@@ -1,0 +1,7 @@
+#import '../fragments/design.graphql'
+
+query design($where: DesignWhereUniqueInput!) {
+  design(where: $where) {
+    ...Design
+  }
+}

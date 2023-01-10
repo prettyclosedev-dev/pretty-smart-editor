@@ -1,0 +1,7 @@
+#import '../fragments/compactDesign.graphql'
+
+query designs($where: DesignWhereInput) {
+  designs(where: $where) {
+    ...CompactDesign
+  }
+}

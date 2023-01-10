@@ -1,6 +1,6 @@
 {
-  "short_name": "Polotno Studio",
-  "name": "Polotno studio",
+  "short_name": "Editor",
+  "name": "Design Editor",
   "icons": [
     {
       "src": "favicon.ico",

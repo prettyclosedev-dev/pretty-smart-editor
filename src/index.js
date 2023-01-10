@@ -21,8 +21,8 @@ window.project = project;
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-const AUTH_DOMAIN = 'prettysmart.us.auth0.com';
-const AUTH_ID = 'ioDLFKxzfv1TprtHgwB0lZy4Vy5pQlN1';
+const AUTH_DOMAIN = process.env.NODE_ENV === "production" ? 'prettysmart.us.auth0.com' : "prettysmart-dev.us.auth0.com";
+const AUTH_ID = process.env.NODE_ENV === "production" ? 'ioDLFKxzfv1TprtHgwB0lZy4Vy5pQlN1' : "l2EdgB8cAh3swlNTBO476nqUlfzJvg2W";
 
 root.render(
   <ProjectContext.Provider value={project}>

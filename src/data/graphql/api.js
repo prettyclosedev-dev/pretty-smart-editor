@@ -3,6 +3,7 @@ import localforage from 'localforage';
 import { loader } from "graphql.macro";
 import { client } from './client';
 const getDesigns = loader("./queries/getDesigns.graphql");
+const getDesign = loader("./queries/getDesign.graphql");
 
 const API = 'https://polotno-studio-api.vercel.app/api';
 
@@ -16,6 +17,8 @@ export async function getDesignById({ id, authToken }) {
       name: '',
     };
   }
+  const {data, loading, error} = await client.query({query: getDesign, variables: {where: {id}}})
+  console.log(data, loading, error)
   const req = await fetch(`${API}/designs/get?id=${id}`, {
     headers: {
       Authorization: authToken,

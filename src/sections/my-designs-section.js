@@ -129,8 +129,8 @@ export const MyDesignsPanel = observer(({ store }) => {
   const project = useProject();
 
   const [designsLoadings, setDesignsLoading] = React.useState(false);
-  const [designs, setDesigns] = React.useState([{name: "Chaim", preview: "https://cdn.shopify.com/s/files/1/0521/3352/7718/products/51Z-qwzSMWL_900x.jpg?v=1668198701"}]);
-  const { subscription, subscriptionLoading } = useSubscription();
+  const [designs, setDesigns] = React.useState([]);
+  const { subscription, subscriptionLoading } = useSubscription(); // TODO: - change
 
   const loadProjects = async () => {
     setDesignsLoading(true);

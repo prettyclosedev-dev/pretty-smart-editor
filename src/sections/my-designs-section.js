@@ -132,7 +132,7 @@ export const MyDesignsPanel = observer(({ store }) => {
     const accessToken = await getAccessTokenSilently({});
 
     const res = await api.listDesigns({ accessToken });
-    setDesigns(res.data);
+    setDesigns(res);
     setDesignsLoading(false);
   };
 

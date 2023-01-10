@@ -1,0 +1,7 @@
+#import '../fragments/design.graphql'
+
+mutation createOneDesign($data: DesignCreateInput!) {
+  createOneDesign(data: $data) {
+    ...Design
+  }
+}

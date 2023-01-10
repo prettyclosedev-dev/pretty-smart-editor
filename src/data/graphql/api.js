@@ -2,8 +2,14 @@ import localforage from 'localforage';
 
 import { loader } from "graphql.macro";
 import { client } from './client';
+
+// query
 const getDesigns = loader("./queries/getDesigns.graphql");
 const getDesign = loader("./queries/getDesign.graphql");
+
+// mutation
+const createOneDesign = loader("./mutations/createOneDesign.graphql");
+
 
 const API = 'https://polotno-studio-api.vercel.app/api';
 
@@ -45,14 +51,6 @@ export async function listDesigns({ accessToken }) {
   }
 
   return []
-
-  const req = await fetch(API + '/designs/list', {
-    method: 'GET',
-    headers: {
-      Authorization: accessToken,
-    },
-  });
-  return req.json();
 }
 
 export async function getUserSubscription({ accessToken }) {
@@ -77,6 +75,46 @@ export async function cancelUserSubscription({ accessToken, id }) {
   return req.json();
 }
 
+// {
+//   "data": {
+//     "name": "First",
+//     "width": 1080,
+//     "height": 1080,
+//     "user": {
+//       "create": {
+//         "name": "Pinny Gluck",
+//         "email": "pinny@brandaringroup.com"
+//       }
+//     },
+//     "preview": "",
+//     "polotnoId": null,
+//     "pages": {
+//       "create": {
+//         "polotnoId": "WIw0uPslYy",
+//         "children": {
+//           "set": [
+//             {
+              
+//             }
+//           ]
+//         },
+//         "width": "auto",
+//         "height": "auto",
+//         "background": "rgba(245,234,187,1)",
+//         "bleed": 0
+//       }
+//     },
+//     "fonts": {
+//       "set": []
+//     },
+//     "category": {
+//       "create": {
+//         "name": "General"
+//       }
+//     }
+//   }
+// }
+
 export async function saveDesign({
   store,
   preview,
@@ -85,6 +123,14 @@ export async function saveDesign({
   name,
   isPrivate,
 }) {
+  try {
+    const {data, loading, error} = await client.mutate({mutation: createOneDesign, variables: {data: {}}})
+    return {id: data?.createOneDesign?.id, status: 'saved'} || {}
+  } catch(e) {
+    console.log(e)
+  }
+
+
   // if (id === 'local' || !authToken) {
   localforage.setItem('polotno-state', store);
   return {

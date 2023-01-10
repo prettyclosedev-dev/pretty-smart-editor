@@ -149,7 +149,7 @@ export const MyDesignsPanel = observer(({ store }) => {
   const half1 = [];
   const half2 = [];
 
-  designs.forEach((design, index) => {
+  designs?.forEach((design, index) => {
     if (index % 2 === 0) {
       half1.push(design);
     } else {
@@ -162,7 +162,7 @@ export const MyDesignsPanel = observer(({ store }) => {
       {(designsLoadings || isLoading) && <div>Loading...</div>}
       {isAuthenticated &&
         !designsLoadings &&
-        !designs.length && <div>No designs yet</div>}
+        !designs?.length && <div>No designs yet</div>}
       {designsLoadings && (
         <div style={{ padding: '30px' }}>
           <Spinner />

@@ -63,7 +63,7 @@ export default observer(({ store }) => {
           />
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>
-          {project.id !== 'local' && (
+          {/* {project.id !== 'local' && ( */}
             <>
               <div
                 style={{
@@ -97,7 +97,7 @@ export default observer(({ store }) => {
               </Tooltip2>
               <NavbarDivider />
             </>
-          )}
+          {/* )} */}
 
           <ProfileModal
             isOpen={modalVisible}

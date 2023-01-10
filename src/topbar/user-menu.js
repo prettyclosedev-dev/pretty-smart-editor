@@ -5,7 +5,7 @@ import { Button, Position, Menu, MenuItem } from '@blueprintjs/core';
 import { Popover2 } from '@blueprintjs/popover2';
 import { useAuth0 } from '@auth0/auth0-react';
 import * as api from '../data/graphql/api';
-import { SubscriptionModal } from './subscription-modal';
+import { ProfileModal } from './profile-modal';
 
 export const UserMenu = observer(({ store }) => {
   const {
@@ -15,17 +15,7 @@ export const UserMenu = observer(({ store }) => {
     isAuthenticated,
     logout,
   } = useAuth0();
-  const [subscriptionLoading, setSubscriptionLoading] = React.useState(true);
-  const [subscription, setSubscription] = React.useState(null);
   const [subModalOpen, toggleSubModal] = React.useState(false);
-
-  const loadSubscription = async () => {
-    setSubscriptionLoading(true);
-    const accessToken = await getAccessTokenSilently({});
-    const res = await api.getUserSubscription({ accessToken });
-    setSubscription(res.subscription);
-    setSubscriptionLoading(false);
-  };
 
   React.useEffect(() => {
     if (isLoading) {
@@ -34,7 +24,6 @@ export const UserMenu = observer(({ store }) => {
     if (!isAuthenticated) {
       return;
     }
-    loadSubscription();
   }, [isLoading, isAuthenticated, getAccessTokenSilently]);
 
   return (
@@ -47,7 +36,7 @@ export const UserMenu = observer(({ store }) => {
             )}
             {isAuthenticated && (
               <MenuItem
-                text="Subscription"
+                text="Profile"
                 icon={'thumbs-up'}
                 onClick={() => {
                   toggleSubModal(true);
@@ -69,7 +58,7 @@ export const UserMenu = observer(({ store }) => {
       >
         <Button icon="user" minimal></Button>
       </Popover2>
-      <SubscriptionModal
+      <ProfileModal
         store={store}
         isOpen={subModalOpen}
         onClose={() => toggleSubModal(false)}

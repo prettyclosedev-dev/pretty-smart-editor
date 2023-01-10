@@ -16,7 +16,7 @@ const authLink = new ApolloLink((operation, forward) => {
     return {
       headers: {
         ...headers,
-        Authorization: TOKEN,
+        Authorization: `Bearer ${TOKEN}`,
       },
     };
   });
@@ -47,9 +47,7 @@ const onErrorLink = onError(
     }
 
     if (networkError) {
-      finalMsg =
-        "An internet connection is required for the application to work";
-      console.log("networkError finalMsg: ", finalMsg);
+      console.log("networkError: ", networkError);
       return;
     }
 
@@ -61,7 +59,7 @@ const onErrorLink = onError(
   }
 );
 
-const link = ApolloLink.from([afterwareLink, onErrorLink, authLink, httpLink]);
+const link = ApolloLink.from([authLink, afterwareLink, onErrorLink, httpLink]);
 
 const cache = new InMemoryCache();
 

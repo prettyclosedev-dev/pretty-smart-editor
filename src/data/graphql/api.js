@@ -36,8 +36,12 @@ export async function getDesignById({ id, authToken }) {
 }
 
 export async function listDesigns({ accessToken }) {
-  const {data, loading, error} = await client.query({query: getDesigns})
-  console.log(data, loading, error)
+  try {
+    const {data, loading, error} = await client.query({query: getDesigns})
+    console.log(data, loading, error)
+  } catch(e) {
+    console.log(e)
+  }
   const req = await fetch(API + '/designs/list', {
     method: 'GET',
     headers: {

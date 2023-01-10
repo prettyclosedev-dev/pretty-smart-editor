@@ -18,7 +18,7 @@ import { useProject } from '../data/graphql/project';
 import { FileMenu } from './file-menu';
 import { DownloadButton } from './download-button';
 import { UserMenu } from './user-menu';
-import { SubscriptionModal } from './subscription-modal';
+import { ProfileModal } from './profile-modal';
 import { Tooltip2 } from '@blueprintjs/popover2';
 
 const NavbarContainer = styled('div')`
@@ -99,7 +99,7 @@ export default observer(({ store }) => {
             </>
           )}
 
-          <SubscriptionModal
+          <ProfileModal
             isOpen={modalVisible}
             onClose={() => {
               setModalVisible(false);

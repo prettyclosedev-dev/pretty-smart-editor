@@ -17,10 +17,6 @@ import * as api from '../data/graphql/api';
 
 import { useProject } from '../data/graphql/project';
 
-import { SubscribeButton } from '../tools/subscribe-button';
-
-import { useSubscription } from '../tools/subscription-context';
-
 const DesignCard = observer(({ design, project, onDelete }) => {
   const [loading, setLoading] = React.useState(false);
   const handleSelect = async () => {
@@ -130,7 +126,6 @@ export const MyDesignsPanel = observer(({ store }) => {
 
   const [designsLoadings, setDesignsLoading] = React.useState(false);
   const [designs, setDesigns] = React.useState([]);
-  const { subscription, subscriptionLoading } = useSubscription(); // TODO: - change
 
   const loadProjects = async () => {
     setDesignsLoading(true);
@@ -164,21 +159,10 @@ export const MyDesignsPanel = observer(({ store }) => {
 
   return (
     <div style={{ height: '100%' }}>
-      {!subscriptionLoading && !subscription && (
-        <div>
-          <div style={{ paddingBottom: '10px' }}>
-            Cloud storage is experimental and available only for Polotno Studio
-            supporters.
-          </div>
-          <SubscribeButton fill />
-        </div>
-      )}
-
-      {designsLoadings || (isLoading && <div>Loading...</div>)}
+      {(designsLoadings || isLoading) && <div>Loading...</div>}
       {isAuthenticated &&
         !designsLoadings &&
-        !designs.length &&
-        subscription && <div>No designs yet</div>}
+        !designs.length && <div>No designs yet</div>}
       {designsLoadings && (
         <div style={{ padding: '30px' }}>
           <Spinner />

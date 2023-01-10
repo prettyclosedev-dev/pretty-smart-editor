@@ -16,7 +16,6 @@ import reduxStore from "./data/redux/store";
 import {client} from "./data/graphql/client";
 import { ApolloProvider } from "react-apollo";
 import { createProject, ProjectContext } from "./data/graphql/project";
-import { SubscriptionProvider } from "./tools/subscription-context"; // TODO: - REMOVE
 
 import "./ui/index.css";
 import App from "./App";
@@ -42,9 +41,7 @@ root.render(
           clientId={AUTH_ID}
           redirectUri={window.location.origin}
         >
-          <SubscriptionProvider>
             <App store={store} />
-          </SubscriptionProvider>
         </Auth0Provider>
       </ProjectContext.Provider>
     </ApolloProvider>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { observer } from 'mobx-react-lite';
+import React from "react";
+import { observer } from "mobx-react-lite";
 import {
   Button,
   Navbar,
@@ -7,21 +7,21 @@ import {
   AnchorButton,
   NavbarDivider,
   EditableText,
-} from '@blueprintjs/core';
-import FaDiscord from '@meronex/icons/fa/FaDiscord';
-import BiCodeBlock from '@meronex/icons/bi/BiCodeBlock';
-import { useAuth0 } from '@auth0/auth0-react';
-import styled from 'polotno/utils/styled';
+} from "@blueprintjs/core";
+import FaDiscord from "@meronex/icons/fa/FaDiscord";
+import BiCodeBlock from "@meronex/icons/bi/BiCodeBlock";
+import { useAuth0 } from "@auth0/auth0-react";
+import styled from "polotno/utils/styled";
 
-import { useProject } from '../data/graphql/project';
+import { useProject } from "../data/graphql/project";
 
-import { FileMenu } from './file-menu';
-import { DownloadButton } from './download-button';
-import { UserMenu } from './user-menu';
-import { ProfileModal } from './profile-modal';
-import { Tooltip2 } from '@blueprintjs/popover2';
+import { FileMenu } from "./file-menu";
+import { DownloadButton } from "./download-button";
+import { UserMenu } from "./user-menu";
+import { ProfileModal } from "./profile-modal";
+import { Tooltip2 } from "@blueprintjs/popover2";
 
-const NavbarContainer = styled('div')`
+const NavbarContainer = styled("div")`
   @media screen and (max-width: 500px) {
     overflow-x: auto;
     overflow-y: hidden;
@@ -29,7 +29,7 @@ const NavbarContainer = styled('div')`
   }
 `;
 
-const NavInner = styled('div')`
+const NavInner = styled("div")`
   @media screen and (max-width: 500px) {
     display: flex;
   }
@@ -58,45 +58,39 @@ export default observer(({ store }) => {
             text="My designs"
             intent="primary"
             onClick={() => {
-              store.openSidePanel('my-designs');
+              store.openSidePanel("my-designs");
             }}
           />
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>
           {/* {project.id !== 'local' && ( */}
-            <>
-              <div
-                style={{
-                  paddingRight: '10px',
-                  maxWidth: '200px',
+          <>
+            <div
+              style={{
+                paddingRight: "10px",
+                maxWidth: "200px",
+              }}
+            >
+              <EditableText
+                value={project.name}
+                placeholder="Design name"
+                onChange={(name) => {
+                  project.name = name;
+                  project.requestSave();
                 }}
-              >
-                <EditableText
-                  value={project.name}
-                  placeholder="Design name"
-                  onChange={(name) => {
-                    project.name = name;
-                    project.requestSave();
-                  }}
-                />
-              </div>
-              <Tooltip2
-                content={
-                  project.private
-                    ? 'The design is private'
-                    : 'The design is public'
-                }
-              >
-                <Button
-                  icon={project.private ? 'eye-off' : 'eye-on'}
-                  onClick={() => {
-                    project.private = !project.private;
-                    project.requestSave();
-                  }}
-                />
-              </Tooltip2>
-              <NavbarDivider />
-            </>
+              />
+            </div>
+
+            <Button
+              text="Save"
+              icon={"floppy-disk"}
+              onClick={() => {
+                // project.private = !project.private;
+                project.requestSave();
+              }}
+            />
+            <NavbarDivider />
+          </>
           {/* )} */}
 
           <ProfileModal
@@ -111,7 +105,7 @@ export default observer(({ store }) => {
             target="_blank"
             minimal
             icon={
-              <BiCodeBlock className="bp4-icon" style={{ fontSize: '20px' }} />
+              <BiCodeBlock className="bp4-icon" style={{ fontSize: "20px" }} />
             }
           >
             API

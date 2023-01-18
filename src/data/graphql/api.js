@@ -1,7 +1,7 @@
-import localforage from 'localforage';
+import localforage from "localforage";
 
 import { loader } from "graphql.macro";
-import { client } from './client';
+import { client } from "./client";
 
 // query
 const getDesigns = loader("./queries/getDesigns.graphql");
@@ -10,21 +10,22 @@ const getDesign = loader("./queries/getDesign.graphql");
 // mutation
 const createOneDesign = loader("./mutations/createOneDesign.graphql");
 
-
-const API = 'https://polotno-studio-api.vercel.app/api';
-
+const API = "https://polotno-studio-api.vercel.app/api";
 
 export async function getDesignById({ id }) {
   // if (id === 'local') {
   // if (true) {
-    const json = await localforage.getItem('polotno-state');
-    return {
-      store: json,
-      name: '',
-    };
+  const json = await localforage.getItem("polotno-state");
+  return {
+    store: json,
+    name: "",
+  };
   // }
-  const {data, loading, error} = await client.query({query: getDesign, variables: {where: {id}}})
-  console.log(data, loading, error)
+  const { data, loading, error } = await client.query({
+    query: getDesign,
+    variables: { where: { id } },
+  });
+  console.log(data, loading, error);
 
   // const req = await fetch(`${API}/designs/get?id=${id}`, {
   //   headers: {
@@ -44,18 +45,18 @@ export async function getDesignById({ id }) {
 
 export async function listDesigns({ accessToken }) {
   try {
-    const {data, loading, error} = await client.query({query: getDesigns})
-    return data?.designs || []
-  } catch(e) {
-    console.log(e)
+    const { data, loading, error } = await client.query({ query: getDesigns });
+    return data?.designs || [];
+  } catch (e) {
+    console.log(e);
   }
 
-  return []
+  return [];
 }
 
 export async function getUserSubscription({ accessToken }) {
-  const req = await fetch(API + '/user/subscription', {
-    method: 'GET',
+  const req = await fetch(API + "/user/subscription", {
+    method: "GET",
     headers: {
       Authorization: accessToken,
     },
@@ -64,11 +65,11 @@ export async function getUserSubscription({ accessToken }) {
 }
 
 export async function cancelUserSubscription({ accessToken, id }) {
-  const req = await fetch(API + '/user/cancel-subscription', {
-    method: 'POST',
+  const req = await fetch(API + "/user/cancel-subscription", {
+    method: "POST",
     headers: {
       Authorization: accessToken,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ id }),
   });
@@ -94,7 +95,7 @@ export async function cancelUserSubscription({ accessToken, id }) {
 //         "children": {
 //           "set": [
 //             {
-              
+
 //             }
 //           ]
 //         },
@@ -115,46 +116,41 @@ export async function cancelUserSubscription({ accessToken, id }) {
 //   }
 // }
 
-export async function saveDesign({
-  store,
-  preview,
-  id,
-  authToken,
-  name,
-  isPrivate,
-}) {
+export async function saveDesign({ store, preview, id, authToken, name = "" }) {
   try {
-    const {data, loading, error} = await client.mutate({mutation: createOneDesign, variables: {data: {}}})
-    return {id: data?.createOneDesign?.id, status: 'saved'} || {}
-  } catch(e) {
-    console.log(e)
+    const { data, loading, error } = await client.mutate({
+      mutation: createOneDesign,
+      variables: { data: { ...store, preview, name } },
+    });
+    return { id: data?.createOneDesign?.id, status: "saved" } || {};
+  } catch (e) {
+    console.log(e);
   }
 
-
   // if (id === 'local' || !authToken) {
-  localforage.setItem('polotno-state', store);
+  localforage.setItem("polotno-state", store);
   return {
-    id: 'local',
-    status: 'saved',
+    id: "local",
+    status: "saved",
   };
   // }
   const req = await fetch(`${API}/designs/save`, {
-    method: 'POST',
+    method: "POST",
     headers: {
       Authorization: authToken,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify({ store, preview, id, name, private: isPrivate }),
+    body: JSON.stringify({ store, preview, id, name }),
   });
   return await req.json();
 }
 
 export async function deleteDesign({ id, authToken }) {
   const req = await fetch(`${API}/designs/delete`, {
-    method: 'POST',
+    method: "POST",
     headers: {
       Authorization: authToken,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ id }),
   });

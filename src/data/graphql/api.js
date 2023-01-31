@@ -13,19 +13,19 @@ const createOneDesign = loader("./mutations/createOneDesign.graphql");
 const API = "https://polotno-studio-api.vercel.app/api";
 
 export async function getDesignById({ id }) {
-  // if (id === 'local') {
-  // if (true) {
-  const json = await localforage.getItem("polotno-state");
-  return {
-    store: json,
-    name: "",
-  };
-  // }
+  if (id === "local") {
+    // if (true) {
+    const json = await localforage.getItem("polotno-state");
+    return {
+      store: json,
+      name: "",
+    };
+  }
   const { data, loading, error } = await client.query({
     query: getDesign,
-    variables: { where: { id } },
+    variables: { where: { id: Number(id) } },
   });
-  console.log(data, loading, error);
+  // console.log(data, loading, error);
 
   // const req = await fetch(`${API}/designs/get?id=${id}`, {
   //   headers: {
@@ -37,10 +37,15 @@ export async function getDesignById({ id }) {
   //   throw new Error('Design not found');
   // }
   // const json = await req.json();
-  // return {
-  //   store: json.data.store,
-  //   name: json.data.name,
-  // };
+  console.log("=============");
+  console.log("=============");
+  console.log(data);
+  console.log("=============");
+  console.log("=============");
+  return {
+    store: data.design,
+    name: data.name,
+  };
 }
 
 export async function listDesigns({ accessToken }) {
@@ -117,6 +122,7 @@ export async function cancelUserSubscription({ accessToken, id }) {
 // }
 
 export async function saveDesign({ store, preview, id, authToken, name = "" }) {
+  console.log("Here", id);
   try {
     const { data, loading, error } = await client.mutate({
       mutation: createOneDesign,

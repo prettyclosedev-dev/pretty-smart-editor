@@ -1,6 +1,6 @@
-import React from 'react';
-import { observer } from 'mobx-react-lite';
-import { useAuth0 } from '@auth0/auth0-react';
+import React from "react";
+import { observer } from "mobx-react-lite";
+import { useAuth0 } from "@auth0/auth0-react";
 import {
   Button,
   Card,
@@ -8,21 +8,22 @@ import {
   MenuItem,
   Position,
   Spinner,
-} from '@blueprintjs/core';
-import { Popover2 } from '@blueprintjs/popover2';
+} from "@blueprintjs/core";
+import { Popover2 } from "@blueprintjs/popover2";
 
-import { SectionTab } from 'polotno/side-panel';
-import FaFolder from '@meronex/icons/fa/FaFolder';
-import * as api from '../data/graphql/api';
+import { SectionTab } from "polotno/side-panel";
+import FaFolder from "@meronex/icons/fa/FaFolder";
+import * as api from "../data/graphql/api";
 
-import { useProject } from '../data/graphql/project';
+import { useProject } from "../data/graphql/project";
 
 const DesignCard = observer(({ design, project, onDelete }) => {
   const [loading, setLoading] = React.useState(false);
   const handleSelect = async () => {
+    console.log("SELECTED", design.id);
     setLoading(true);
     await project.loadById(design.id);
-    project.store.openSidePanel('photos');
+    project.store.openSidePanel("photos");
     setLoading(false);
   };
   const handleCopy = async () => {
@@ -31,24 +32,24 @@ const DesignCard = observer(({ design, project, onDelete }) => {
       await project.loadById(design.id);
     }
     await project.duplicate();
-    project.store.openSidePanel('photos');
+    project.store.openSidePanel("photos");
     setLoading(false);
   };
   return (
     <Card
-      style={{ margin: '3px', padding: '0px', position: 'relative' }}
+      style={{ margin: "3px", padding: "0px", position: "relative" }}
       interactive
       onClick={() => {
         handleSelect();
       }}
     >
-      <img src={design.preview} style={{ width: '100%' }} />
+      <img src={design.preview} style={{ width: "100%" }} />
       <div
         style={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          padding: '3px',
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          padding: "3px",
         }}
       >
         {design.name}
@@ -56,17 +57,17 @@ const DesignCard = observer(({ design, project, onDelete }) => {
       {loading && (
         <div
           style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
           }}
         >
           <Spinner />
         </div>
       )}
       <div
-        style={{ position: 'absolute', top: '5px', right: '5px' }}
+        style={{ position: "absolute", top: "5px", right: "5px" }}
         onClick={(e) => {
           e.stopPropagation();
         }}
@@ -92,7 +93,7 @@ const DesignCard = observer(({ design, project, onDelete }) => {
                 icon="trash"
                 text="Delete"
                 onClick={() => {
-                  if (window.confirm('Are you sure you want to delete it?')) {
+                  if (window.confirm("Are you sure you want to delete it?")) {
                     api.deleteDesign({
                       id: design.design_id,
                       authToken: project.authToken,
@@ -158,19 +159,19 @@ export const MyDesignsPanel = observer(({ store }) => {
   });
 
   return (
-    <div style={{ height: '100%' }}>
+    <div style={{ height: "100%" }}>
       {(designsLoadings || isLoading) && <div>Loading...</div>}
-      {isAuthenticated &&
-        !designsLoadings &&
-        !designs?.length && <div>No designs yet</div>}
+      {isAuthenticated && !designsLoadings && !designs?.length && (
+        <div>No designs yet</div>
+      )}
       {designsLoadings && (
-        <div style={{ padding: '30px' }}>
+        <div style={{ padding: "30px" }}>
           <Spinner />
         </div>
       )}
       {!isLoading && isAuthenticated && (
-        <div style={{ display: 'flex', paddingTop: '5px' }}>
-          <div style={{ width: '50%' }}>
+        <div style={{ display: "flex", paddingTop: "5px" }}>
+          <div style={{ width: "50%" }}>
             {half1.map((design) => (
               <DesignCard
                 design={design}
@@ -181,7 +182,7 @@ export const MyDesignsPanel = observer(({ store }) => {
               />
             ))}
           </div>
-          <div style={{ width: '50%' }}>
+          <div style={{ width: "50%" }}>
             {half2.map((design) => (
               <DesignCard
                 design={design}
@@ -200,7 +201,7 @@ export const MyDesignsPanel = observer(({ store }) => {
 
 // define the new custom section
 export const MyDesignsSection = {
-  name: 'my-designs',
+  name: "my-designs",
   Tab: (props) => (
     <SectionTab name="My Designs" {...props}>
       <FaFolder />

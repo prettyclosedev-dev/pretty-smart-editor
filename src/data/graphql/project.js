@@ -42,13 +42,14 @@ class Project {
         id,
         authToken: this.authToken,
       });
+      console.log(store, name);
       if (store) {
         this.store.loadJSON(store);
       }
       this.name = name;
     } catch (e) {
       console.log(e);
-      alert("Project can't be loaded");
+      alert("Project can't be loaded !!!");
     }
   }
 
@@ -95,31 +96,40 @@ class Project {
       pixelRatio: maxWidth / json.width,
       mimeType: "image/jpeg",
     });
-    // if (this.authToken && this.id === 'local') {
-    //   this.id = '';
-    // }
 
-    const res = await api.saveDesign({
-      store: {
-        ...json,
-        pages: {
-          createMany: {
-            data: json.pages.map((p, idx) => ({
-              ...p,
-              id: idx + 100,
-              children: { set: { data: p.children.map((c) => c) } },
-            })),
+    console.log(this.id);
+    // if (this.authToken && this.id === "local") {
+    if (this.id === "local") {
+      const res = await api.saveDesign({
+        store: {
+          ...json,
+          fonts: null,
+          pages: {
+            createMany: {
+              data: json.pages.map((p, idx) => {
+                console.log(p.id);
+                let copy = { ...p };
+                delete copy.id;
+                return {
+                  ...copy,
+                  children: { set: copy.children },
+                };
+              }),
+            },
           },
         },
-      },
-      preview,
-      id: this.id,
-      name: this.name,
-      authToken: this.authToken,
-    });
-    if (res.status === "saved") {
-      this.id = res.id;
-      this.updateUrlWithProjectId();
+        preview,
+        // id: this.id,
+        name: this.name,
+        authToken: this.authToken,
+      });
+
+      if (res.status === "saved") {
+        this.id = res.id;
+        this.updateUrlWithProjectId();
+      }
+    } else {
+      console.log("HAVE AN ID");
     }
   }
 

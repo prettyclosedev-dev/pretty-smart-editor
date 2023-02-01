@@ -13,9 +13,12 @@ const createOneDesign = loader("./mutations/createOneDesign.graphql");
 const API = "https://polotno-studio-api.vercel.app/api";
 
 export async function getDesignById({ id }) {
+  console.log(id);
   if (id === "local") {
     // if (true) {
+
     const json = await localforage.getItem("polotno-state");
+    console.log(json);
     return {
       store: json,
       name: "",
@@ -43,7 +46,13 @@ export async function getDesignById({ id }) {
   console.log("=============");
   console.log("=============");
   return {
-    store: data.design,
+    store: {
+      ...data.design,
+      pages: data?.design?.pages?.map((page) => ({
+        ...page,
+        id: page.polotnoId,
+      })),
+    },
     name: data.name,
   };
 }
@@ -122,7 +131,15 @@ export async function cancelUserSubscription({ accessToken, id }) {
 // }
 
 export async function saveDesign({ store, preview, id, authToken, name = "" }) {
-  console.log("Here", id);
+  if (id === "local" || !authToken) {
+    localforage.setItem("polotno-state", store);
+
+    return {
+      id: "local",
+      status: "saved",
+    };
+  }
+
   try {
     const { data, loading, error } = await client.mutate({
       mutation: createOneDesign,
@@ -133,22 +150,7 @@ export async function saveDesign({ store, preview, id, authToken, name = "" }) {
     console.log(e);
   }
 
-  // if (id === 'local' || !authToken) {
-  localforage.setItem("polotno-state", store);
-  return {
-    id: "local",
-    status: "saved",
-  };
-  // }
-  const req = await fetch(`${API}/designs/save`, {
-    method: "POST",
-    headers: {
-      Authorization: authToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ store, preview, id, name }),
-  });
-  return await req.json();
+  // return await req.json();
 }
 
 export async function deleteDesign({ id, authToken }) {

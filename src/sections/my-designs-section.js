@@ -20,7 +20,6 @@ import { useProject } from "../data/graphql/project";
 const DesignCard = observer(({ design, project, onDelete }) => {
   const [loading, setLoading] = React.useState(false);
   const handleSelect = async () => {
-    console.log("SELECTED", design.id);
     setLoading(true);
     await project.loadById(design.id);
     project.store.openSidePanel("photos");

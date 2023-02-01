@@ -97,36 +97,36 @@ class Project {
       mimeType: "image/jpeg",
     });
 
-    console.log(this.id);
-    // if (this.authToken && this.id === "local") {
-    if (this.id === "local") {
-      const res = await api.saveDesign({
-        store: {
-          ...json,
-          fonts: null,
-          pages: {
-            createMany: {
-              data: json.pages.map((p, idx) => {
-                console.log(p.id);
-                let copy = { ...p };
-                delete copy.id;
-                return {
-                  ...copy,
-                  children: { set: copy.children },
-                };
-              }),
+    if (this.authToken && this.id === "local") {
+      if (this.id === "local") {
+        const res = await api.saveDesign({
+          store: {
+            ...json,
+            fonts: null,
+            pages: {
+              createMany: {
+                data: json.pages.map((p, idx) => {
+                  let copy = { ...p };
+                  copy.polotnoId = p.id;
+                  delete copy.id;
+                  return {
+                    ...copy,
+                    children: { set: copy.children },
+                  };
+                }),
+              },
             },
           },
-        },
-        preview,
-        // id: this.id,
-        name: this.name,
-        authToken: this.authToken,
-      });
+          preview,
+          // id: this.id,
+          name: this.name,
+          authToken: this.authToken,
+        });
 
-      if (res.status === "saved") {
-        this.id = res.id;
-        this.updateUrlWithProjectId();
+        if (res.status === "saved") {
+          this.id = res.id;
+          this.updateUrlWithProjectId();
+        }
       }
     } else {
       console.log("HAVE AN ID");
@@ -134,7 +134,7 @@ class Project {
   }
 
   async duplicate() {
-    this.id = "";
+    this.id = "local";
     this.save();
   }
 }

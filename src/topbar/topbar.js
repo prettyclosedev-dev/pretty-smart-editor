@@ -7,7 +7,9 @@ import {
   AnchorButton,
   NavbarDivider,
   EditableText,
+  MenuItem,
 } from "@blueprintjs/core";
+import { Select2, ItemPredicate, ItemRenderer } from "@blueprintjs/select";
 import FaDiscord from "@meronex/icons/fa/FaDiscord";
 import BiCodeBlock from "@meronex/icons/bi/BiCodeBlock";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -35,6 +37,44 @@ const NavInner = styled("div")`
   }
 `;
 
+const CATEGORIES = [
+  { name: "General", id: 1 },
+  { name: "Brand assets", id: 2 },
+]; //.map((f, index) => ({ ...f, rank: index + 1 }));
+
+const filterCategory = (query, category, _index, exactMatch) => {
+  const normalizedTitle = category.name.toLowerCase();
+  const normalizedQuery = query.toLowerCase();
+
+  if (exactMatch) {
+    return normalizedTitle === normalizedQuery;
+  } else {
+    return `${normalizedTitle}`.indexOf(normalizedQuery) >= 0;
+  }
+};
+
+const renderCategory = (
+  category,
+  { handleClick, handleFocus, modifiers, query }
+) => {
+  if (!modifiers.matchesPredicate) {
+    return null;
+  }
+
+  return (
+    <MenuItem
+      active={modifiers.active}
+      disabled={modifiers.disabled}
+      key={category.id}
+      label={category.name.toString()}
+      onClick={handleClick}
+      onFocus={handleFocus}
+      roleStructure="listoption"
+      text={`${category.name}`}
+    />
+  );
+};
+
 export default observer(({ store }) => {
   const project = useProject();
 
@@ -53,44 +93,91 @@ export default observer(({ store }) => {
       <NavInner>
         <Navbar.Group align={Alignment.LEFT}>
           <FileMenu store={store} project={project} />
-          <NavbarDivider />
-          <Button
-            text="My designs"
-            intent="primary"
-            onClick={() => {
-              store.openSidePanel("my-designs");
-            }}
-          />
+          {isAuthenticated && (
+            <>
+              <NavbarDivider />
+              <Button
+                text="My Designs"
+                intent="primary"
+                onClick={() => {
+                  store.openSidePanel("my-designs");
+                }}
+              />
+            </>
+          )}
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>
           {/* {project.id !== 'local' && ( */}
-          <>
-            <div
-              style={{
-                paddingRight: "10px",
-                maxWidth: "200px",
-              }}
-            >
-              <EditableText
-                value={project.name}
-                placeholder="Design name"
-                onChange={(name) => {
-                  project.name = name;
+          {isAuthenticated && (
+            <>
+              <div
+                style={{
+                  maxWidth: "200px",
+                }}
+              >
+                <Select2
+                  items={CATEGORIES}
+                  itemPredicate={filterCategory}
+                  itemRenderer={renderCategory}
+                  noResults={
+                    <MenuItem
+                      disabled={true}
+                      text="No results."
+                      roleStructure="listoption"
+                    />
+                  }
+                  onItemSelect={(name) => {
+                    if (!project.category) {
+                      project.category = {};
+                    }
+
+                    project.category.name = name;
+                    project.requestSave();
+                  }}
+                >
+                  <Button
+                    text={project.category?.name || "Select a category"}
+                    rightIcon="double-caret-vertical"
+                    placeholder="Select a category"
+                  />
+                </Select2>
+              </div>
+              <NavbarDivider />
+              <div
+                style={{
+                  paddingRight: "10px",
+                  maxWidth: "200px",
+                }}
+              >
+                <EditableText
+                  value={project.name}
+                  placeholder="Design Name"
+                  onChange={(name) => {
+                    project.name = name;
+                    project.requestSave();
+                  }}
+                />
+              </div>
+
+              <Button
+                text="Save"
+                icon={"floppy-disk"}
+                onClick={() => {
                   project.requestSave();
                 }}
               />
-            </div>
-
-            <Button
-              text="Save"
-              icon={"floppy-disk"}
-              onClick={() => {
-                // project.private = !project.private;
-                project.requestSave();
-              }}
-            />
-            <NavbarDivider />
-          </>
+              <NavbarDivider />
+              <Button
+                text="Make Private"
+                icon={project.private ? "eye-off" : 'eye-on'}
+                onClick={() => {
+                  project.private = !project.private;
+                  project.requestSave();
+                }}
+              />
+              <NavbarDivider />
+            </>
+          )}
           {/* )} */}
 
           <ProfileModal
@@ -100,7 +187,7 @@ export default observer(({ store }) => {
             }}
             store={store}
           />
-          <AnchorButton
+          {/* <AnchorButton
             href="https://polotno.com"
             target="_blank"
             minimal
@@ -109,8 +196,8 @@ export default observer(({ store }) => {
             }
           >
             API
-          </AnchorButton>
-          <NavbarDivider />
+          </AnchorButton> */}
+          {/* <NavbarDivider /> */}
           <DownloadButton store={store} />
           <NavbarDivider />
           <UserMenu store={store} project={project} />

@@ -66,7 +66,7 @@ const renderCategory = (
       active={modifiers.active}
       disabled={modifiers.disabled}
       key={category.id}
-      label={category.name.toString()}
+      label={category.id.toString()}
       onClick={handleClick}
       onFocus={handleFocus}
       roleStructure="listoption"
@@ -74,6 +74,25 @@ const renderCategory = (
     />
   );
 };
+
+function createCategory(name) {
+  return {
+    name,
+  };
+}
+
+function renderCreateCategoryOption(query, active, handleClick) {
+  return (
+    <MenuItem
+      icon="add"
+      text={`Create "${query}"`}
+      roleStructure="listoption"
+      active={active}
+      onClick={handleClick}
+      shouldDismissPopover={false}
+    />
+  );
+}
 
 export default observer(({ store }) => {
   const project = useProject();
@@ -116,6 +135,8 @@ export default observer(({ store }) => {
                 }}
               >
                 <Select2
+                  createNewItemFromQuery={createCategory}
+                  createNewItemRenderer={renderCreateCategoryOption}
                   items={CATEGORIES}
                   itemPredicate={filterCategory}
                   itemRenderer={renderCategory}
@@ -126,13 +147,17 @@ export default observer(({ store }) => {
                       roleStructure="listoption"
                     />
                   }
-                  onItemSelect={(name) => {
+                  onItemSelect={({name, id}) => {
+                    if (!CATEGORIES.map(cat => cat.name).includes(name)) {
+                      CATEGORIES.push({name, id: CATEGORIES.length + 1})
+                    }
+                    
                     if (!project.category) {
                       project.category = {};
                     }
 
                     project.category.name = name;
-                    project.requestSave();
+                    // project.requestSave();
                   }}
                 >
                   <Button
@@ -169,9 +194,9 @@ export default observer(({ store }) => {
               <NavbarDivider />
               <Button
                 text="Make Private"
-                icon={project.private ? "eye-off" : 'eye-on'}
+                icon={project.public ? "eye-on" : "eye-off"}
                 onClick={() => {
-                  project.private = !project.private;
+                  project.public = !project.public;
                   project.requestSave();
                 }}
               />

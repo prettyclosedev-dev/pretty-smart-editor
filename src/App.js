@@ -14,6 +14,7 @@ import { IconsSection } from "./sections/icons-section";
 import { ShapesSection } from "./sections/shapes-section";
 import { StableDiffusionSection } from "./sections/stable-diffusion-section";
 import { MyDesignsSection } from "./sections/my-designs-section";
+import { ChatSection } from "./sections/chat-section";
 import { useProject } from "./data/graphql/project";
 
 import { ImageRemoveBackground } from "./tools/background-remover";
@@ -31,6 +32,7 @@ DEFAULT_SECTIONS.push(QuotesSection, QrSection);
 DEFAULT_SECTIONS.unshift(MyDesignsSection);
 
 DEFAULT_SECTIONS.push(StableDiffusionSection);
+DEFAULT_SECTIONS.push(ChatSection);
 
 const useHeight = () => {
   const [height, setHeight] = React.useState(window.innerHeight);
@@ -53,7 +55,7 @@ const App = ({ store }) => {
     // url example https://studio.polotno.com/design/5f9f1b0b
     const reg = new RegExp("design/([a-zA-Z0-9_-]+)").exec(url.pathname);
     const designId = (reg && reg[1]) || "local";
-    // if (designId === "local") return;
+    if (designId === "local") return;
     project.loadById(designId);
   };
 

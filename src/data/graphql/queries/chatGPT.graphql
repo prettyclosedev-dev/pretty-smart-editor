@@ -1,0 +1,3 @@
+query Query($messages: Json) {
+  chatGPT(messages: $messages)
+}

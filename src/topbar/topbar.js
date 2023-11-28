@@ -55,7 +55,7 @@ const filterCategory = (query, category, _index, exactMatch) => {
 
 const renderCategory = (
   category,
-  { handleClick, handleFocus, modifiers, query }
+  { handleClick, handleFocus, modifiers, query },
 ) => {
   if (!modifiers.matchesPredicate) {
     return null;
@@ -147,16 +147,12 @@ export default observer(({ store }) => {
                       roleStructure="listoption"
                     />
                   }
-                  onItemSelect={({name, id}) => {
-                    if (!CATEGORIES.map(cat => cat.name).includes(name)) {
-                      CATEGORIES.push({name, id: CATEGORIES.length + 1})
-                    }
-                    
-                    if (!project.category) {
-                      project.category = {};
+                  onItemSelect={({ name, id }) => {
+                    if (!CATEGORIES.map((cat) => cat.name).includes(name)) {
+                      CATEGORIES.push({ name, id: CATEGORIES.length + 1 });
                     }
 
-                    project.category.name = name;
+                    project.setCategory({ name });
                     // project.requestSave();
                   }}
                 >
@@ -178,7 +174,7 @@ export default observer(({ store }) => {
                   value={project.name}
                   placeholder="Design Name"
                   onChange={(name) => {
-                    project.name = name;
+                    project.setName(name);
                     project.requestSave();
                   }}
                 />
@@ -193,10 +189,10 @@ export default observer(({ store }) => {
               />
               <NavbarDivider />
               <Button
-                text="Make Private"
+                text={project.public ? "Make Private" : "Make Public"}
                 icon={project.public ? "eye-on" : "eye-off"}
                 onClick={() => {
-                  project.public = !project.public;
+                  project.togglePublic();
                   project.requestSave();
                 }}
               />

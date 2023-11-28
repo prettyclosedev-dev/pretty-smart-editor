@@ -10,8 +10,9 @@ class Project {
   id = "";
   name = "";
   authToken = "";
-  private = false;
+  public = false;
   user = {};
+  category = {};
   skipSaving = false;
 
   constructor({ store }) {
@@ -21,6 +22,18 @@ class Project {
     store.on("change", () => {
       this.requestSave();
     });
+  }
+
+  setName(_name) {
+    this.name = _name;
+  }
+
+  setCategory(_category) {
+    this.category = _category;
+  }
+
+  togglePublic() {
+    this.public = !this.public;
   }
 
   requestSave() {

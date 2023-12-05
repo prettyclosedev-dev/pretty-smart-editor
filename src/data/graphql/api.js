@@ -53,7 +53,9 @@ export async function getDesignById({ id }) {
         id: page.polotnoId,
       })),
     },
-    name: data.name,
+    name: data.design.name,
+    public: data.design.public,
+    category: data.design.category,
   };
 }
 

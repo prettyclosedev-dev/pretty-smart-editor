@@ -32,6 +32,10 @@ class Project {
     this.category = _category;
   }
 
+  setPublic(_public) {
+    this.public = _public;
+  }
+
   togglePublic() {
     this.public = !this.public;
   }
@@ -51,7 +55,7 @@ class Project {
     this.id = id;
     this.updateUrlWithProjectId();
     try {
-      const { store, name } = await api.getDesignById({
+      const { store, name, _public, category } = await api.getDesignById({
         id,
         authToken: this.authToken,
       });
@@ -59,7 +63,9 @@ class Project {
       if (store) {
         this.store.loadJSON(store);
       }
-      this.name = name;
+      this.setName(name);
+      this.setPublic(_public);
+      this.setCategory(category);
     } catch (e) {
       console.log(e);
       alert("Project can't be loaded !!!");

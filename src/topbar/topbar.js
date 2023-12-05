@@ -4,12 +4,9 @@ import {
   Button,
   Navbar,
   Alignment,
-  AnchorButton,
   NavbarDivider,
   EditableText,
-  MenuItem,
 } from "@blueprintjs/core";
-import { Select2, ItemPredicate, ItemRenderer } from "@blueprintjs/select";
 import FaDiscord from "@meronex/icons/fa/FaDiscord";
 import BiCodeBlock from "@meronex/icons/bi/BiCodeBlock";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -22,6 +19,7 @@ import { DownloadButton } from "./download-button";
 import { UserMenu } from "./user-menu";
 import { ProfileModal } from "./profile-modal";
 import { Tooltip2 } from "@blueprintjs/popover2";
+import { CategoriesSelect } from "./categories-select";
 
 const NavbarContainer = styled("div")`
   @media screen and (max-width: 500px) {
@@ -36,63 +34,6 @@ const NavInner = styled("div")`
     display: flex;
   }
 `;
-
-const CATEGORIES = [
-  { name: "General", id: 1 },
-  { name: "Brand assets", id: 2 },
-]; //.map((f, index) => ({ ...f, rank: index + 1 }));
-
-const filterCategory = (query, category, _index, exactMatch) => {
-  const normalizedTitle = category.name.toLowerCase();
-  const normalizedQuery = query.toLowerCase();
-
-  if (exactMatch) {
-    return normalizedTitle === normalizedQuery;
-  } else {
-    return `${normalizedTitle}`.indexOf(normalizedQuery) >= 0;
-  }
-};
-
-const renderCategory = (
-  category,
-  { handleClick, handleFocus, modifiers, query },
-) => {
-  if (!modifiers.matchesPredicate) {
-    return null;
-  }
-
-  return (
-    <MenuItem
-      active={modifiers.active}
-      disabled={modifiers.disabled}
-      key={category.id}
-      label={category.id.toString()}
-      onClick={handleClick}
-      onFocus={handleFocus}
-      roleStructure="listoption"
-      text={`${category.name}`}
-    />
-  );
-};
-
-function createCategory(name) {
-  return {
-    name,
-  };
-}
-
-function renderCreateCategoryOption(query, active, handleClick) {
-  return (
-    <MenuItem
-      icon="add"
-      text={`Create "${query}"`}
-      roleStructure="listoption"
-      active={active}
-      onClick={handleClick}
-      shouldDismissPopover={false}
-    />
-  );
-}
 
 export default observer(({ store }) => {
   const project = useProject();
@@ -129,40 +70,7 @@ export default observer(({ store }) => {
           {/* {project.id !== 'local' && ( */}
           {isAuthenticated && (
             <>
-              <div
-                style={{
-                  maxWidth: "200px",
-                }}
-              >
-                <Select2
-                  createNewItemFromQuery={createCategory}
-                  createNewItemRenderer={renderCreateCategoryOption}
-                  items={CATEGORIES}
-                  itemPredicate={filterCategory}
-                  itemRenderer={renderCategory}
-                  noResults={
-                    <MenuItem
-                      disabled={true}
-                      text="No results."
-                      roleStructure="listoption"
-                    />
-                  }
-                  onItemSelect={({ name, id }) => {
-                    if (!CATEGORIES.map((cat) => cat.name).includes(name)) {
-                      CATEGORIES.push({ name, id: CATEGORIES.length + 1 });
-                    }
-
-                    project.setCategory({ name });
-                    // project.requestSave();
-                  }}
-                >
-                  <Button
-                    text={project.category?.name || "Select a category"}
-                    rightIcon="double-caret-vertical"
-                    placeholder="Select a category"
-                  />
-                </Select2>
-              </div>
+              <CategoriesSelect store={store} />
               <NavbarDivider />
               <div
                 style={{

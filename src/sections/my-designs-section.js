@@ -174,7 +174,7 @@ export const MyDesignsPanel = observer(({ store }) => {
             {half1.map((design) => (
               <DesignCard
                 design={design}
-                key={design.design_id}
+                key={design.id}
                 store={store}
                 project={project}
                 onDelete={handleProjectDelete}
@@ -185,7 +185,7 @@ export const MyDesignsPanel = observer(({ store }) => {
             {half2.map((design) => (
               <DesignCard
                 design={design}
-                key={design.design_id}
+                key={design.id}
                 store={store}
                 project={project}
                 onDelete={handleProjectDelete}

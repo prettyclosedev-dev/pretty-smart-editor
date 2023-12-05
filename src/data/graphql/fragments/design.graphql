@@ -15,6 +15,7 @@ fragment Design on Design {
     fonts        
     unit         
     dpi          
+    public
     publishedDate
     editedDate   
     category {

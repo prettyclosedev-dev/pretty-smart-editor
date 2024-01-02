@@ -4,9 +4,12 @@ import { Button, MenuItem } from "@blueprintjs/core";
 import { Select2 } from "@blueprintjs/select";
 import { useQuery, useMutation } from "react-apollo";
 import { loader } from "graphql.macro";
+import { useCategories, useUser } from "../data/graphql/api";
+import { useAuth0 } from "@auth0/auth0-react";
+
 const getCategories = loader("../data/graphql/queries/getCategories.graphql");
 const createOneCategory = loader(
-  "../data/graphql/mutations/createOneCategory.graphql",
+  "../data/graphql/mutations/createOneCategory.graphql"
 );
 
 const filterCategory = (query, category, _index, exactMatch) => {
@@ -22,7 +25,7 @@ const filterCategory = (query, category, _index, exactMatch) => {
 
 const renderCategory = (
   category,
-  { handleClick, handleFocus, modifiers, query },
+  { handleClick, handleFocus, modifiers, query }
 ) => {
   if (!modifiers.matchesPredicate) {
     return null;
@@ -61,25 +64,31 @@ function createCategoryFromQuery(name) {
 
 export const CategoriesSelect = observer(({ store }) => {
   const project = useProject();
-  const [createCategory] = useMutation(createOneCategory);
-  const { loading, error, data } = useQuery(getCategories);
+  const { isAuthenticated, user } = useAuth0();
+  const [categories, categoriesLoading, categoriesError, addCategory] =
+    useCategories({where: {public: {equals: true}}}); // filter for public categories
+  const [gqlUser, userLoading, userError] = useUser({
+    email: isAuthenticated ? user.email : null,
+  });
 
-  if (loading) return "Loading...";
-  if (error) return `Error! ${error.message}`;
-  
+  if (categoriesLoading) return "Loading...";
+  if (categoriesError) return `Error! ${categoriesError.message}`;
+
   const onItemSelect = ({ name, id }) => {
-    if (id == undefined) {
-      createCategory({
-        variables: {
-          data: {
-            name,
+    if (id == undefined && !!gqlUser?.id) {
+      addCategory({
+        name,
+        creator: {
+          connect: {
+            id: gqlUser?.id,
           },
         },
-        refetchQueries: [getCategories],
-        awaitRefetchQueries: true,
-      }).then(({ data: { createOneCategory } }) => {
-        const { name, id } = createOneCategory;
+        public: true
+      }).then((result) => {
+        const { name, id } = result?.data?.createOneCategory;
         project.setCategory({ name, id });
+      }).catch(e => {
+        console.log("Failed to add category", e);
       });
     } else {
       project.setCategory({ name, id });
@@ -102,7 +111,7 @@ export const CategoriesSelect = observer(({ store }) => {
         }}
         createNewItemFromQuery={createCategoryFromQuery}
         createNewItemRenderer={renderCreateCategoryOption}
-        items={data.categories}
+        items={categories}
         itemPredicate={filterCategory}
         itemRenderer={renderCategory}
         noResults={

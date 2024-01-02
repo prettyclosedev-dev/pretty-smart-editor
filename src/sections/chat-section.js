@@ -29,6 +29,11 @@ import systemPrompt from "../utils/chat-system-prompt.txt";
 /* graphql */
 import { loader } from "graphql.macro";
 import { client } from "../data/graphql/client";
+import {
+  imageDefaults,
+  svgDefaults,
+  textDefaults,
+} from "../utils/json-defaults";
 const chatGPT = loader("../data/graphql/queries/chatGPT.graphql");
 
 export const ChatPanel = observer(({ store }) => {
@@ -43,6 +48,7 @@ export const ChatPanel = observer(({ store }) => {
   const [contentHistory, setContentHistory] = useState([]); //{json, prompt}
   const [textContent, setTextContent] = useState("");
   const [promptText, setPromptText] = useState("");
+  const [finalTime, setFinalTime] = useState("");
 
   const project = useProject();
 
@@ -53,10 +59,10 @@ export const ChatPanel = observer(({ store }) => {
 
   useEffect(() => {
     fetch(systemPrompt)
-    .then((response) => response.text())
-    .then((textContent) => {
-      setPromptText(textContent);
-    });
+      .then((response) => response.text())
+      .then((textContent) => {
+        setPromptText(textContent);
+      });
   }, []);
 
   const handleStringChange = (handler) => {
@@ -68,8 +74,12 @@ export const ChatPanel = observer(({ store }) => {
   );
 
   const { seconds, minutes, hours, days, isRunning, start, pause, reset } =
-    useStopwatch({autoStart: false});
-  const time = `${hours}:${minutes}:${seconds}`;
+    useStopwatch({ autoStart: false });
+
+  useEffect(() => {
+    const time = `${hours}:${minutes}:${seconds}`;
+    setFinalTime(time)
+  }, [hours, minutes, seconds]);
 
   const runChat = async () => {
     // const messages = [
@@ -79,9 +89,9 @@ export const ChatPanel = observer(({ store }) => {
     //   You are a graphics designer using polotno studio editor.
 
     //   You will be generating the necessary json files to load into polotno editor for the design you create.
-      
+
     //   The json file needs to be complete with all parameters for polotno studio to work.
-      
+
     //   Here is a sample json:
     //   ${"```"}
     //   {
@@ -308,21 +318,24 @@ export const ChatPanel = observer(({ store }) => {
     // ];
 
     if (!promptText?.length) {
-      alert("No system prompt!")
-      return 
+      alert("No system prompt!");
+      return;
     }
 
     const messages = [
       {
         role: "system",
-        content: promptText
-      }
-    ]
+        content: promptText,
+      },
+    ];
 
     if (contentHistory?.length) {
       contentHistory.map((history) => {
         messages.push({ role: "user", content: history?.prompt });
-        messages.push({ role: "assistant", content: JSON.stringify(history?.json) });
+        messages.push({
+          role: "assistant",
+          content: JSON.stringify(history?.json),
+        });
       });
     }
 
@@ -340,32 +353,83 @@ export const ChatPanel = observer(({ store }) => {
       if (error) {
         alert(JSON.stringify(error));
         pause();
-        return
+        return;
       }
 
-      console.log(time)
-
-      pause();
-
       const json = JSON.parse(data?.chatGPT?.content);
-      window.store.loadJSON(json);
+
+      console.log(json);
+      const defaultJson =
+        contentHistory?.length > 0
+          ? contentHistory?.[contentHistory?.length - 1]?.json
+          : {
+              id: "design_id",
+              width: 1080,
+              height: 1080,
+              fonts: [],
+              pages: [
+                {
+                  id: "page_id",
+                  children: [],
+                  width: "auto",
+                  height: "auto",
+                  background: "",
+                  bleed: 0,
+                },
+              ],
+              unit: "px",
+              dpi: 72,
+            };
+
+      if (!contentHistory?.length) {
+        json.pages = json.pages?.map(page => {
+          let {children} = page;
+          children = children?.map((child) => {
+            let additional = {};
+            const { type } = child;
+            switch (type) {
+              case "svg":
+                additional = svgDefaults;
+                break;
+              case "text":
+                additional = textDefaults;
+                break;
+              case "image":
+                additional = imageDefaults;
+                break;
+            }
+            return { ...additional, ...child };
+          });
+
+          return {...defaultJson?.pages?.[0], ...page, children}
+        })
+      }
+
+      console.log(defaultJson, json);
+      const finalJson = { ...defaultJson, ...json };
+      console.log(finalJson);
+
+      window.store.loadJSON(finalJson);
 
       setContentHistory([
         ...contentHistory,
-        { json, prompt: textContent, time },
+        { json, prompt: textContent, time: finalTime },
       ]);
+
+      pause();
 
       setTextContent("");
     } catch (e) {
+      console.log(e)
       alert(JSON.stringify(e));
       pause();
     }
   };
 
   function formatTime(value) {
-    const parts = value.split(':');
-    const minutes = String(parts[1]).padStart(2, '0');
-    const seconds = String(parts[2]).padStart(2, '0');
+    const parts = value.split(":");
+    const minutes = String(parts[1]).padStart(2, "0");
+    const seconds = String(parts[2]).padStart(2, "0");
     return `${parts[0]}:${minutes}:${seconds}`;
   }
 
@@ -399,7 +463,14 @@ export const ChatPanel = observer(({ store }) => {
             icon={"circle-arrow-right"}
             onClick={runChat}
           />
-          {isRunning && <Text style={{alignSelf: 'center', marginTop: 10, marginBottom: 10}}>Wait up to 3 minutes {formatTime(`${hours}:${minutes}:${seconds}`)}</Text>}
+          {isRunning && (
+            <Text
+              style={{ alignSelf: "center", marginTop: 10, marginBottom: 10 }}
+            >
+              Wait up to 3 minutes{" "}
+              {formatTime(`${hours}:${minutes}:${seconds}`)}
+            </Text>
+          )}
           {contentHistory?.length > 0 && (
             <div>
               <Divider style={{ marginTop: "30px", marginBottom: "20px" }} />
@@ -408,9 +479,21 @@ export const ChatPanel = observer(({ store }) => {
               </Text>
               {contentHistory?.map((history, index) => {
                 return (
-                  <div onClick={() => window.store?.loadJSON(history?.json)} key={index} style={{ margin: "5px", marginTop: "10px", marginBottom: "10px" }}>
+                  <div
+                    onClick={() => window.store?.loadJSON(history?.json)}
+                    key={index}
+                    style={{
+                      margin: "5px",
+                      marginTop: "10px",
+                      marginBottom: "10px",
+                      cursor: "pointer",
+                    }}
+                  >
                     <Text>
-                      {index + 1}: {history?.prompt} <span style={{color: 'gray'}}>- Time: {formatTime(history?.time)}</span>
+                      {index + 1}: {history?.prompt}{" "}
+                      <span style={{ color: "gray" }}>
+                        - Time: {formatTime(history?.time)}
+                      </span>
                     </Text>
                   </div>
                 );

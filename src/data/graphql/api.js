@@ -2,13 +2,19 @@ import localforage from "localforage";
 
 import { loader } from "graphql.macro";
 import { client } from "./client";
+import { useQuery, useMutation } from "react-apollo";
 
 // query
-const getDesigns = loader("./queries/getDesigns.graphql");
-const getDesign = loader("./queries/getDesign.graphql");
+const getDesignsQuery = loader("./queries/getDesigns.graphql");
+const getDesignQuery = loader("./queries/getDesign.graphql");
+const getCategoriesQuery = loader("./queries/getCategories.graphql");
+const getUserQuery = loader("./queries/getUser.graphql");
 
 // mutation
-const createOneDesign = loader("./mutations/createOneDesign.graphql");
+const createOneDesignMutation = loader("./mutations/createOneDesign.graphql");
+const createOneCategoryMutation = loader(
+  "./mutations/createOneCategory.graphql"
+);
 
 const API = "https://polotno-studio-api.vercel.app/api";
 
@@ -25,7 +31,7 @@ export async function getDesignById({ id }) {
     };
   }
   const { data, loading, error } = await client.query({
-    query: getDesign,
+    query: getDesignQuery,
     variables: { where: { id: Number(id) } },
   });
   // console.log(data, loading, error);
@@ -61,7 +67,9 @@ export async function getDesignById({ id }) {
 
 export async function listDesigns({ accessToken }) {
   try {
-    const { data, loading, error } = await client.query({ query: getDesigns });
+    const { data, loading, error } = await client.query({
+      query: getDesignsQuery,
+    });
     return data?.designs || [];
   } catch (e) {
     console.log(e);
@@ -144,7 +152,7 @@ export async function saveDesign({ store, preview, id, authToken, name = "" }) {
 
   try {
     const { data, loading, error } = await client.mutate({
-      mutation: createOneDesign,
+      mutation: createOneDesignMutation,
       variables: { data: { ...store, preview, name } },
     });
     return { id: data?.createOneDesign?.id, status: "saved" } || {};
@@ -165,4 +173,69 @@ export async function deleteDesign({ id, authToken }) {
     body: JSON.stringify({ id }),
   });
   return await req.json();
+}
+
+export function useCategories({ where, orderBy, take, skip, cursor }) {
+  const { data, loading, error } = useQuery(getCategoriesQuery, {
+    variables: { where, orderBy, take, skip, cursor },
+  });
+
+  const [addSingleCategory] = useMutation(createOneCategoryMutation);
+
+  const addCategory = async (input) => {
+    try {
+      return await addSingleCategory({
+        skip: !input?.creator?.connect?.id,
+        variables: {
+          data: input,
+        },
+        update: (proxy, { data: { createOneCategory } }) => {
+          const data = proxy.readQuery({
+            query: getCategoriesQuery,
+            variables: {
+              where,
+              orderBy,
+              take,
+              skip,
+              cursor,
+            },
+          });
+
+          if (data && createOneCategory) {
+            proxy.writeQuery({
+              query: getCategoriesQuery,
+              variables: {
+                where,
+                orderBy,
+                take,
+                skip,
+                cursor,
+              },
+              data: {
+                categories: [...data.categories, createOneCategory],
+              },
+            });
+          }
+        },
+      });
+    } catch (e) {
+      console.log("Failed to add category", e);
+      throw e;
+    }
+  };
+
+  return [data?.categories || [], loading, error, addCategory];
+}
+
+export function useUser({ email }) {
+  const { data, loading, error } = useQuery(getUserQuery, {
+    skip: !email?.length,
+    variables: {
+      where: {
+        email,
+      },
+    },
+  });
+
+  return [data?.user || {}, loading, error];
 }

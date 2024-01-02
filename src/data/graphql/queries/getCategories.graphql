@@ -1,7 +1,7 @@
 #import '../fragments/category.graphql'
 
-query categories {
-  categories {
+query categories($where: CategoryWhereInput, $orderBy: [CategoryOrderByWithRelationInput!], $take: Int, $skip: Int, $cursor: CategoryWhereUniqueInput) {
+  categories(where: $where, orderBy: $orderBy, take: $take, skip: $skip, cursor: $cursor) {
     ...Category
   }
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { observer } from "mobx-react-lite";
 import {
   Button,
@@ -7,19 +7,16 @@ import {
   NavbarDivider,
   EditableText,
 } from "@blueprintjs/core";
-import FaDiscord from "@meronex/icons/fa/FaDiscord";
-import BiCodeBlock from "@meronex/icons/bi/BiCodeBlock";
-import { useAuth0 } from "@auth0/auth0-react";
-import styled from "polotno/utils/styled";
-
-import { useProject } from "../data/graphql/project";
-
 import { FileMenu } from "./file-menu";
 import { DownloadButton } from "./download-button";
 import { UserMenu } from "./user-menu";
 import { ProfileModal } from "./profile-modal";
-import { Tooltip2 } from "@blueprintjs/popover2";
 import { CategoriesSelect } from "./categories-select";
+
+import { useAuth0 } from "@auth0/auth0-react";
+import { useProject } from "../data/graphql/project";
+
+import styled from "polotno/utils/styled";
 
 const NavbarContainer = styled("div")`
   @media screen and (max-width: 500px) {
@@ -38,15 +35,8 @@ const NavInner = styled("div")`
 export default observer(({ store }) => {
   const project = useProject();
 
-  const {
-    loginWithPopup,
-    isLoading,
-    getAccessTokenSilently,
-    isAuthenticated,
-    logout,
-  } = useAuth0();
-
-  const [modalVisible, setModalVisible] = React.useState(false);
+  const { isAuthenticated } = useAuth0();
+  const [modalVisible, setModalVisible] = useState(false);
 
   return (
     <NavbarContainer className="bp4-navbar">

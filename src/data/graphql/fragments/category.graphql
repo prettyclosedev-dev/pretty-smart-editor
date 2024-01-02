@@ -1,4 +1,10 @@
 fragment Category on Category {
     id           
-    name                  
+    name
+    creator {
+        id
+        name
+        role
+    }
+    public                 
 }

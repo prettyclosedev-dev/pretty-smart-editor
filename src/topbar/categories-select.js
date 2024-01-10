@@ -2,15 +2,8 @@ import { useProject } from "../data/graphql/project";
 import { observer } from "mobx-react-lite";
 import { Button, MenuItem } from "@blueprintjs/core";
 import { Select2 } from "@blueprintjs/select";
-import { useQuery, useMutation } from "react-apollo";
-import { loader } from "graphql.macro";
 import { useCategories, useUser } from "../data/graphql/api";
 import { useAuth0 } from "@auth0/auth0-react";
-
-const getCategories = loader("../data/graphql/queries/getCategories.graphql");
-const createOneCategory = loader(
-  "../data/graphql/mutations/createOneCategory.graphql"
-);
 
 const filterCategory = (query, category, _index, exactMatch) => {
   const normalizedTitle = category.name.toLowerCase();
@@ -71,11 +64,12 @@ export const CategoriesSelect = observer(({ store }) => {
     email: isAuthenticated ? user.email : null,
   });
 
-  if (categoriesLoading) return "Loading...";
+  if (categoriesLoading || userLoading) return "Loading...";
   if (categoriesError) return `Error! ${categoriesError.message}`;
+  if (userError) return `Error! ${userError.message}`;
 
   const onItemSelect = ({ name, id }) => {
-    if (id == undefined && !!gqlUser?.id) {
+    if (id === undefined && !!gqlUser?.id && gqlUser?.role === "ADMIN") {
       addCategory({
         name,
         creator: {
@@ -90,7 +84,7 @@ export const CategoriesSelect = observer(({ store }) => {
       }).catch(e => {
         console.log("Failed to add category", e);
       });
-    } else {
+    } else if (id !== undefined) {
       project.setCategory({ name, id });
     }
     // project.requestSave();
@@ -110,7 +104,8 @@ export const CategoriesSelect = observer(({ store }) => {
           },
         }}
         createNewItemFromQuery={createCategoryFromQuery}
-        createNewItemRenderer={renderCreateCategoryOption}
+        // allow creating categories only for admins
+        createNewItemRenderer={gqlUser.role === "ADMIN" ? renderCreateCategoryOption : undefined}
         items={categories}
         itemPredicate={filterCategory}
         itemRenderer={renderCategory}

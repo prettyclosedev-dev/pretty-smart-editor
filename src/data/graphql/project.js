@@ -36,6 +36,10 @@ class Project {
     this.public = _public;
   }
 
+  setUser(_user) {
+    this.user = _user
+  }
+
   togglePublic() {
     this.public = !this.public;
   }
@@ -110,45 +114,81 @@ class Project {
 
   async save() {
     const json = this.store.toJSON();
-    const maxWidth = 400;
+    const maxWidth = 200;
     const preview = await this.store.toDataURL({
       pixelRatio: maxWidth / json.width,
       mimeType: "image/jpeg",
     });
 
-    if (this.authToken && this.id === "local") {
-      if (this.id === "local") {
-        const res = await api.saveDesign({
-          store: {
-            ...json,
-            fonts: null,
-            pages: {
-              createMany: {
-                data: json.pages.map((p, idx) => {
-                  let copy = { ...p };
-                  copy.polotnoId = p.id;
-                  delete copy.id;
-                  return {
-                    ...copy,
-                    children: { set: copy.children },
-                  };
-                }),
-              },
+    if (!this.authToken) return;
+
+    if (!this.id) {
+      const res = await api.createDesign({
+        store: {
+          ...json,
+          fonts: null,
+          pages: {
+            createMany: {
+              data: json.pages.map((p, idx) => {
+                let copy = { ...p };
+                copy.polotnoId = p.id;
+                delete copy.id;
+                return {
+                  ...copy,
+                  children: { set: copy.children },
+                };
+              }),
             },
           },
-          preview,
-          // id: this.id,
-          name: this.name,
-          authToken: this.authToken,
-        });
+        },
+        preview,
+        // id: this.id,
+        name: this.name,
+        polotnoId: this.store.id,
+        _public: this.public,
+        category: { connect: { id: this.category?.id } },
+        user: {connect: { email: this.user.email }},
+        authToken: this.authToken,
+      });
 
-        if (res.status === "saved") {
-          this.id = res.id;
-          this.updateUrlWithProjectId();
-        }
+      if (res.status === "saved") {
+        this.id = res.id;
+        this.updateUrlWithProjectId();
       }
     } else {
-      console.log("HAVE AN ID");
+      const res = api.saveDesign({
+        store: {
+          ...json,
+          width: { set: json.width },
+          height: { set: json.height },
+          unit: { set: json.unit },
+          dpi: { set: json.dpi },
+          fonts: null,
+          pages: {
+            update: json.pages.map((p, idx) => {
+              const copy = {...p}
+              return {
+                where: {
+                  polotnoId: p.id
+                },
+                data: {
+                  width: {set: p.width},
+                  height: {set: p.height},
+                  background: {set: p.background},
+                  bleed: {set: p.bleed},
+                  children: { set: copy.children },
+                },
+              };
+            })
+          }
+        },
+        preview: { set: preview },
+        id: Number(this.id),
+        name: { set: this.name },
+        _public: { set: this.public },
+        category: { connect: { id: this.category?.id } },
+        authToken: this.authToken,
+      })
     }
   }
 

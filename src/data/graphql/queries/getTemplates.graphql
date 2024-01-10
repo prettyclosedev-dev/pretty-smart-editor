@@ -1,0 +1,7 @@
+#import '../fragments/compactTemplate.graphql'
+
+query templates($where: TemplateWhereInput) {
+  templates(where: $where) {
+    ...CompactTemplate
+  }
+}

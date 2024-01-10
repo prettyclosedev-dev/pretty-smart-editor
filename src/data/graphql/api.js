@@ -9,9 +9,12 @@ const getDesignsQuery = loader("./queries/getDesigns.graphql");
 const getDesignQuery = loader("./queries/getDesign.graphql");
 const getCategoriesQuery = loader("./queries/getCategories.graphql");
 const getUserQuery = loader("./queries/getUser.graphql");
+const getTemplatesQuery = loader("./queries/getTemplates.graphql");
 
 // mutation
 const createOneDesignMutation = loader("./mutations/createOneDesign.graphql");
+const updateOneDesignMutation = loader("./mutations/updateOneDesign.graphql");
+const deleteOneDesignMutation = loader("./mutations/deleteOneDesign.graphql");
 const createOneCategoryMutation = loader(
   "./mutations/createOneCategory.graphql"
 );
@@ -63,19 +66,6 @@ export async function getDesignById({ id }) {
     public: data.design.public,
     category: data.design.category,
   };
-}
-
-export async function listDesigns({ accessToken }) {
-  try {
-    const { data, loading, error } = await client.query({
-      query: getDesignsQuery,
-    });
-    return data?.designs || [];
-  } catch (e) {
-    console.log(e);
-  }
-
-  return [];
 }
 
 export async function getUserSubscription({ accessToken }) {
@@ -140,7 +130,7 @@ export async function cancelUserSubscription({ accessToken, id }) {
 //   }
 // }
 
-export async function saveDesign({ store, preview, id, authToken, name = "" }) {
+export async function createDesign({ store, preview, id, authToken, name = "", user }) {
   if (id === "local" || !authToken) {
     localforage.setItem("polotno-state", store);
 
@@ -153,26 +143,73 @@ export async function saveDesign({ store, preview, id, authToken, name = "" }) {
   try {
     const { data, loading, error } = await client.mutate({
       mutation: createOneDesignMutation,
-      variables: { data: { ...store, preview, name } },
+      variables: { data: { ...store, preview, name, user } },
+      refetchQueries: ["designs"]
     });
     return { id: data?.createOneDesign?.id, status: "saved" } || {};
   } catch (e) {
     console.log(e);
   }
-
-  // return await req.json();
 }
 
-export async function deleteDesign({ id, authToken }) {
-  const req = await fetch(`${API}/designs/delete`, {
-    method: "POST",
-    headers: {
-      Authorization: authToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ id }),
+export async function saveDesign({ store, preview, id, authToken, name = "", user }) {
+  if (id === "local" || !authToken) {
+    localforage.setItem("polotno-state", store);
+
+    return {
+      id: "local",
+      status: "saved",
+    };
+  }
+
+  try {
+    const { data, loading, error } = await client.mutate({
+      mutation: updateOneDesignMutation,
+      variables: { data: { ...store, preview, name }, where: { id } },
+      refetchQueries: ["designs"]
+    });
+    return { id: data?.createOneDesign?.id, status: "saved" } || {};
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+// export async function deleteDesign({ id, authToken }) {
+//   const req = await fetch(`${API}/designs/delete`, {
+//     method: "POST",
+//     headers: {
+//       Authorization: authToken,
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify({ id }),
+//   });
+//   return await req.json();
+// }
+
+export function useDesigns({ where, orderBy, take, skip, cursor }) {
+  const { data, loading, error } = useQuery(getDesignsQuery,{
+    variables: { where, orderBy, take, skip, cursor }
   });
-  return await req.json();
+
+  const [deleteOneDesign] = useMutation(deleteOneDesignMutation)
+
+  const deleteDesign = async (id) => {
+    try {
+      return await deleteOneDesign({
+        variables: {
+          where: {
+            id
+          }
+        },
+        refetchQueries: ["designs"]
+      })
+    } catch (e) {
+      console.log("Failed to delete design", e);
+      throw e;
+    }
+  }
+
+  return [data?.designs || [], loading, error, deleteDesign]
 }
 
 export function useCategories({ where, orderBy, take, skip, cursor }) {
@@ -238,4 +275,10 @@ export function useUser({ email }) {
   });
 
   return [data?.user || {}, loading, error];
+}
+
+export function useTemplates() {
+  const { data, loading, error } = useQuery(getTemplatesQuery)
+
+  return [data?.templates || [], loading, error]
 }

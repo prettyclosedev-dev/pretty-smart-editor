@@ -1,0 +1,5 @@
+mutation deleteOneDesign($where: DesignWhereUniqueInput!) {
+  deleteOneDesign(where: $where) {
+    id
+  }
+}

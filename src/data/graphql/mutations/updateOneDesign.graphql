@@ -1,0 +1,7 @@
+#import '../fragments/design.graphql'
+
+mutation updateOneDesign($data: DesignUpdateInput!, $where: DesignWhereUniqueInput!) {
+  updateOneDesign(data: $data, where: $where) {
+    ...Design
+  }
+}

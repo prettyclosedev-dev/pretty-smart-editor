@@ -15,12 +15,14 @@ import { ShapesSection } from "./sections/shapes-section";
 import { StableDiffusionSection } from "./sections/stable-diffusion-section";
 import { MyDesignsSection } from "./sections/my-designs-section";
 import { ChatSection } from "./sections/chat-section";
+import { TemplatesSection } from "./sections/templates-section";
 import { useProject } from "./data/graphql/project";
 
 import { ImageRemoveBackground } from "./tools/background-remover";
 
 import Topbar from "./topbar/topbar";
 
+DEFAULT_SECTIONS.unshift(TemplatesSection)
 // DEFAULT_SECTIONS.splice(3, 0, IllustrationsSection);
 // replace elements section with just shapes
 DEFAULT_SECTIONS.splice(3, 1, ShapesSection);
@@ -48,7 +50,7 @@ const App = ({ store }) => {
   const project = useProject();
   const height = useHeight();
 
-  const { isAuthenticated, getAccessTokenSilently, isLoading } = useAuth0();
+  const { isAuthenticated, getAccessTokenSilently, isLoading, user } = useAuth0();
 
   const load = () => {
     let url = new URL(window.location.href);
@@ -64,6 +66,7 @@ const App = ({ store }) => {
       return;
     }
     if (isAuthenticated) {
+      project.setUser({email: user.email})
       getAccessTokenSilently()
         .then((token) => {
           project.authToken = token;
@@ -78,7 +81,7 @@ const App = ({ store }) => {
       project.authToken = null;
       load();
     }
-  }, [isAuthenticated, project, getAccessTokenSilently, isLoading]);
+  }, [isAuthenticated, project, getAccessTokenSilently, isLoading, user]);
 
   const handleDrop = (ev) => {
     // Prevent default behavior (Prevent file from being opened)

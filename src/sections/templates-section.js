@@ -12,12 +12,12 @@ import {
 import { Popover2 } from "@blueprintjs/popover2";
 
 import { SectionTab } from "polotno/side-panel";
-import FaFolder from "@meronex/icons/fa/FaFolder";
-import { useDesigns } from "../data/graphql/api";
+import FaBox from "@meronex/icons/fa/FaBox";
 
 import { useProject } from "../data/graphql/project";
+import { useTemplates } from "../data/graphql/api";
 
-const DesignCard = observer(({ design, project, onDelete }) => {
+const DesignCard = observer(({ design, project }) => {
   const [loading, setLoading] = React.useState(false);
   const handleSelect = async () => {
     setLoading(true);
@@ -81,22 +81,6 @@ const DesignCard = observer(({ design, project, onDelete }) => {
                   handleSelect();
                 }}
               />
-              <MenuItem
-                icon="duplicate"
-                text="Copy"
-                onClick={async () => {
-                  handleCopy();
-                }}
-              />
-              <MenuItem
-                icon="trash"
-                text="Delete"
-                onClick={() => {
-                  if (window.confirm("Are you sure you want to delete it?")) {
-                    onDelete(design.id);
-                  }
-                }}
-              />
             </Menu>
           }
           position={Position.BOTTOM}
@@ -110,22 +94,14 @@ const DesignCard = observer(({ design, project, onDelete }) => {
 
 export const MyDesignsPanel = observer(({ store }) => {
   const {
-    isAuthenticated,
-    user,
+    isAuthenticated
   } = useAuth0();
 
   const project = useProject();
 
-  const [designs, loading, error, deleteDesign] = useDesigns({
-    where: {
-      // user: {
-      //   email: {
-      //     equals: user?.email
-      //   }
-      // }
-    }
-  })
+  const [templates, loading, error] = useTemplates()
 
+  
   if (!isAuthenticated) {
     return (
       <div style={{ height: "100%" }}>
@@ -147,15 +123,15 @@ export const MyDesignsPanel = observer(({ store }) => {
   if (error) {
     return (
       <div style={{ height: "100%" }}>
-        <div>Error loading designs</div>
+        <div>Error loading templates</div>
       </div>
     )
   }
 
-  if (designs.length === 0) {
+  if (templates.length === 0) {
     return (
       <div style={{ height: "100%" }}>
-        <div>No designs yet</div>
+        <div>No templates yet</div>
       </div>
     )
   }
@@ -163,7 +139,7 @@ export const MyDesignsPanel = observer(({ store }) => {
   const half1 = [];
   const half2 = [];
 
-  designs?.forEach((design, index) => {
+  templates?.forEach((design, index) => {
     if (index % 2 === 0) {
       half1.push(design);
     } else {
@@ -173,43 +149,41 @@ export const MyDesignsPanel = observer(({ store }) => {
 
   return (
     <div style={{ height: "100%" }}>
-      <div style={{ display: "flex", paddingTop: "5px" }}>
-        <div style={{ width: "50%" }}>
-          {half1.map((design) => (
-            <DesignCard
-              design={design}
-              key={design.id}
-              store={store}
-              project={project}
-              onDelete={deleteDesign}
-            />
-          ))}
+        <div style={{ display: "flex", paddingTop: "5px" }}>
+          <div style={{ width: "50%" }}>
+            {half1.map((design) => (
+              <DesignCard
+                design={design}
+                key={design.id}
+                store={store}
+                project={project}
+              />
+            ))}
+          </div>
+          <div style={{ width: "50%" }}>
+            {half2.map((design) => (
+              <DesignCard
+                design={design}
+                key={design.id}
+                store={store}
+                project={project}
+              />
+            ))}
+          </div>
         </div>
-        <div style={{ width: "50%" }}>
-          {half2.map((design) => (
-            <DesignCard
-              design={design}
-              key={design.id}
-              store={store}
-              project={project}
-              onDelete={deleteDesign}
-            />
-          ))}
-        </div>
-      </div>
     </div>
   );
 });
 
 // define the new custom section
-export const MyDesignsSection = {
-  name: "my-designs",
+export const TemplatesSection = {
+  name: "pretteysmart-templates",
   Tab: (props) => (
-    <SectionTab name="My Designs" {...props}>
-      <FaFolder />
+    <SectionTab name="Templates" {...props}>
+      <FaBox />
     </SectionTab>
   ),
-  visibleInList: false,
+  visibleInList: true,
   // we need observer to update component automatically on any store changes
   Panel: MyDesignsPanel,
 };

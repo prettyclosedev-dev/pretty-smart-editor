@@ -1,0 +1,17 @@
+#import './user.graphql'
+#import './category.graphql'
+
+fragment CompactTemplate on Template {
+    id           
+    name         
+    preview     
+    publishedDate
+    editedDate   
+    category {
+        ...Category
+    }       
+    user {
+        ...User
+    }               
+}
+

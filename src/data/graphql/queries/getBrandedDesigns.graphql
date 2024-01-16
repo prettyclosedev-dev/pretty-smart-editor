@@ -1,0 +1,3 @@
+query brandedDesigns($where: DesignWhereInput, $email: String!) {
+  brandedDesigns(where: $where, email: $email)
+}

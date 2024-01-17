@@ -130,7 +130,7 @@ export const MyDesignsPanel = observer(({ store }) => {
   if (templates.length === 0) {
     return (
       <div style={{ height: "100%" }}>
-        <div>No templates yet</div>
+        <div>No designs yet</div>
       </div>
     )
   }
@@ -178,7 +178,7 @@ export const MyDesignsPanel = observer(({ store }) => {
 export const TemplatesSection = {
   name: "pretteysmart-templates",
   Tab: (props) => (
-    <SectionTab name="Templates" {...props}>
+    <SectionTab name="Designs" {...props}>
       <FaBox />
     </SectionTab>
   ),

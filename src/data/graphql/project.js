@@ -33,6 +33,10 @@ class Project {
   }
 
   addCategory(_category) {
+    if (!this.categories) {
+      this.categories = [];
+    }
+
     if (!this.categories.some((category) => category.id === _category.id)) {
       this.categories.push(_category);
     }
@@ -71,7 +75,7 @@ class Project {
     this.id = id;
     this.updateUrlWithProjectId();
     try {
-      const { store, name, _public, categories } = await api.getDesignById({
+      const { store, name, public: _public, categories } = await api.getDesignById({
         id,
         authToken: this.authToken,
       });
@@ -81,7 +85,7 @@ class Project {
       }
       this.setName(name);
       this.setPublic(_public);
-      this.setCategories(categories);
+      this.setCategories(categories || []);
     } catch (e) {
       console.log(e);
       alert("Project can't be loaded !!!");
@@ -196,14 +200,16 @@ class Project {
             }),
           },
         },
+        polotnoId: this.store.id,
         preview: { set: preview },
         id: Number(this.id),
         name: { set: this.name },
-        _public: { set: this.public },
+        public: { set: this.public },
         categories: {
           set: this.categories.map((category) => ({ id: category.id })),
         },
         authToken: this.authToken,
+        creator: { connect: { email: this.user.email } },
       });
     }
   }

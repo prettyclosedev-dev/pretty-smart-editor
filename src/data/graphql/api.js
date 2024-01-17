@@ -130,7 +130,7 @@ export async function cancelUserSubscription({ accessToken, id }) {
 //   }
 // }
 
-export async function createDesign({ store, preview, id, authToken, name = "", user }) {
+export async function createDesign({ store, preview, id, _public, categories, authToken, name = "", creator }) {
   if (id === "local" || !authToken) {
     localforage.setItem("polotno-state", store);
 
@@ -143,7 +143,7 @@ export async function createDesign({ store, preview, id, authToken, name = "", u
   try {
     const { data, loading, error } = await client.mutate({
       mutation: createOneDesignMutation,
-      variables: { data: { ...store, preview, name, user } },
+      variables: { data: { ...store, preview, name, public: _public, categories, creator } },
       refetchQueries: ["designs"]
     });
     return { id: data?.createOneDesign?.id, status: "saved" } || {};
@@ -152,7 +152,7 @@ export async function createDesign({ store, preview, id, authToken, name = "", u
   }
 }
 
-export async function saveDesign({ store, preview, id, authToken, name = "", user }) {
+export async function saveDesign({ store, preview, categories, _public, id, authToken, name = "", creator, polotnoId }) {
   if (id === "local" || !authToken) {
     localforage.setItem("polotno-state", store);
 
@@ -165,7 +165,7 @@ export async function saveDesign({ store, preview, id, authToken, name = "", use
   try {
     const { data, loading, error } = await client.mutate({
       mutation: updateOneDesignMutation,
-      variables: { data: { ...store, preview, name }, where: { id } },
+      variables: { data: { ...store, preview, name, public: _public, categories, creator }, where: { id } },
       refetchQueries: ["designs"]
     });
     return { id: data?.createOneDesign?.id, status: "saved" } || {};

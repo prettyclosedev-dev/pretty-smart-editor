@@ -11,7 +11,7 @@ import { FileMenu } from "./file-menu";
 import { DownloadButton } from "./download-button";
 import { UserMenu } from "./user-menu";
 import { ProfileModal } from "./profile-modal";
-import { CategoriesSelect } from "./categories-select";
+import { CategoriesPopover } from "./categories-select";
 
 import { useAuth0 } from "@auth0/auth0-react";
 import { useProject } from "../data/graphql/project";
@@ -60,7 +60,7 @@ export default observer(({ store }) => {
           {/* {project.id !== 'local' && ( */}
           {isAuthenticated && (
             <>
-              <CategoriesSelect store={store} />
+              <CategoriesPopover store={store} />
               <NavbarDivider />
               <div
                 style={{

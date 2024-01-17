@@ -1,6 +1,6 @@
 import { useProject } from "../data/graphql/project";
 import { observer } from "mobx-react-lite";
-import { Button, MenuItem, Tag } from "@blueprintjs/core";
+import { Popover, PopoverPosition, Button, MenuItem, Tag } from "@blueprintjs/core";
 import { MultiSelect2 } from "@blueprintjs/select";
 import { useCategories, useUser } from "../data/graphql/api";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -131,11 +131,22 @@ export const CategoriesSelect = observer(({ store }) => {
         selectedItems={project.categories || []}
       >
         <Button
-          text={project.categories.length > 0 ? project.categories.map(c => c.name).join(', ') : "Select categories"}
+          text={project.categories?.length > 0 ? project.categories.map(c => c.name).join(', ') : "Select categories"}
           rightIcon="double-caret-vertical"
           placeholder="Select categories"
         />
       </MultiSelect2>
     </div>
+  );
+});
+
+export const CategoriesPopover = observer((store) => {
+  return (
+    <Popover
+      content={<CategoriesSelect store={store} />}
+      position={PopoverPosition.RIGHT}
+    >
+      <Button icon="tag" text="Select Categories" />
+    </Popover>
   );
 });

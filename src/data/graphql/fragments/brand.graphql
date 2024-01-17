@@ -1,4 +1,4 @@
-#import './category.graphql'
+#import './compactCategory.graphql'
 
 fragment Brand on Brand {
     id
@@ -25,7 +25,7 @@ fragment Brand on Brand {
     phone
     tagline
     specialCategories {
-      ...Category
+      ...CompactCategory
     }
     wordmark
   }

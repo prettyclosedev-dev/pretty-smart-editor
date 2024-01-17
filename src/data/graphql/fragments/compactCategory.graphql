@@ -1,0 +1,11 @@
+fragment CompactCategory on Category {
+    id           
+    name
+    creator {
+        id
+        name
+        role
+    }
+    public   
+    tags      
+}

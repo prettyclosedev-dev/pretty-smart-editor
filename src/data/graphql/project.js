@@ -12,7 +12,7 @@ class Project {
   authToken = "";
   public = false;
   user = {};
-  category = {};
+  categories = [];
   skipSaving = false;
 
   constructor({ store }) {
@@ -28,8 +28,20 @@ class Project {
     this.name = _name;
   }
 
-  setCategory(_category) {
-    this.category = _category;
+  setCategories(_categories) {
+    this.categories = _categories;
+  }
+
+  addCategory(_category) {
+    if (!this.categories.some((category) => category.id === _category.id)) {
+      this.categories.push(_category);
+    }
+  }
+
+  removeCategory(_category) {
+    this.categories = this.categories.filter(
+      (category) => category.id !== _category.id
+    );
   }
 
   setPublic(_public) {
@@ -37,7 +49,7 @@ class Project {
   }
 
   setUser(_user) {
-    this.user = _user
+    this.user = _user;
   }
 
   togglePublic() {
@@ -59,7 +71,7 @@ class Project {
     this.id = id;
     this.updateUrlWithProjectId();
     try {
-      const { store, name, _public, category } = await api.getDesignById({
+      const { store, name, _public, categories } = await api.getDesignById({
         id,
         authToken: this.authToken,
       });
@@ -69,7 +81,7 @@ class Project {
       }
       this.setName(name);
       this.setPublic(_public);
-      this.setCategory(category);
+      this.setCategories(categories);
     } catch (e) {
       console.log(e);
       alert("Project can't be loaded !!!");
@@ -146,8 +158,10 @@ class Project {
         name: this.name,
         polotnoId: this.store.id,
         _public: this.public,
-        category: { connect: { id: this.category?.id } },
-        user: {connect: { email: this.user.email }},
+        categories: {
+          connect: this.categories.map((category) => ({ id: category.id })),
+        },
+        creator: { connect: { email: this.user.email } },
         authToken: this.authToken,
       });
 
@@ -166,29 +180,31 @@ class Project {
           fonts: null,
           pages: {
             update: json.pages.map((p, idx) => {
-              const copy = {...p}
+              const copy = { ...p };
               return {
                 where: {
-                  polotnoId: p.id
+                  polotnoId: p.id,
                 },
                 data: {
-                  width: {set: p.width},
-                  height: {set: p.height},
-                  background: {set: p.background},
-                  bleed: {set: p.bleed},
+                  width: { set: p.width },
+                  height: { set: p.height },
+                  background: { set: p.background },
+                  bleed: { set: p.bleed },
                   children: { set: copy.children },
                 },
               };
-            })
-          }
+            }),
+          },
         },
         preview: { set: preview },
         id: Number(this.id),
         name: { set: this.name },
         _public: { set: this.public },
-        category: { connect: { id: this.category?.id } },
+        categories: {
+          set: this.categories.map((category) => ({ id: category.id })),
+        },
         authToken: this.authToken,
-      })
+      });
     }
   }
 

@@ -1,3 +1,5 @@
+#import './brand.graphql'
+
 fragment Category on Category {
     id           
     name
@@ -6,5 +8,9 @@ fragment Category on Category {
         name
         role
     }
-    public                 
+    public   
+    tags      
+    availableForBrands {
+        ...Brand
+    }        
 }

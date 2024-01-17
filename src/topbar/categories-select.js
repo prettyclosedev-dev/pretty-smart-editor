@@ -1,7 +1,7 @@
 import { useProject } from "../data/graphql/project";
 import { observer } from "mobx-react-lite";
-import { Button, MenuItem } from "@blueprintjs/core";
-import { Select2 } from "@blueprintjs/select";
+import { Button, MenuItem, Tag } from "@blueprintjs/core";
+import { MultiSelect2 } from "@blueprintjs/select";
 import { useCategories, useUser } from "../data/graphql/api";
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -80,15 +80,25 @@ export const CategoriesSelect = observer(({ store }) => {
         public: true
       }).then((result) => {
         const { name, id } = result?.data?.createOneCategory;
-        project.setCategory({ name, id });
+        project.addCategory({ name, id });
       }).catch(e => {
         console.log("Failed to add category", e);
       });
     } else if (id !== undefined) {
-      project.setCategory({ name, id });
+      project.addCategory({ name, id });
     }
     // project.requestSave();
   };
+
+  const onItemRemove = (categoryToRemove) => {
+    project.removeCategory(categoryToRemove); // add logic to erase category for admin
+  };
+
+  const renderTag = category => (
+    <Tag key={category.id} onRemove={() => onItemRemove(category)}>
+      {category.name}
+    </Tag>
+  );
 
   return (
     <div
@@ -96,7 +106,7 @@ export const CategoriesSelect = observer(({ store }) => {
         maxWidth: "200px",
       }}
     >
-      <Select2
+      <MultiSelect2
         menuProps={{
           style: {
             maxHeight: "400px",
@@ -117,13 +127,15 @@ export const CategoriesSelect = observer(({ store }) => {
           />
         }
         onItemSelect={onItemSelect}
+        tagRenderer={renderTag}
+        selectedItems={project.categories || []}
       >
         <Button
-          text={project.category?.name || "Select a category"}
+          text={project.categories.length > 0 ? project.categories.map(c => c.name).join(', ') : "Select categories"}
           rightIcon="double-caret-vertical"
-          placeholder="Select a category"
+          placeholder="Select categories"
         />
-      </Select2>
+      </MultiSelect2>
     </div>
   );
 });

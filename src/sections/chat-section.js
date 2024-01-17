@@ -78,7 +78,7 @@ export const ChatPanel = observer(({ store }) => {
 
   useEffect(() => {
     const time = `${hours}:${minutes}:${seconds}`;
-    setFinalTime(time)
+    setFinalTime(time);
   }, [hours, minutes, seconds]);
 
   const runChat = async () => {
@@ -356,6 +356,8 @@ export const ChatPanel = observer(({ store }) => {
         return;
       }
 
+      console.log("chatGPT", data?.chatGPT?.content);
+
       const json = JSON.parse(data?.chatGPT?.content);
 
       console.log(json);
@@ -382,8 +384,8 @@ export const ChatPanel = observer(({ store }) => {
             };
 
       if (!contentHistory?.length) {
-        json.pages = json.pages?.map(page => {
-          let {children} = page;
+        json.pages = json.pages?.map((page) => {
+          let { children } = page;
           children = children?.map((child) => {
             let additional = {};
             const { type } = child;
@@ -401,12 +403,12 @@ export const ChatPanel = observer(({ store }) => {
             return { ...additional, ...child };
           });
 
-          return {...defaultJson?.pages?.[0], ...page, children}
-        })
+          return { ...defaultJson?.pages?.[0], ...page, children };
+        });
       }
 
       console.log(defaultJson, json);
-      const finalJson = { ...defaultJson, ...json };
+      const finalJson = mergeChildrenIfSameIdOrType(defaultJson, json);
       console.log(finalJson);
 
       window.store.loadJSON(finalJson);
@@ -420,11 +422,47 @@ export const ChatPanel = observer(({ store }) => {
 
       setTextContent("");
     } catch (e) {
-      console.log(e)
+      console.log(e);
       alert(JSON.stringify(e));
       pause();
     }
   };
+
+  function mergeChildrenIfSameIdOrType(defaultJson, newJson) {
+    // Ensure the defaultJson has the pages and children structure we expect
+    if (!defaultJson.pages || !Array.isArray(defaultJson.pages) || !defaultJson.pages.length || !defaultJson.pages[0].children) {
+        throw new Error('Invalid structure of defaultJson');
+    }
+
+    // Ensure the newJson has the pages and children structure we expect
+    if (!newJson.pages || !Array.isArray(newJson.pages) || !newJson.pages.length || !newJson.pages[0].children) {
+        throw new Error('Invalid structure of newJson');
+    }
+
+    // Clone the defaultJson to avoid mutating the original object
+    const resultJson = JSON.parse(JSON.stringify(defaultJson));
+
+    // Iterate over the new children
+    newJson.pages[0].children.forEach(newChild => {
+        // Find a matching child in the defaultJson by 'id' or 'type'
+        const matchIndex = resultJson.pages[0].children.findIndex(
+            defaultChild => defaultChild.id === newChild.id || defaultChild.type === newChild.type
+        );
+
+        // If a match is found, merge the new child into the matching child
+        if (matchIndex !== -1) {
+            resultJson.pages[0].children[matchIndex] = {
+                ...resultJson.pages[0].children[matchIndex],
+                ...newChild
+            };
+        } else {
+            // If no match is found, optionally you can add the new child to the array
+            // resultJson.pages[0].children.push(newChild);
+        }
+    });
+
+    return resultJson;
+}
 
   function formatTime(value) {
     const parts = value.split(":");

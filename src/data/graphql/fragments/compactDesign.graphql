@@ -8,10 +8,11 @@ fragment CompactDesign on Design {
     preview     
     publishedDate
     editedDate   
-    category {
+    categories {
         ...Category
     }       
-    user {
+    creator {
         ...User
-    }               
+    }     
+    tags          
 }

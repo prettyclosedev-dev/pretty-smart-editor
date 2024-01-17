@@ -101,7 +101,6 @@ export const MyDesignsPanel = observer(({ store }) => {
 
   const [templates, loading, error] = useTemplates()
 
-  
   if (!isAuthenticated) {
     return (
       <div style={{ height: "100%" }}>

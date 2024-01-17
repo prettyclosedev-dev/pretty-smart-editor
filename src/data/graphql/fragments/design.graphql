@@ -18,10 +18,11 @@ fragment Design on Design {
     public
     publishedDate
     editedDate   
-    category {
+    categories {
         ...Category
     }       
-    user {
+    creator {
         ...User
-    }               
+    }  
+    tags             
 }

@@ -1,6 +1,11 @@
+#import './brand.graphql'
+
 fragment User on User {
     id           
     name  
     email
-    role               
+    role    
+    brands {
+        ...Brand
+    }           
 }

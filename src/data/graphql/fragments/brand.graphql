@@ -1,0 +1,31 @@
+#import './category.graphql'
+
+fragment Brand on Brand {
+    id
+    email
+    colors {
+      id
+      primary
+      rank
+      value
+    }
+    fonts {
+      bold
+      italic
+      google
+      id
+      name
+      url
+      value
+    }
+    icon
+    industry
+    logo
+    name
+    phone
+    tagline
+    specialCategories {
+      ...Category
+    }
+    wordmark
+  }

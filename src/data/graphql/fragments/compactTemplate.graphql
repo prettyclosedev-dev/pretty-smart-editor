@@ -7,11 +7,12 @@ fragment CompactTemplate on Template {
     preview     
     publishedDate
     editedDate   
-    category {
+    categories {
         ...Category
     }       
-    user {
+    creator {
         ...User
-    }               
+    }  
+    tags             
 }
 

@@ -14,6 +14,8 @@ class Project {
   user = {};
   categories = [];
   skipSaving = false;
+  loading = false;
+  error = null;
 
   constructor({ store }) {
     mobx.makeAutoObservable(this);
@@ -60,6 +62,14 @@ class Project {
     this.public = !this.public;
   }
 
+  setLoading(_loading) {
+    this.loading = _loading;
+  }
+
+  setError(_error) {
+    this.error = _error;
+  }
+
   requestSave() {
     if (this.saveTimeout) {
       return;
@@ -74,6 +84,9 @@ class Project {
   async loadById(id) {
     this.id = id;
     this.updateUrlWithProjectId();
+    this.setLoading(true);
+    this.setError(null);
+
     try {
       const { store, name, public: _public, categories } = await api.getDesignById({
         id,
@@ -88,7 +101,10 @@ class Project {
       this.setCategories(categories || []);
     } catch (e) {
       console.log(e);
+      this.setError(e);
       alert("Project can't be loaded !!!");
+    } finally {
+      this.setLoading(false);
     }
   }
 
@@ -161,7 +177,7 @@ class Project {
         // id: this.id,
         name: this.name,
         polotnoId: this.store.id,
-        _public: this.public,
+        public: this.public,
         categories: {
           connect: this.categories.map((category) => ({ id: category.id })),
         },
@@ -204,7 +220,7 @@ class Project {
         preview: { set: preview },
         id: Number(this.id),
         name: { set: this.name },
-        public: { set: this.public },
+        public: this.public,
         categories: {
           set: this.categories.map((category) => ({ id: category.id })),
         },

@@ -87,7 +87,7 @@ export default observer(({ store }) => {
               />
               <NavbarDivider />
               <Button
-                text={project.public ? "Make Private" : "Make Public"}
+                text={project.loading ? "Loading..." : project.error ? "---" : project.public ? "Make Private" : "Make Public"}
                 icon={project.public ? "eye-on" : "eye-off"}
                 onClick={() => {
                   project.togglePublic();

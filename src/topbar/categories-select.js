@@ -64,7 +64,8 @@ export const CategoriesSelect = observer(({ store }) => {
     email: isAuthenticated ? user.email : null,
   });
 
-  if (categoriesLoading || userLoading) return "Loading...";
+  if (project.loading || categoriesLoading || userLoading) return "Loading...";
+  if (project.error) return `Error! ${project.error.message}`;
   if (categoriesError) return `Error! ${categoriesError.message}`;
   if (userError) return `Error! ${userError.message}`;
 

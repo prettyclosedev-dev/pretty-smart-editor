@@ -17,6 +17,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useProject } from "../data/graphql/project";
 
 import styled from "polotno/utils/styled";
+import { TagsPopover } from "./tags-select";
 
 const NavbarContainer = styled("div")`
   @media screen and (max-width: 500px) {
@@ -60,8 +61,6 @@ export default observer(({ store }) => {
           {/* {project.id !== 'local' && ( */}
           {isAuthenticated && (
             <>
-              <CategoriesPopover store={store} />
-              <NavbarDivider />
               <div
                 style={{
                   paddingRight: "10px",
@@ -77,20 +76,31 @@ export default observer(({ store }) => {
                   }}
                 />
               </div>
-
+              <CategoriesPopover store={store} />
+              <NavbarDivider />
+              <TagsPopover store={store} />
+              <NavbarDivider />
               <Button
-                text="Save"
-                icon={"floppy-disk"}
+                text={
+                  project.loading
+                    ? "Loading..."
+                    : project.error
+                    ? "---"
+                    : project.public
+                    ? "Make Private"
+                    : "Make Public"
+                }
+                icon={project.public ? "eye-on" : "eye-off"}
                 onClick={() => {
+                  project.togglePublic();
                   project.requestSave();
                 }}
               />
               <NavbarDivider />
               <Button
-                text={project.loading ? "Loading..." : project.error ? "---" : project.public ? "Make Private" : "Make Public"}
-                icon={project.public ? "eye-on" : "eye-off"}
+                text="Save"
+                icon={"floppy-disk"}
                 onClick={() => {
-                  project.togglePublic();
                   project.requestSave();
                 }}
               />

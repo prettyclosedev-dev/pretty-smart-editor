@@ -70,6 +70,11 @@ const cache = new InMemoryCache({
             return [...existing, ...incoming];
           },
         },
+        tags: {
+          merge(existing = [], incoming) {
+            return [...existing, ...incoming];
+          },
+        },
       },
     },
   },

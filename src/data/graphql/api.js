@@ -48,12 +48,12 @@ export async function getDesignById({ id }) {
   // if (!req.ok) {
   //   throw new Error('Design not found');
   // }
-  // const json = await req.json();
-  console.log("=============");
-  console.log("=============");
-  console.log(data);
-  console.log("=============");
-  console.log("=============");
+  // // const json = await req.json();
+  // console.log("=============");
+  // console.log("=============");
+  // console.log(data);
+  // console.log("=============");
+  // console.log("=============");
   return { // why are things in store?
     store: {
       ...data.design,
@@ -65,6 +65,7 @@ export async function getDesignById({ id }) {
     name: data.design.name,
     public: data.design.public,
     categories: data.design.categories,
+    tags: data.design.tags,
     creator: data.design.creator,
     preview: data.design.preview,
   };
@@ -166,7 +167,7 @@ export async function cancelUserSubscription({ accessToken, id }) {
 //   }
 // }
 
-export async function createDesign({ store, preview, id, public: _public, categories, authToken, name = "", creator }) {
+export async function createDesign({ store, preview, id, public: _public, categories, tags, authToken, name = "", creator }) {
   if (id === "local" || !authToken) {
     localforage.setItem("polotno-state", store);
 
@@ -179,7 +180,7 @@ export async function createDesign({ store, preview, id, public: _public, catego
   try {
     const { data, loading, error } = await client.mutate({
       mutation: createOneDesignMutation,
-      variables: { data: { ...store, preview, name, public: _public, categories, creator } },
+      variables: { data: { ...store, preview, name, public: _public, categories, tags, creator } },
       refetchQueries: ["designs"]
     });
     return { id: data?.createOneDesign?.id, status: "saved" } || {};
@@ -188,7 +189,7 @@ export async function createDesign({ store, preview, id, public: _public, catego
   }
 }
 
-export async function saveDesign({ store, preview, categories, public: _public, id, authToken, name = "", creator, polotnoId }) {
+export async function saveDesign({ store, preview, categories, tags, public: _public, id, authToken, name = "", creator, polotnoId }) {
   if (id === "local" || !authToken) {
     localforage.setItem("polotno-state", store);
 
@@ -201,7 +202,7 @@ export async function saveDesign({ store, preview, categories, public: _public, 
   try {
     const { data, loading, error } = await client.mutate({
       mutation: updateOneDesignMutation,
-      variables: { data: { ...store, preview, name, public: {set: _public}, categories, creator }, where: { id } },
+      variables: { data: { ...store, preview, name, public: {set: _public}, categories, tags, creator }, where: { id } },
       refetchQueries: ["designs"]
     });
     return { id: data?.createOneDesign?.id, status: "saved" } || {};

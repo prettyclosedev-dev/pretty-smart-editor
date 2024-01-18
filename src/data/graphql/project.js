@@ -13,6 +13,7 @@ class Project {
   public = false;
   user = {};
   categories = [];
+  tags = [];
   skipSaving = false;
   loading = false;
   error = null;
@@ -24,6 +25,18 @@ class Project {
     store.on("change", () => {
       this.requestSave();
     });
+
+    // mobx.reaction(
+    //   () => ({
+    //     name: this.name,
+    //     categories: this.categories,
+    //     tags: this.tags,
+    //     public: this.public,
+    //   }),
+    //   () => {
+    //     this.requestSave();
+    //   }
+    // );
   }
 
   setName(_name) {
@@ -47,6 +60,26 @@ class Project {
   removeCategory(_category) {
     this.categories = this.categories.filter(
       (category) => category.id !== _category.id
+    );
+  }
+
+  setTags(_tags) {
+    this.tags = _tags;
+  }
+
+  addTag(_tag) {
+    if (!this.tags) {
+      this.tags = [];
+    }
+
+    if (!this.tags.some((tag) => tag === _tag)) {
+      this.tags.push(_tag);
+    }
+  }
+
+  removeTag(_tag) {
+    this.tags = this.tags.filter(
+      (tag) => tag !==_tag
     );
   }
 
@@ -88,17 +121,23 @@ class Project {
     this.setError(null);
 
     try {
-      const { store, name, public: _public, categories } = await api.getDesignById({
+      const { store, name, public: _public, categories, tags } = await api.getDesignById({
         id,
         authToken: this.authToken,
       });
       console.log(store, name);
       if (store) {
+        this.saveTimeout = {};
         this.store.loadJSON(store);
+        await this.store.waitLoading();
+        setTimeout(() => {
+          this.saveTimeout = null;
+        }, 1000)
       }
       this.setName(name);
       this.setPublic(_public);
       this.setCategories(categories || []);
+      this.setTags(tags || []);
     } catch (e) {
       console.log(e);
       this.setError(e);
@@ -181,11 +220,12 @@ class Project {
         categories: {
           connect: this.categories.map((category) => ({ id: category.id })),
         },
+        tags: this.tags,
         creator: { connect: { email: this.user.email } },
         authToken: this.authToken,
       });
 
-      if (res.status === "saved") {
+      if (res.status === "saved") { // change to success from graphql
         this.id = res.id;
         this.updateUrlWithProjectId();
       }
@@ -223,6 +263,9 @@ class Project {
         public: this.public,
         categories: {
           set: this.categories.map((category) => ({ id: category.id })),
+        },
+        tags: {
+          set: this.tags,
         },
         authToken: this.authToken,
         creator: { connect: { email: this.user.email } },

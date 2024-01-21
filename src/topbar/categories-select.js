@@ -1,6 +1,7 @@
 import { useProject } from "../data/graphql/project";
 import { observer } from "mobx-react-lite";
-import { Popover, PopoverPosition, Button, MenuItem, Tag } from "@blueprintjs/core";
+import { Popover2 } from "@blueprintjs/popover2";
+import { PopoverPosition, Button, MenuItem, Tag } from "@blueprintjs/core";
 import { MultiSelect2 } from "@blueprintjs/select";
 import { useCategories, useUser } from "../data/graphql/api";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -91,14 +92,14 @@ export const CategoriesSelect = observer(({ store }) => {
     // project.requestSave();
   };
 
-  const onItemRemove = (categoryToRemove) => {
+  const onItemRemove = categoryToRemove => {
     project.removeCategory(categoryToRemove); // add logic to erase category for admin
   };
 
   const renderTag = category => (
-    <Tag key={category.id} onRemove={() => onItemRemove(category)}>
+    <span key={category.id}>
       {category.name}
-    </Tag>
+    </span>
   );
 
   return (
@@ -129,6 +130,7 @@ export const CategoriesSelect = observer(({ store }) => {
         }
         onItemSelect={onItemSelect}
         tagRenderer={renderTag}
+        onRemove={onItemRemove}
         selectedItems={project.categories || []}
       >
         <Button
@@ -143,11 +145,58 @@ export const CategoriesSelect = observer(({ store }) => {
 
 export const CategoriesPopover = observer((store) => {
   return (
-    <Popover
+    <Popover2
       content={<CategoriesSelect store={store} />}
       position={PopoverPosition.RIGHT}
     >
       <Button icon="tag" text="Select Categories" />
-    </Popover>
+    </Popover2>
   );
 });
+
+
+export const CategoriesSelectSearch = ({selected, onAddSelected, onRemoveSelected}) => {
+  const [categories, categoriesLoading, categoriesError] =
+    useCategories({where: {public: {equals: true}}}); // filter for public categories
+
+  if (categoriesError) return `Error! ${categoriesError.message}`;
+
+  const renderTag = category => (
+    <span key={category.id}>
+      {category.name}
+    </span>
+  );
+
+  return (
+    <div>
+      <MultiSelect2
+        menuProps={{
+          style: {
+            maxHeight: "400px",
+            overflow: "auto",
+          },
+        }}
+        tagInputProps={{
+          leftIcon: "tag"
+        }}
+        // filter already selected categories
+        items={categories.filter(c => !selected.some(i => c.id === i.id))}
+        itemPredicate={filterCategory}
+        itemRenderer={renderCategory}
+        placeholder="search categories"
+        noResults={
+          <MenuItem
+            disabled={true}
+            text="No results."
+            roleStructure="listoption"
+          />
+        }
+        onItemSelect={onAddSelected}
+        tagRenderer={renderTag}
+        onRemove={onRemoveSelected}
+        selectedItems={selected || []}
+      >
+      </MultiSelect2>
+    </div>
+  );
+}

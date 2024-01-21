@@ -224,7 +224,7 @@ export async function saveDesign({ store, preview, categories, tags, public: _pu
 // }
 
 export function useDesigns({ where, orderBy, take, skip, cursor }) {
-  const { data, loading, error } = useQuery(getDesignsQuery,{
+  const { data, loading, error, refetch } = useQuery(getDesignsQuery,{
     variables: { where, orderBy, take, skip, cursor }
   });
 
@@ -246,7 +246,7 @@ export function useDesigns({ where, orderBy, take, skip, cursor }) {
     }
   }
 
-  return [data?.designs || [], loading, error, deleteDesign]
+  return {data: data?.designs || [], count: data?.designsCount, loading, error, refetch, deleteDesign }
 }
 
 export function useCategories({ where, orderBy, take, skip, cursor }) {

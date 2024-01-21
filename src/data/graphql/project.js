@@ -220,12 +220,12 @@ class Project {
         categories: {
           connect: this.categories.map((category) => ({ id: category.id })),
         },
-        tags: this.tags,
+        tags: { set: this.tags },
         creator: { connect: { email: this.user.email } },
         authToken: this.authToken,
       });
 
-      if (res.status === "saved") { // change to success from graphql
+      if (res?.status === "saved") { // change to success from graphql
         this.id = res.id;
         this.updateUrlWithProjectId();
       }

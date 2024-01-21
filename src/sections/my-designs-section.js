@@ -18,6 +18,7 @@ import { useDesigns } from "../data/graphql/api";
 
 import { useProject } from "../data/graphql/project";
 import { CategoriesSelectSearch } from "../topbar/categories-select";
+import { debounce } from "lodash";
 
 const DesignCard = observer(({ design, project, onDelete }) => {
   const [loading, setLoading] = React.useState(false);
@@ -143,6 +144,12 @@ function designWhere(user, text, visibility, categories) {
   }
 }
 
+const fireSearch = debounce((refetch, user, text, visibility, categories) => {
+  refetch({
+    where: designWhere(user, text, visibility, categories)
+  })
+}, 500)
+
 function visibilityMenu({selected, onChangeSelection}) {
   return (
     <Popover2
@@ -165,7 +172,6 @@ function visibilityMenu({selected, onChangeSelection}) {
   );
 }
 
-
 export const MyDesignsPanel = observer(({ store }) => {
   const {
     isAuthenticated,
@@ -183,10 +189,10 @@ export const MyDesignsPanel = observer(({ store }) => {
   const [visibility, setVisibility] = useState("all") // "all" | "public" | "private"
   const [categories, setCategories] = useState([])
 
+  
+
   useEffect(() => {
-    refetch({
-      where: designWhere(user, text, visibility, categories)
-    })
+    fireSearch(refetch, user, text, visibility, categories)
   }, [text, visibility, categories, user, refetch])
 
   const half1 = [];

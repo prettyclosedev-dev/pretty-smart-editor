@@ -12,9 +12,8 @@ import {
   Text,
   TextArea,
   Divider,
+  Popover
 } from "@blueprintjs/core";
-
-import { Popover2 } from "@blueprintjs/popover2";
 
 import { SectionTab } from "polotno/side-panel";
 import FaFolder from "@meronex/icons/fa/FaFolder";

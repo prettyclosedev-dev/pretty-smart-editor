@@ -17,6 +17,8 @@ class Project {
   skipSaving = false;
   loading = false;
   error = null;
+  language =
+    localStorage.getItem('polotno-language') || navigator.language || 'en';
 
   constructor({ store }) {
     mobx.makeAutoObservable(this);
@@ -37,6 +39,11 @@ class Project {
     //     this.requestSave();
     //   }
     // );
+  }
+
+  setLanguage(lang) {
+    this.language = lang;
+    localStorage.setItem('polotno-language', lang);
   }
 
   setName(_name) {
@@ -276,6 +283,10 @@ class Project {
   async duplicate() {
     this.id = "local";
     this.save();
+  }
+
+  async clear() {
+    // await api.deleteDesign();
   }
 }
 

@@ -12,14 +12,16 @@ import { DownloadButton } from "./download-button";
 import { UserMenu } from "./user-menu";
 import { ProfileModal } from "./profile-modal";
 import { CategoriesPopover } from "./categories-select";
-
+import { forEveryChild } from 'polotno/model/group-model';
 import { useAuth0 } from "@auth0/auth0-react";
 import { useProject } from "../data/graphql/project";
 
 import styled from "polotno/utils/styled";
 import { TagsPopover } from "./tags-select";
 
-const NavbarContainer = styled("div")`
+const NavbarContainer = styled('div')`
+  white-space: nowrap;
+
   @media screen and (max-width: 500px) {
     overflow-x: auto;
     overflow-y: hidden;
@@ -27,11 +29,41 @@ const NavbarContainer = styled("div")`
   }
 `;
 
-const NavInner = styled("div")`
+const NavInner = styled('div')`
   @media screen and (max-width: 500px) {
     display: flex;
   }
 `;
+
+const PlayButton = observer(({ store }) => {
+  let hasAnimations = false;
+  forEveryChild({ children: store.pages }, (child) => {
+    const hasAnim = child.animations?.find((el) => el.enabled);
+    if (hasAnim) {
+      hasAnimations = true;
+    }
+  });
+  if (!hasAnimations) {
+    return null;
+  }
+  return (
+    <Button
+      icon={store.isPlaying ? 'pause' : 'play'}
+      onClick={() => {
+        if (store.isPlaying) {
+          store.stop();
+        } else {
+          store.play();
+        }
+      }}
+      style={{
+        marginRight: '10px',
+      }}
+    >
+      Preview
+    </Button>
+  );
+});
 
 export default observer(({ store }) => {
   const project = useProject();
@@ -40,16 +72,16 @@ export default observer(({ store }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   return (
-    <NavbarContainer className="bp4-navbar">
+    <NavbarContainer className="bp5-navbar">
       <NavInner>
         <Navbar.Group align={Alignment.LEFT}>
           <FileMenu store={store} project={project} />
           {isAuthenticated && (
             <>
-              <NavbarDivider />
               <Button
                 text="My Designs"
                 intent="primary"
+                style={{ marginLeft: '20px' }}
                 onClick={() => {
                   store.openSidePanel("my-designs");
                 }}
@@ -58,7 +90,6 @@ export default observer(({ store }) => {
           )}
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>
-          {/* {project.id !== 'local' && ( */}
           {isAuthenticated && (
             <>
               <div
@@ -107,7 +138,6 @@ export default observer(({ store }) => {
               <NavbarDivider />
             </>
           )}
-          {/* )} */}
 
           <ProfileModal
             isOpen={modalVisible}
@@ -116,17 +146,7 @@ export default observer(({ store }) => {
             }}
             store={store}
           />
-          {/* <AnchorButton
-            href="https://polotno.com"
-            target="_blank"
-            minimal
-            icon={
-              <BiCodeBlock className="bp4-icon" style={{ fontSize: "20px" }} />
-            }
-          >
-            API
-          </AnchorButton> */}
-          {/* <NavbarDivider /> */}
+          <PlayButton store={store} />
           <DownloadButton store={store} />
           <NavbarDivider />
           <UserMenu store={store} project={project} />

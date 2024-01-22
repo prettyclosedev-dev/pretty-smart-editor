@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { observer } from "mobx-react-lite";
 import { useAuth0 } from "@auth0/auth0-react";
 import {
@@ -8,17 +8,14 @@ import {
   MenuItem,
   Position,
   Spinner,
-  InputGroup,
+  Popover
 } from "@blueprintjs/core";
-import { Popover2 } from "@blueprintjs/popover2";
 
 import { SectionTab } from "polotno/side-panel";
 import FaFolder from "@meronex/icons/fa/FaFolder";
 import { useDesigns } from "../data/graphql/api";
 
 import { useProject } from "../data/graphql/project";
-import { CategoriesSelectSearch } from "../topbar/categories-select";
-import { debounce } from "lodash";
 
 const DesignCard = observer(({ design, project, onDelete }) => {
   const [loading, setLoading] = React.useState(false);
@@ -74,7 +71,7 @@ const DesignCard = observer(({ design, project, onDelete }) => {
           e.stopPropagation();
         }}
       >
-        <Popover2
+        <Popover
           content={
             <Menu>
               <MenuItem
@@ -105,72 +102,11 @@ const DesignCard = observer(({ design, project, onDelete }) => {
           position={Position.BOTTOM}
         >
           <Button icon="more" />
-        </Popover2>
+        </Popover>
       </div>
     </Card>
   );
 });
-
-function designWhere(user, text, visibility, categories) {
-  // currently the categories are or or 
-  // need to check if its supposed to be and and
-  return {
-    creator: {
-      email: {
-        equals: user?.email
-      }
-    },
-    OR: text?.length > 0 ? [
-      {
-        name: {
-          contains: text
-        }
-      },
-      {
-        tags: {
-          has: text
-        }
-      },
-    ] : undefined,
-    public: visibility && visibility !== "all" ?
-      { equals: visibility === "public" } : undefined,
-    categories: categories?.length > 0 ? {
-      every: {
-        id : {
-          in: categories.map(cat => cat.id)
-        }
-      }
-    } : undefined,
-  }
-}
-
-const fireSearch = debounce((refetch, user, text, visibility, categories) => {
-  refetch({
-    where: designWhere(user, text, visibility, categories)
-  })
-}, 500)
-
-function visibilityMenu({selected, onChangeSelection}) {
-  return (
-    <Popover2
-      content={
-        <Menu>
-          <MenuItem text="all" 
-            onClick={() => onChangeSelection("all")} />
-          <MenuItem text="public"
-            onClick={() => onChangeSelection("public")} />
-          <MenuItem text="private"
-            onClick={() => onChangeSelection("private")} />
-        </Menu>
-      }
-      placement="bottom-end"
-    >
-      <Button minimal={true} rightIcon="caret-down">
-        {selected}
-      </Button>
-    </Popover2>
-  );
-}
 
 export const MyDesignsPanel = observer(({ store }) => {
   const {
@@ -180,20 +116,49 @@ export const MyDesignsPanel = observer(({ store }) => {
 
   const project = useProject();
 
-  const {data: designs, count, loading, error, refetch, deleteDesign} = useDesigns({
-    where: designWhere(user, "")
+  const [designs, loading, error, deleteDesign] = useDesigns({
+    where: {
+      // user: {
+      //   email: {
+      //     equals: user?.email
+      //   }
+      // }
+    }
   })
 
-  // state of search
-  const [text, setText] = useState("")
-  const [visibility, setVisibility] = useState("all") // "all" | "public" | "private"
-  const [categories, setCategories] = useState([])
+  if (!isAuthenticated) {
+    return (
+      <div style={{ height: "100%" }}>
+        <div>please authenticate</div>
+      </div>
+    )
+  }
 
+  if (loading) {
+    return (
+      <div style={{ height: "100%" }}>
+        <div style={{ padding: "30px" }}>
+          <Spinner />
+        </div>
+      </div>
+    )
+  }
   
+  if (error) {
+    return (
+      <div style={{ height: "100%" }}>
+        <div>Error loading designs</div>
+      </div>
+    )
+  }
 
-  useEffect(() => {
-    fireSearch(refetch, user, text, visibility, categories)
-  }, [text, visibility, categories, user, refetch])
+  if (designs.length === 0) {
+    return (
+      <div style={{ height: "100%" }}>
+        <div>No designs yet</div>
+      </div>
+    )
+  }
 
   const half1 = [];
   const half2 = [];
@@ -207,50 +172,31 @@ export const MyDesignsPanel = observer(({ store }) => {
   });
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 10 }}>
-      <InputGroup
-        placeholder="search in name and tags"
-        onChange={(e) => setText(e.target.value)}
-        value={text}
-        rightElement={visibilityMenu({selected: visibility, onChangeSelection: setVisibility})}>
-      </InputGroup>
-      <CategoriesSelectSearch 
-        selected={categories}
-        onAddSelected={cat => setCategories( old => old.some(c => c.id === cat.id) ? old : [...old, cat])}
-        onRemoveSelected={cat => setCategories(old => old.filter(c => c.id !== cat.id))} />
-      {count !== null && <p style={{ marginBottom: 0 }}>{count} results</p>}
-      {!isAuthenticated ? 
-        <div>please authenticate</div> :
-      loading ?
-        <div style={{ padding: "30px" }}>
-          <Spinner />
-        </div> :
-      error ?
-        <div>Error loading designs</div>:
-        <div style={{ display: "flex", paddingTop: "5px", height: "100%", overflow: "auto" }}>
-          <div style={{ width: "50%" }}>
-            {half1.map((design) => (
-              <DesignCard
-                design={design}
-                key={design.id}
-                store={store}
-                project={project}
-                onDelete={deleteDesign}
-              />
-            ))}
-          </div>
-          <div style={{ width: "50%" }}>
-            {half2.map((design) => (
-              <DesignCard
-                design={design}
-                key={design.id}
-                store={store}
-                project={project}
-                onDelete={deleteDesign}
-              />
-            ))}
-          </div>
-        </div>}
+    <div style={{ height: "100%" }}>
+      <div style={{ display: "flex", paddingTop: "5px" }}>
+        <div style={{ width: "50%" }}>
+          {half1.map((design) => (
+            <DesignCard
+              design={design}
+              key={design.id}
+              store={store}
+              project={project}
+              onDelete={deleteDesign}
+            />
+          ))}
+        </div>
+        <div style={{ width: "50%" }}>
+          {half2.map((design) => (
+            <DesignCard
+              design={design}
+              key={design.id}
+              store={store}
+              project={project}
+              onDelete={deleteDesign}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 });

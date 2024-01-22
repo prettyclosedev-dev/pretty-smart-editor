@@ -39,13 +39,12 @@ const NounContainer = styled('div')`
 
 export const NounprojectPanel = observer(({ store, query }) => {
   // load data
-  const { data, isLoading, loadMore, setQuery } = useInfiniteAPI({
+  const { data, isLoading, loadMore, setQuery, hasMore } = useInfiniteAPI({
+    defaultQuery: query,
     getAPI: ({ page, query }) =>
-      `${API}/get-nounproject?query=${query}&offset=${
-        (page - 1) * limit
-      }&KEY=${getKey()}`,
+      `${API}/get-nounproject?query=${query}&page=${page}&limit=${limit}&KEY=${getKey()}`,
     getSize: (res) => {
-      return 1;
+      return res.pagesNumber;
     },
   });
 
@@ -86,7 +85,7 @@ export const NounprojectPanel = observer(({ store, query }) => {
           });
         }}
         rowsNumber={4}
-        loadMore={loadMore}
+        loadMore={hasMore && loadMore}
       />
     </NounContainer>
   );
@@ -150,15 +149,16 @@ export const FlatIconPanel = observer(({ store, query }) => {
 export const IconFinderPanel = observer(({ store, query }) => {
   // load data
   const count = 50;
-  const { data, isLoading, loadMore, setQuery } = useInfiniteAPI({
-    getAPI: ({ page, query }) =>
-      `${API}/get-iconfinder?query=${query}&offset=${
-        (page - 1) * count
-      }&count=${count}&KEY=${getKey()}`,
-    getSize: (res) => {
-      return Math.ceil(res.total_count / count);
-    },
-  });
+  const { data, isLoading, loadMore, setQuery, error, hasMore } =
+    useInfiniteAPI({
+      getAPI: ({ page, query }) =>
+        `${API}/get-iconfinder?query=${query}&offset=${
+          (page - 1) * count
+        }&count=${count}&KEY=${getKey()}`,
+      getSize: (res) => {
+        return Math.ceil(res.total_count / count);
+      },
+    });
 
   React.useEffect(() => {
     setQuery(query);
@@ -205,7 +205,8 @@ export const IconFinderPanel = observer(({ store, query }) => {
         });
       }}
       rowsNumber={4}
-      loadMore={loadMore}
+      error={error}
+      loadMore={hasMore && loadMore}
     />
   );
 });
@@ -263,7 +264,7 @@ export const IconsPanel = ({ store }) => {
         >
           Noun Project
         </Button>
-        <Button
+        {/* <Button
           onClick={() => {
             setService('flaticon');
           }}
@@ -278,7 +279,7 @@ export const IconsPanel = ({ store }) => {
           }
         >
           FlatIcon
-        </Button>
+        </Button> */}
       </div>
       {service === 'flaticon' && (
         <FlatIconPanel query={delayedQuery} store={store} />
@@ -296,11 +297,11 @@ export const IconsPanel = ({ store }) => {
 // // define the new custom section
 export const IconsSection = {
   name: 'icons',
-  Tab: (props) => (
-    <SectionTab name="Icons" {...props}>
+  Tab: observer((props) => (
+    <SectionTab name={t('sidePanel.icons')} {...props}>
       <FaVectorSquare />
     </SectionTab>
-  ),
+  )),
   // we need observer to update component automatically on any store changes
   Panel: IconsPanel,
 };

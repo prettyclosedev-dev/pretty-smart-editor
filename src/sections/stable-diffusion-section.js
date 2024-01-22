@@ -13,10 +13,12 @@ import { ImagesGrid } from 'polotno/side-panel/images-grid';
 import { useCredits } from './credits';
 import { useInfiniteAPI } from 'polotno/utils/use-api';
 import { getCrop } from 'polotno/utils/image';
+import { useProject } from '../data/graphql/project';
 
 const API = 'https://api.polotno.dev/api';
 
 const GenerateTab = observer(({ store }) => {
+  const project = useProject();
   const inputRef = React.useRef(null);
   const [image, setImage] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
@@ -45,6 +47,17 @@ const GenerateTab = observer(({ store }) => {
     setImage(data.output[0]);
   };
 
+  const moreButton = (
+    <a
+      onClick={() => {
+       
+      }}
+      href="#"
+    >
+      Need more?
+    </a>
+  );
+
   return (
     <>
       <div style={{ height: '40px', paddingTop: '5px' }}>
@@ -67,8 +80,14 @@ const GenerateTab = observer(({ store }) => {
         inputRef={inputRef}
       />
       <p style={{ textAlign: 'center' }}>
-        {!!credits && <div>You have ({credits}) credits.</div>}
-        {!credits && <div>You have no credits. They will renew tomorrow.</div>}
+        {!!credits && (
+          <div>
+            You have ({credits}) credits. {moreButton}
+          </div>
+        )}
+        {!credits && (
+          <div>You have no credits. They will renew tomorrow. {moreButton}</div>
+        )}
       </p>
       <Button
         onClick={handleGenerate}
@@ -267,7 +286,7 @@ const StableDiffusionPanel = observer(({ store }) => {
 export const StableDiffusionSection = {
   name: 'stable-diffusion',
   Tab: (props) => (
-    <SectionTab name="AI Generated" {...props}>
+    <SectionTab name="AI Img" {...props}>
       <FaBrain />
     </SectionTab>
   ),

@@ -8,10 +8,8 @@ import {
   Menu,
   MenuItem,
   MenuDivider,
+  Popover,
 } from '@blueprintjs/core';
-import { Popover2 } from '@blueprintjs/popover2';
-import FaFileExport from '@meronex/icons/fa/FaFileExport';
-import FaFileImport from '@meronex/icons/fa/FaFileImport';
 import { downloadFile } from 'polotno/utils/download';
 
 export const FileMenu = observer(({ store, project }) => {
@@ -20,7 +18,7 @@ export const FileMenu = observer(({ store, project }) => {
   const [faqOpened, toggleFaq] = React.useState(false);
   return (
     <>
-      <Popover2
+      <Popover
         content={
           <Menu>
             {/* <MenuDivider title={t('toolbar.layering')} /> */}
@@ -44,15 +42,6 @@ export const FileMenu = observer(({ store, project }) => {
                 project.save();
               }}
             />
-            {/* {project.id !== 'local' && (
-              <MenuItem
-                icon="duplicate"
-                text="Make a copy"
-                onClick={() => {
-                  project.duplicate();
-                }}
-              />
-            )} */}
             <MenuDivider />
             <MenuItem
               // icon={<FaFileImport />}
@@ -80,6 +69,43 @@ export const FileMenu = observer(({ store, project }) => {
             />
 
             <MenuDivider />
+            <MenuItem text="Language" icon="translate">
+              <MenuItem
+                text="English"
+                active={project.language.startsWith('en')}
+                onClick={() => {
+                  project.setLanguage('en');
+                }}
+              />
+              <MenuItem
+                text="Portuguese"
+                active={project.language.startsWith('pt')}
+                onClick={() => {
+                  project.setLanguage('pt');
+                }}
+              />
+              <MenuItem
+                text="French"
+                active={project.language.startsWith('fr')}
+                onClick={() => {
+                  project.setLanguage('fr');
+                }}
+              />
+              <MenuItem
+                text="Russian"
+                active={project.language.startsWith('ru')}
+                onClick={() => {
+                  project.setLanguage('ru');
+                }}
+              />
+              <MenuItem
+                text="Indonesian"
+                active={project.language.startsWith('id')}
+                onClick={() => {
+                  project.setLanguage('id');
+                }}
+              />
+            </MenuItem>
             <MenuItem
               text="About"
               icon="info-sign"
@@ -92,7 +118,7 @@ export const FileMenu = observer(({ store, project }) => {
         position={Position.BOTTOM_RIGHT}
       >
         <Button minimal text="File" />
-      </Popover2>
+      </Popover>
       <input
         type="file"
         id="load-project"

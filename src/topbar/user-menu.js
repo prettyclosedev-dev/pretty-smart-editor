@@ -1,8 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { Button, Position, Menu, MenuItem } from '@blueprintjs/core';
-import { Popover2 } from '@blueprintjs/popover2';
+import { Button, Position, Menu, MenuItem, Popover } from '@blueprintjs/core';
 import { useAuth0 } from '@auth0/auth0-react';
 import * as api from '../data/graphql/api';
 import { ProfileModal } from './profile-modal';
@@ -28,7 +27,7 @@ export const UserMenu = observer(({ store }) => {
 
   return (
     <>
-      <Popover2
+      <Popover
         content={
           <Menu style={{ width: '80px !important' }}>
             {!isAuthenticated && (
@@ -57,7 +56,7 @@ export const UserMenu = observer(({ store }) => {
         position={Position.BOTTOM_RIGHT}
       >
         <Button icon="user" minimal></Button>
-      </Popover2>
+      </Popover>
       <ProfileModal
         store={store}
         isOpen={subModalOpen}

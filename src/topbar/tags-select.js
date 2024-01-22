@@ -1,7 +1,7 @@
 import { useProject } from "../data/graphql/project";
 import { observer } from "mobx-react-lite";
 import { Popover, PopoverPosition, Button, MenuItem, Tag } from "@blueprintjs/core";
-import { MultiSelect2 } from "@blueprintjs/select";
+import { MultiSelect } from "@blueprintjs/select";
 import { useUser } from "../data/graphql/api";
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -88,7 +88,7 @@ export const TagsSelect = observer(({ store }) => {
         maxWidth: "200px",
       }}
     >
-      <MultiSelect2
+      <MultiSelect
         menuProps={{
           style: {
             maxHeight: "400px",
@@ -118,7 +118,7 @@ export const TagsSelect = observer(({ store }) => {
           rightIcon="double-caret-vertical"
           placeholder="Select tags"
         />
-      </MultiSelect2>
+      </MultiSelect>
     </div>
   );
 });

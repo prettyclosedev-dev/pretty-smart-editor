@@ -246,7 +246,7 @@ export function useDesigns({ where, orderBy, take, skip, cursor }) {
     }
   }
 
-  return {data: data?.designs || [], count: data?.designsCount, loading, error, refetch, deleteDesign }
+  return [data?.designs || [], data?.designsCount, loading, error, refetch, deleteDesign]
 }
 
 export function useCategories({ where, orderBy, take, skip, cursor }) {

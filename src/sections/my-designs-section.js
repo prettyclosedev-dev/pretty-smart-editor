@@ -116,7 +116,7 @@ export const MyDesignsPanel = observer(({ store }) => {
 
   const project = useProject();
 
-  const [designs, loading, error, deleteDesign] = useDesigns({
+  const [designs, designsCount, loading, error, refetch, deleteDesign] = useDesigns({
     where: {
       // user: {
       //   email: {
@@ -129,7 +129,7 @@ export const MyDesignsPanel = observer(({ store }) => {
   if (!isAuthenticated) {
     return (
       <div style={{ height: "100%" }}>
-        <div>please authenticate</div>
+        <div>Please authenticate</div>
       </div>
     )
   }
@@ -152,7 +152,7 @@ export const MyDesignsPanel = observer(({ store }) => {
     )
   }
 
-  if (designs.length === 0) {
+  if (designs?.length === 0) {
     return (
       <div style={{ height: "100%" }}>
         <div>No designs yet</div>
@@ -172,7 +172,7 @@ export const MyDesignsPanel = observer(({ store }) => {
   });
 
   return (
-    <div style={{ height: "100%" }}>
+    <div style={{ height: "100%", overflowY: "auto" }}>
       <div style={{ display: "flex", paddingTop: "5px" }}>
         <div style={{ width: "50%" }}>
           {half1.map((design) => (

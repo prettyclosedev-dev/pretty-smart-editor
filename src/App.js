@@ -12,6 +12,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { loadFile } from './tools/file';
 import { QrSection } from './sections/qr-section';
 // import { ThenounprojectSection } from './thenounproject-section';
+// import { TemplatesSection } from "./sections/templates-section";
 import { QuotesSection } from './sections/quotes-section';
 import { IconsSection } from './sections/icons-section';
 import { ShapesSection } from './sections/shapes-section';
@@ -31,15 +32,15 @@ import Topbar from './topbar/topbar';
 
 // DEFAULT_SECTIONS.splice(3, 0, IllustrationsSection);
 // replace elements section with just shapes
-DEFAULT_SECTIONS.splice(3, 1, ShapesSection);
+// DEFAULT_SECTIONS.splice(3, 1, ShapesSection);
 // DEFAULT_SECTIONS.splice(2, 0, StableDiffusionSection);
 // add icons
-DEFAULT_SECTIONS.splice(3, 0, IconsSection);
+// DEFAULT_SECTIONS.splice(3, 0, IconsSection);
 // add two more sections
-DEFAULT_SECTIONS.push(QuotesSection, QrSection);
-DEFAULT_SECTIONS.unshift(MyDesignsSection);
+// DEFAULT_SECTIONS.push(QuotesSection, QrSection);
+// DEFAULT_SECTIONS.unshift(MyDesignsSection);
 
-DEFAULT_SECTIONS.push(StableDiffusionSection);
+// DEFAULT_SECTIONS.push(StableDiffusionSection);
 
 const useHeight = () => {
   const [height, setHeight] = React.useState(window.innerHeight);
@@ -116,6 +117,15 @@ const App = observer(({ store }) => {
     }
   };
 
+  const customSections = [...DEFAULT_SECTIONS];
+
+  // customSections.unshift(TemplatesSection)
+  customSections.splice(3, 1, ShapesSection);
+  customSections.splice(3, 0, IconsSection);
+  customSections.push(QuotesSection, QrSection);
+  customSections.unshift(MyDesignsSection);
+  customSections.push(StableDiffusionSection);
+
   return (
     <div
       style={{
@@ -130,7 +140,7 @@ const App = observer(({ store }) => {
       <div style={{ height: 'calc(100% - 50px)' }}>
         <PolotnoContainer className="polotno-app-container">
           <SidePanelWrap>
-            <SidePanel store={store} sections={DEFAULT_SECTIONS} />
+            <SidePanel store={store} sections={customSections} />
           </SidePanelWrap>
           <WorkspaceWrap>
             <Toolbar

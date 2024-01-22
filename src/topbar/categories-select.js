@@ -1,7 +1,7 @@
 import { useProject } from "../data/graphql/project";
 import { observer } from "mobx-react-lite";
 import { Popover, PopoverPosition, Button, MenuItem, Tag } from "@blueprintjs/core";
-import { MultiSelect2 } from "@blueprintjs/select";
+import { MultiSelect } from "@blueprintjs/select";
 import { useCategories, useUser } from "../data/graphql/api";
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -107,7 +107,7 @@ export const CategoriesSelect = observer(({ store }) => {
         maxWidth: "200px",
       }}
     >
-      <MultiSelect2
+      <MultiSelect
         menuProps={{
           style: {
             maxHeight: "400px",
@@ -137,7 +137,7 @@ export const CategoriesSelect = observer(({ store }) => {
           rightIcon="double-caret-vertical"
           placeholder="Select categories"
         />
-      </MultiSelect2>
+      </MultiSelect>
     </div>
   );
 });
@@ -168,7 +168,7 @@ export const CategoriesSelectSearch = ({selected, onAddSelected, onRemoveSelecte
 
   return (
     <div>
-      <MultiSelect2
+      <MultiSelect
         menuProps={{
           style: {
             maxHeight: "400px",
@@ -195,7 +195,7 @@ export const CategoriesSelectSearch = ({selected, onAddSelected, onRemoveSelecte
         onRemove={onRemoveSelected}
         selectedItems={selected || []}
       >
-      </MultiSelect2>
+      </MultiSelect>
     </div>
   );
 }

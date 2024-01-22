@@ -1,7 +1,6 @@
 import { useProject } from "../data/graphql/project";
 import { observer } from "mobx-react-lite";
-import { Popover2 } from "@blueprintjs/popover2";
-import { PopoverPosition, Button, MenuItem, Tag } from "@blueprintjs/core";
+import { Popover, PopoverPosition, Button, MenuItem, Tag } from "@blueprintjs/core";
 import { MultiSelect2 } from "@blueprintjs/select";
 import { useUser } from "../data/graphql/api";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -126,11 +125,11 @@ export const TagsSelect = observer(({ store }) => {
 
 export const TagsPopover = observer((store) => {
   return (
-    <Popover2
+    <Popover
       content={<TagsSelect store={store} />}
       position={PopoverPosition.RIGHT}
     >
       <Button icon="tag" text="Select Tags" />
-    </Popover2>
+    </Popover>
   );
 });

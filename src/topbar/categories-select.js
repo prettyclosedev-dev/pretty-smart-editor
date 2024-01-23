@@ -159,6 +159,7 @@ export const CategoriesSelectSearch = ({selected, onAddSelected, onRemoveSelecte
     useCategories({where: {public: {equals: true}}}); // filter for public categories
 
   if (categoriesError) return `Error! ${categoriesError.message}`;
+  if (categoriesLoading) return `Loading...`;
 
   const renderTag = category => (
     <span key={category.id}>

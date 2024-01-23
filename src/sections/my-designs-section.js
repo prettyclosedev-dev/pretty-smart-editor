@@ -145,9 +145,11 @@ function designWhere(user, text, visibility, categories) {
 }
 
 const fireSearch = debounce((refetch, user, text, visibility, categories) => {
-  refetch({
-    where: designWhere(user, text, visibility, categories)
-  })
+  if (refetch !== undefined) {
+    refetch({
+      where: designWhere(user, text, visibility, categories)
+    })
+  }
 }, 500)
 
 function visibilityMenu({selected, onChangeSelection}) {
@@ -181,7 +183,8 @@ export const MyDesignsPanel = observer(({ store }) => {
   const project = useProject();
 
   const [designs, count, loading, error, refetch, deleteDesign] = useDesigns({
-    where: designWhere(user, "")
+    where: designWhere(user, ""),
+    user,
   })
 
   // state of search

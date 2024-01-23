@@ -26,6 +26,7 @@ export const FileMenu = observer(({ store, project }) => {
               icon="plus"
               text="Create new design"
               onClick={() => {
+                // TODO: - NEED to remove id from url and clear project without saving design
                 const ids = store.pages
                   .map((page) => page.children.map((child) => child.id))
                   .flat();

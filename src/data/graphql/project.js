@@ -118,7 +118,7 @@ class Project {
       this.saveTimeout = null;
       // skip autosave if no project opened
       this.save();
-    }, 5000);
+    }, 1000);
   }
 
   async loadById(id) {
@@ -131,15 +131,16 @@ class Project {
       const { store, name, public: _public, categories, tags } = await api.getDesignById({
         id,
         authToken: this.authToken,
+        user: this.user,
       });
       console.log(store, name);
       if (store) {
-        this.saveTimeout = {};
+        // this.saveTimeout = {};
         this.store.loadJSON(store);
-        await this.store.waitLoading();
-        setTimeout(() => {
-          this.saveTimeout = null;
-        }, 1000)
+        // await this.store.waitLoading();
+        // setTimeout(() => {
+        //   this.saveTimeout = null;
+        // }, 1000)
       }
       this.setName(name);
       this.setPublic(_public);
@@ -200,7 +201,7 @@ class Project {
 
     if (!this.authToken) return;
 
-    if (!this.id) {
+    if (!this.id || this.id === "local") {
       const res = await api.createDesign({
         store: {
           ...json,
@@ -208,9 +209,10 @@ class Project {
           pages: {
             createMany: {
               data: json.pages.map((p, idx) => {
-                let copy = { ...p };
-                copy.polotnoId = p.id;
+                let copy = { ...p, polotnoId: p.id };
+                // copy.polotnoId = p.id;
                 delete copy.id;
+                console.log("=========", copy)
                 return {
                   ...copy,
                   children: { set: copy.children },

@@ -6,7 +6,9 @@ import { useQuery, useMutation } from "react-apollo";
 
 // query
 const getDesignsQuery = loader("./queries/getDesigns.graphql");
+const getBrandedDesignsQuery = loader("./queries/getBrandedDesigns.graphql");
 const getDesignQuery = loader("./queries/getDesign.graphql");
+const getBrandedDesignQuery = loader("./queries/getBrandedDesign.graphql");
 const getCategoriesQuery = loader("./queries/getCategories.graphql");
 const getUserQuery = loader("./queries/getUser.graphql");
 const getTemplatesQuery = loader("./queries/getTemplates.graphql");
@@ -22,21 +24,26 @@ const createOneCategoryMutation = loader(
 
 const API = "https://polotno-studio-api.vercel.app/api";
 
-export async function getDesignById({ id }) {
+export async function getDesignById({ id, user }) {
   console.log(id);
   if (id === "local") {
-    // if (true) {
-
     const json = await localforage.getItem("polotno-state");
-    console.log(json);
+
+    json.pages = json.pages?.createMany?.data.map((page) => ({
+      ...page,
+      id: page.polotnoId,
+      children: page.children?.set?.data,
+    }));
+    json.fonts = [] // need to change eventually to fonts.set...
+
     return {
-      store: json,
+      store: json, // need to clean object
       name: "",
     };
   }
   const { data, loading, error } = await client.query({
-    query: getDesignQuery,
-    variables: { where: { id: Number(id) } },
+    query: getBrandedDesignQuery,
+    variables: { where: { id: Number(id) }, email: user.email },
   });
   // console.log(data, loading, error);
 
@@ -57,18 +64,18 @@ export async function getDesignById({ id }) {
   // console.log("=============");
   return { // why are things in store?
     store: {
-      ...data.design,
-      pages: data?.design?.pages?.map((page) => ({
+      ...data.brandedDesign,
+      pages: data?.brandedDesign?.pages?.map((page) => ({
         ...page,
         id: page.polotnoId,
       })),
     },
-    name: data.design.name,
-    public: data.design.public,
-    categories: data.design.categories,
-    tags: data.design.tags,
-    creator: data.design.creator,
-    preview: data.design.preview,
+    name: data.brandedDesign.name,
+    public: data.brandedDesign.public,
+    categories: data.brandedDesign.categories,
+    tags: data.brandedDesign.tags,
+    creator: data.brandedDesign.creator,
+    preview: data.brandedDesign.preview,
   };
 }
 
@@ -169,8 +176,8 @@ export async function cancelUserSubscription({ accessToken, id }) {
 // }
 
 export async function createDesign({ store, preview, id, public: _public, categories, tags, authToken, name = "", creator }) {
-  if (id === "local" || !authToken) {
-    localforage.setItem("polotno-state", store);
+  if (!id || id === "local" || !authToken) {
+    localforage.setItem("polotno-state", store); // store clean?
 
     return {
       id: "local",
@@ -224,9 +231,10 @@ export async function saveDesign({ store, preview, categories, tags, public: _pu
 //   return await req.json();
 // }
 
-export function useDesigns({ where, orderBy, take, skip, cursor }) {
-  const { data, loading, error, refetch } = useQuery(getDesignsQuery,{
-    variables: { where, orderBy, take, skip, cursor }
+export function useDesigns({ where, orderBy, take, skip, cursor, user }) {
+  console.log(user)
+  const { data, loading, error, refetch } = useQuery(getBrandedDesignsQuery, {
+    variables: { where, orderBy, take, skip, cursor, email: user.email }
   });
 
   const [deleteOneDesign] = useMutation(deleteOneDesignMutation)
@@ -247,7 +255,7 @@ export function useDesigns({ where, orderBy, take, skip, cursor }) {
     }
   }
 
-  return [data?.designs || [], data?.designsCount, loading, error, refetch, deleteDesign]
+  return [data?.brandedDesigns || [], data?.designsCount, loading, error, refetch, deleteDesign]
 }
 
 export function useCategories({ where, orderBy, take, skip, cursor }) {

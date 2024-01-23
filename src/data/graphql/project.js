@@ -110,14 +110,14 @@ class Project {
     this.error = _error;
   }
 
-  requestSave() {
+  requestSave(doCreate) {
     if (this.saveTimeout) {
       return;
     }
     this.saveTimeout = setTimeout(() => {
       this.saveTimeout = null;
       // skip autosave if no project opened
-      this.save();
+      this.save(doCreate);
     }, 1000);
   }
 
@@ -191,7 +191,7 @@ class Project {
   //   this.skipSaving = false;
   // }
 
-  async save() {
+  async save(doCreate) {
     const json = this.store.toJSON();
     const maxWidth = 200;
     const preview = await this.store.toDataURL({
@@ -203,6 +203,7 @@ class Project {
 
     if (!this.id || this.id === "local") {
       const res = await api.createDesign({
+        doCreate,
         store: {
           ...json,
           fonts: null,
@@ -210,9 +211,7 @@ class Project {
             createMany: {
               data: json.pages.map((p, idx) => {
                 let copy = { ...p, polotnoId: p.id };
-                // copy.polotnoId = p.id;
                 delete copy.id;
-                console.log("=========", copy)
                 return {
                   ...copy,
                   children: { set: copy.children },
@@ -224,7 +223,7 @@ class Project {
         preview,
         // id: this.id,
         name: this.name,
-        polotnoId: this.store.id,
+        polotnoId: this.id,
         public: this.public,
         categories: {
           connect: this.categories.map((category) => ({ id: category.id })),
@@ -234,7 +233,7 @@ class Project {
         authToken: this.authToken,
       });
 
-      if (res?.status === "saved") { // change to success from graphql
+      if (res?.status === "saved") {
         this.id = res.id;
         this.updateUrlWithProjectId();
       }
@@ -260,12 +259,13 @@ class Project {
                   background: { set: p.background },
                   bleed: { set: p.bleed },
                   children: { set: copy.children },
+                  duration: { set: p.duration },
                 },
               };
             }),
           },
         },
-        polotnoId: this.store.id,
+        polotnoId: this.id,
         preview: { set: preview },
         id: Number(this.id),
         name: { set: this.name },

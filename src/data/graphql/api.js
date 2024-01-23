@@ -32,6 +32,7 @@ export async function getDesignById({ id, user }) {
     json.pages = json.pages?.createMany?.data.map((page) => ({
       ...page,
       id: page.polotnoId,
+      duration: page.duration || 0,
       children: page.children?.set?.data,
     }));
     json.fonts = [] // need to change eventually to fonts.set...
@@ -67,6 +68,7 @@ export async function getDesignById({ id, user }) {
       ...data.brandedDesign,
       pages: data?.brandedDesign?.pages?.map((page) => ({
         ...page,
+        duration: page.duration || 0,
         id: page.polotnoId,
       })),
     },
@@ -175,8 +177,8 @@ export async function cancelUserSubscription({ accessToken, id }) {
 //   }
 // }
 
-export async function createDesign({ store, preview, id, public: _public, categories, tags, authToken, name = "", creator }) {
-  if (!id || id === "local" || !authToken) {
+export async function createDesign({ store, preview, id, public: _public, categories, tags, authToken, name = "", creator, doCreate }) {
+  if (!doCreate && (!id || id === "local" || !authToken)) {
     localforage.setItem("polotno-state", store); // store clean?
 
     return {
@@ -210,7 +212,7 @@ export async function saveDesign({ store, preview, categories, tags, public: _pu
   try {
     const { data, loading, error } = await client.mutate({
       mutation: updateOneDesignMutation,
-      variables: { data: { ...store, preview, name, public: {set: _public}, categories, tags, creator }, where: { id } },
+      variables: { data: { ...store, preview, name, public: {set: !!_public}, categories, tags, creator }, where: { id } },
       refetchQueries: ["designs"]
     });
     return { id: data?.createOneDesign?.id, status: "saved" } || {};

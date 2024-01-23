@@ -132,7 +132,7 @@ export default observer(({ store }) => {
                 text="Save"
                 icon={"floppy-disk"}
                 onClick={() => {
-                  project.requestSave();
+                  project.requestSave(true);
                 }}
               />
               <NavbarDivider />

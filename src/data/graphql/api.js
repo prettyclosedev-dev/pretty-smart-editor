@@ -10,6 +10,7 @@ const getDesignQuery = loader("./queries/getDesign.graphql");
 const getCategoriesQuery = loader("./queries/getCategories.graphql");
 const getUserQuery = loader("./queries/getUser.graphql");
 const getTemplatesQuery = loader("./queries/getTemplates.graphql");
+const getBrands = loader("./queries/getBrands.graphql");
 
 // mutation
 const createOneDesignMutation = loader("./mutations/createOneDesign.graphql");
@@ -318,4 +319,10 @@ export function useTemplates() {
   const { data, loading, error } = useQuery(getTemplatesQuery)
 
   return [data?.templates || [], loading, error]
+}
+
+export function useBrands() {
+  const { data, loading, error } = useQuery(getBrands)
+
+  return { brands: data?.brands || [], loading, error }
 }

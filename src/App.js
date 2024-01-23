@@ -18,6 +18,7 @@ import { IconsSection } from './sections/icons-section';
 import { ShapesSection } from './sections/shapes-section';
 import { StableDiffusionSection } from './sections/stable-diffusion-section';
 import { MyDesignsSection } from './sections/my-designs-section';
+import { MyBrandsSection } from './sections/brands-section';
 import { useProject } from './data/graphql/project';
 
 import { ImageRemoveBackground } from './tools/background-remover';
@@ -125,6 +126,7 @@ const App = observer(({ store }) => {
   customSections.push(QuotesSection, QrSection);
   customSections.unshift(MyDesignsSection);
   customSections.push(StableDiffusionSection);
+  customSections.push(MyBrandsSection);
 
   return (
     <div

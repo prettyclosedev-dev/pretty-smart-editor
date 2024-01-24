@@ -183,7 +183,7 @@ export const CategoriesSelectSearch = ({selected, onAddSelected, onRemoveSelecte
         items={categories.filter(c => !selected.some(i => c.id === i.id))}
         itemPredicate={filterCategory}
         itemRenderer={renderCategory}
-        placeholder="search categories"
+        placeholder="Search categories"
         noResults={
           <MenuItem
             disabled={true}

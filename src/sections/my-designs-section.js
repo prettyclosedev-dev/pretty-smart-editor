@@ -210,7 +210,7 @@ export const MyDesignsPanel = observer(({ store }) => {
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 10 }}>
       <InputGroup
-        placeholder="search in name and tags"
+        placeholder="Search in name and tags"
         onChange={(e) => setText(e.target.value)}
         value={text}
         rightElement={visibilityMenu({selected: visibility, onChangeSelection: setVisibility})}>
@@ -219,9 +219,9 @@ export const MyDesignsPanel = observer(({ store }) => {
         selected={categories}
         onAddSelected={cat => setCategories( old => old.some(c => c.id === cat.id) ? old : [...old, cat])}
         onRemoveSelected={cat => setCategories(old => old.filter(c => c.id !== cat.id))} />
-      {count !== null && <p style={{ marginBottom: 0 }}>{count} results</p>}
+      {count !== null && !loading && <p style={{ marginBottom: 0 }}>{count} result{count > 1 ? "s" : ""}</p>}
       {!isAuthenticated ? 
-        <div>please authenticate</div> :
+        <div>Please authenticate</div> :
       loading ?
         <div style={{ padding: "30px" }}>
           <Spinner />

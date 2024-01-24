@@ -29,18 +29,25 @@ export async function getDesignById({ id, user }) {
   if (id === "local") {
     const json = await localforage.getItem("polotno-state");
 
-    json.pages = json.pages?.createMany?.data.map((page) => ({
-      ...page,
-      id: page.polotnoId,
-      duration: page.duration || 0,
-      children: page.children?.set?.data,
-    }));
-    json.fonts = [] // need to change eventually to fonts.set...
-
-    return {
-      store: json, // need to clean object
-      name: "",
-    };
+    if (json) {
+      json.pages = json.pages?.createMany?.data.map((page) => ({
+        ...page,
+        id: page.polotnoId,
+        duration: page.duration || 0,
+        children: page.children?.set?.data,
+      }));
+      json.fonts = [] // need to change eventually to fonts.set...
+  
+      return {
+        store: json, // need to clean object
+        name: "",
+      };
+    } else {
+      return {
+        store: null,
+        name: "",
+      };
+    }
   }
   const { data, loading, error } = await client.query({
     query: getBrandedDesignQuery,

@@ -32,7 +32,7 @@
     "redux-logger": "^4.0.0",
     "redux-thunk": "^2.4.2"
   },
-  "homepage": ".",
+  "homepage": "/",
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",

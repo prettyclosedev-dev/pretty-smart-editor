@@ -341,5 +341,5 @@ export function useTemplates() {
 export function useBrands() {
   const { data, loading, error } = useQuery(getBrands)
 
-  return { brands: data?.brands || [], loading, error }
+  return [ data?.brands || [], loading, error ]
 }

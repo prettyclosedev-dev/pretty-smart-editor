@@ -63,7 +63,7 @@ const BrandCard = ({brand}) => {
 }
 
 export const MyBrandsPanel = observer(({ store }) => {
-  const { brands, loading, error } = useBrands()
+  const [ brands, loading, error ] = useBrands()
   
   return (
     <div style={{ height: "100%" }}>

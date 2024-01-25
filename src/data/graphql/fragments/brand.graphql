@@ -2,6 +2,7 @@
 
 fragment Brand on Brand {
     id
+    prettySmartId
     email
     colors {
       id

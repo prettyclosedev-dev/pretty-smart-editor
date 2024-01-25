@@ -43,19 +43,9 @@ import Topbar from './topbar/topbar';
 
 // DEFAULT_SECTIONS.push(StableDiffusionSection);
 
-const useHeight = () => {
-  const [height, setHeight] = React.useState(window.innerHeight);
-  React.useEffect(() => {
-    window.addEventListener('resize', () => {
-      setHeight(window.innerHeight);
-    });
-  }, []);
-  return height;
-};
 
 const App = observer(({ store }) => {
   const project = useProject();
-  const height = useHeight();
 
   const { isAuthenticated, getAccessTokenSilently, isLoading, user } = useAuth0();
 
@@ -131,15 +121,15 @@ const App = observer(({ store }) => {
   return (
     <div
       style={{
-        width: '100vw',
-        height: height + 'px',
+        width: '100%',
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
       }}
       onDrop={handleDrop}
     >
-      <Topbar store={store} />
-      <div style={{ height: 'calc(100% - 50px)' }}>
+      {!window.PrettySmartEmbeddedMode && <Topbar store={store} />}
+      <div style={{ height: !window.PrettySmartEmbeddedMode ? 'calc(100% - 50px)' : "100%" }}>
         <PolotnoContainer className="polotno-app-container">
           <SidePanelWrap>
             <SidePanel store={store} sections={customSections} />

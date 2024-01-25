@@ -21,6 +21,6 @@ const store = createStore(
   composeEnhancers(applyMiddleware(...MIDDLEWARES))
 );
 
-window.store = store
+window.reduxStore = store
 
 export default store;

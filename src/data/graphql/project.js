@@ -12,6 +12,7 @@ class Project {
   authToken = "";
   public = false;
   user = {};
+  brand = {};
   categories = [];
   tags = [];
   skipSaving = false;
@@ -27,7 +28,6 @@ class Project {
 
     store.on("change", () => {
       const pagesIds = store.pages?.map(page => page.id);
-      console.log(pagesIds, this.pagesIds)
       if (JSON.stringify(pagesIds) !== JSON.stringify(this.pagesIds)) {
         this.id = "local";
         this.updateUrlWithProjectId();
@@ -111,6 +111,10 @@ class Project {
     this.user = _user;
   }
 
+  setBrand(_brand) {
+    this.brand = _brand;
+  }
+
   togglePublic() {
     this.public = !this.public;
   }
@@ -135,7 +139,6 @@ class Project {
   }
 
   async loadById(id) {
-    console.log("loadById", id)
     this.id = id;
     this.updateUrlWithProjectId();
     this.setLoading(true);
@@ -146,6 +149,7 @@ class Project {
         id,
         authToken: this.authToken,
         user: this.user,
+        brand: this.brand,
       });
       console.log(store, name);
       if (store) {

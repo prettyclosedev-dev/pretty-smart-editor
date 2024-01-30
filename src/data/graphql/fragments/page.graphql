@@ -1,9 +1,0 @@
-fragment Page on Page {
-  id        
-  polotnoId 
-  children  
-  width     
-  height    
-  background
-  bleed     
-}

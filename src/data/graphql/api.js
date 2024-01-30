@@ -32,7 +32,6 @@ export async function getDesignById({ id, user }) {
     if (json) {
       json.pages = json.pages?.createMany?.data.map((page) => ({
         ...page,
-        id: page.polotnoId,
         duration: page.duration || 0,
         children: page.children?.set?.data,
       }));
@@ -50,7 +49,7 @@ export async function getDesignById({ id, user }) {
     }
   }
   const { data, loading, error } = await client.query({
-    query: getBrandedDesignQuery,
+    query: getDesignQuery,
     variables: { where: { id: Number(id) }, email: user.email },
   });
   // console.log(data, loading, error);
@@ -76,7 +75,6 @@ export async function getDesignById({ id, user }) {
       pages: data?.design?.pages?.map((page) => ({
         ...page,
         duration: page.duration || 0,
-        id: page.polotnoId,
       })),
     },
     name: data.design.name,
@@ -241,7 +239,6 @@ export async function saveDesign({ store, preview, categories, tags, public: _pu
 // }
 
 export function useDesigns({ where, orderBy, take, skip, cursor, user }) {
-  console.log(user)
   const { data, loading, error, refetch } = useQuery(getDesignsQuery, {
     variables: { where, orderBy, take, skip, cursor, email: user.email }
   });

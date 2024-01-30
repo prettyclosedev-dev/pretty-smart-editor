@@ -1,6 +1,7 @@
 import * as mobx from "mobx";
 import { createContext, useContext } from "react";
 import * as api from "./api";
+import { makeid } from "../../tools/id";
 
 export const ProjectContext = createContext({});
 
@@ -29,6 +30,11 @@ class Project {
       const pagesIds = store.pages?.map(page => page.id);
       console.log(pagesIds, this.pagesIds)
       if (JSON.stringify(pagesIds) !== JSON.stringify(this.pagesIds)) {
+        this.setPagesIds(pagesIds);
+        this.setName("");
+        this.setCategories([]);
+        this.setTags([]);
+        this.setPublic(false);
         this.id = "local";
         this.updateUrlWithProjectId();
         this.requestSave(true);
@@ -172,6 +178,33 @@ class Project {
     }
   }
 
+
+  async loadBranded(design) {
+    this.setLoading(true);
+
+    this.id = 'local'
+    this.updateUrlWithProjectId()
+    const store = {
+      ...design,
+      pages: design?.pages?.map((page) => ({
+        ...page,
+        duration: page.duration || 0,
+        id: makeid(10),
+      })),
+    }
+    this.setPagesIds(store.pages?.map(page => page.id))
+    this.store.loadJSON(store);
+    this.setName(design.name);
+    this.setPublic(false);
+    this.setCategories(design.categories || []);
+    this.setTags(design.tags || []);
+
+    this.setLoading(false);
+
+    this.requestSave(true);
+  }
+
+
   updateUrlWithProjectId() {
     if (!this.id || this.id === "local") {
       window.history.replaceState({}, null, `/`);
@@ -224,23 +257,11 @@ class Project {
         store: {
           ...json,
           fonts: null,
-          pages: {
-            createMany: {
-              data: json.pages.map((p, idx) => {
-                let copy = { ...p, polotnoId: p.id };
-                delete copy.id;
-                return {
-                  ...copy,
-                  children: { set: copy.children },
-                };
-              }),
-            },
-          },
+          pages: {set: json.pages}
         },
         preview,
         // id: this.id,
         name: this.name,
-        polotnoId: this.id,
         public: this.public,
         categories: {
           connect: this.categories.map((category) => ({ id: category.id })),
@@ -263,26 +284,8 @@ class Project {
           unit: { set: json.unit },
           dpi: { set: json.dpi },
           fonts: null,
-          pages: {
-            update: json.pages.map((p, idx) => {
-              const copy = { ...p };
-              return {
-                where: {
-                  polotnoId: p.id,
-                },
-                data: {
-                  width: { set: p.width },
-                  height: { set: p.height },
-                  background: { set: p.background },
-                  bleed: { set: p.bleed },
-                  children: { set: copy.children },
-                  duration: { set: p.duration },
-                },
-              };
-            }),
-          },
+          pages: { set: json.pages },
         },
-        polotnoId: this.id,
         preview: { set: preview },
         id: Number(this.id),
         name: { set: this.name },

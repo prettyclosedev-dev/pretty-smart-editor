@@ -3,7 +3,6 @@
 
 fragment CompactDesign on Design {
     id           
-    polotnoId    
     name         
     preview     
     publishedDate

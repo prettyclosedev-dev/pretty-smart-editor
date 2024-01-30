@@ -1,15 +1,11 @@
 #import './user.graphql'
 #import './category.graphql'
-#import './page.graphql'
 
 fragment Design on Design {
     id           
-    polotnoId    
     name         
     preview      
-    pages {
-        ...Page
-    }        
+    pages   
     width        
     height       
     fonts        

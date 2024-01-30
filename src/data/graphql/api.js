@@ -24,7 +24,7 @@ const createOneCategoryMutation = loader(
 
 const API = "https://polotno-studio-api.vercel.app/api";
 
-export async function getDesignById({ id, user }) {
+export async function getDesignById({ id, user, brand }) {
   console.log(id);
   if (id === "local") {
     const json = await localforage.getItem("polotno-state");
@@ -35,8 +35,8 @@ export async function getDesignById({ id, user }) {
         duration: page.duration || 0,
         children: page.children?.set?.data,
       }));
-      json.fonts = [] // need to change eventually to fonts.set...
-  
+      json.fonts = []; // need to change eventually to fonts.set...
+
       return {
         store: json, // need to clean object
         name: "",
@@ -48,10 +48,23 @@ export async function getDesignById({ id, user }) {
       };
     }
   }
+  const variables = {
+    where: { id: Number(id) }
+  }
+
+  if (user) {
+    variables.email = user.email;
+  }
+
+  if (brand) {
+    variables.brandWhere = { id: brand.id };
+  }
+
   const { data, loading, error } = await client.query({
     query: getDesignQuery,
-    variables: { where: { id: Number(id) }, email: user.email },
+    variables
   });
+  
   // console.log(data, loading, error);
 
   // const req = await fetch(`${API}/designs/get?id=${id}`, {
@@ -69,7 +82,8 @@ export async function getDesignById({ id, user }) {
   // console.log(data);
   // console.log("=============");
   // console.log("=============");
-  return { // why are things in store?
+  return {
+    // why are things in store?
     store: {
       ...data.design,
       pages: data?.design?.pages?.map((page) => ({
@@ -182,7 +196,18 @@ export async function cancelUserSubscription({ accessToken, id }) {
 //   }
 // }
 
-export async function createDesign({ store, preview, id, public: _public, categories, tags, authToken, name = "", creator, doCreate }) {
+export async function createDesign({
+  store,
+  preview,
+  id,
+  public: _public,
+  categories,
+  tags,
+  authToken,
+  name = "",
+  creator,
+  doCreate,
+}) {
   if (!doCreate && (!id || id === "local" || !authToken)) {
     localforage.setItem("polotno-state", store); // store clean?
 
@@ -195,8 +220,18 @@ export async function createDesign({ store, preview, id, public: _public, catego
   try {
     const { data, loading, error } = await client.mutate({
       mutation: createOneDesignMutation,
-      variables: { data: { ...store, preview, name, public: _public, categories, tags, creator } },
-      refetchQueries: ["designs"]
+      variables: {
+        data: {
+          ...store,
+          preview,
+          name,
+          public: _public,
+          categories,
+          tags,
+          creator,
+        },
+      },
+      refetchQueries: ["designs"],
     });
     return { id: data?.createOneDesign?.id, status: "saved" } || {};
   } catch (e) {
@@ -204,7 +239,18 @@ export async function createDesign({ store, preview, id, public: _public, catego
   }
 }
 
-export async function saveDesign({ store, preview, categories, tags, public: _public, id, authToken, name = "", creator, polotnoId }) {
+export async function saveDesign({
+  store,
+  preview,
+  categories,
+  tags,
+  public: _public,
+  id,
+  authToken,
+  name = "",
+  creator,
+  polotnoId,
+}) {
   if (id === "local" || !authToken) {
     localforage.setItem("polotno-state", store);
 
@@ -217,8 +263,19 @@ export async function saveDesign({ store, preview, categories, tags, public: _pu
   try {
     const { data, loading, error } = await client.mutate({
       mutation: updateOneDesignMutation,
-      variables: { data: { ...store, preview, name, public: {set: !!_public}, categories, tags, creator }, where: { id } },
-      refetchQueries: ["designs"]
+      variables: {
+        data: {
+          ...store,
+          preview,
+          name,
+          public: { set: !!_public },
+          categories,
+          tags,
+          creator,
+        },
+        where: { id },
+      },
+      refetchQueries: ["designs"],
     });
     return { id: data?.createOneDesign?.id, status: "saved" } || {};
   } catch (e) {
@@ -240,26 +297,26 @@ export async function saveDesign({ store, preview, categories, tags, public: _pu
 
 export function useDesigns({ where, orderBy, take, skip, cursor, user }) {
   const { data, loading, error, refetch } = useQuery(getDesignsQuery, {
-    variables: { where, orderBy, take, skip, cursor, email: user.email }
+    variables: { where, orderBy, take, skip, cursor, email: user.email },
   });
 
-  const [deleteOneDesign] = useMutation(deleteOneDesignMutation)
+  const [deleteOneDesign] = useMutation(deleteOneDesignMutation);
 
   const deleteDesign = async (id) => {
     try {
       return await deleteOneDesign({
         variables: {
           where: {
-            id
-          }
+            id,
+          },
         },
-        refetchQueries: ["designs"]
-      })
+        refetchQueries: ["designs"],
+      });
     } catch (e) {
       console.log("Failed to delete design", e);
       throw e;
     }
-  }
+  };
 
   return [data?.designs || [], data?.designsCount, loading, error, refetch, deleteDesign]
 }
@@ -338,13 +395,13 @@ export function useUser({ email }) {
 }
 
 export function useTemplates() {
-  const { data, loading, error } = useQuery(getTemplatesQuery)
+  const { data, loading, error } = useQuery(getTemplatesQuery);
 
-  return [data?.templates || [], loading, error]
+  return [data?.templates || [], loading, error];
 }
 
 export function useBrands() {
-  const { data, loading, error } = useQuery(getBrands)
+  const { data, loading, error } = useQuery(getBrands);
 
-  return [ data?.brands || [], loading, error ]
+  return [data?.brands || [], loading, error];
 }

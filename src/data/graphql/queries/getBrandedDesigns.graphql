@@ -1,4 +1,4 @@
-query brandedDesigns($where: DesignWhereInput, $email: String!) {
-  brandedDesigns(where: $where, email: $email)
+query brandedDesigns($where: DesignWhereInput, $email: String!, $brandWhere: BrandWhereUniqueInput) {
+  brandedDesigns(where: $where, email: $email, brandWhere: $brandWhere)
   designsCount(where: $where)
 }

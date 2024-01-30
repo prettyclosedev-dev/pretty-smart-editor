@@ -132,8 +132,8 @@ function designWhere(user, text, visibility, categories) {
         }
       },
     ] : undefined,
-    public: visibility && visibility !== "all" ?
-      { equals: visibility === "public" } : undefined,
+    public: visibility && visibility !== "All" ?
+      { equals: visibility === "Public" } : undefined,
     categories: categories?.length > 0 ? {
       every: {
         id : {
@@ -157,12 +157,12 @@ function visibilityMenu({selected, onChangeSelection}) {
     <Popover
       content={
         <Menu>
-          <MenuItem text="all" 
-            onClick={() => onChangeSelection("all")} />
-          <MenuItem text="public"
-            onClick={() => onChangeSelection("public")} />
-          <MenuItem text="private"
-            onClick={() => onChangeSelection("private")} />
+          <MenuItem text="All" 
+            onClick={() => onChangeSelection("All")} />
+          <MenuItem text="Public"
+            onClick={() => onChangeSelection("Public")} />
+          <MenuItem text="Private"
+            onClick={() => onChangeSelection("Private")} />
         </Menu>
       }
       placement="bottom-end"
@@ -189,7 +189,7 @@ export const MyDesignsPanel = observer(({ store }) => {
 
   // state of search
   const [text, setText] = useState("")
-  const [visibility, setVisibility] = useState("all") // "all" | "public" | "private"
+  const [visibility, setVisibility] = useState("All") // "All" | "Public" | "Private"
   const [categories, setCategories] = useState([])
 
   useEffect(() => {

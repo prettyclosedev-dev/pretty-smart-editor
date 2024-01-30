@@ -19,13 +19,22 @@ class Project {
   error = null;
   language =
     localStorage.getItem('polotno-language') || navigator.language || 'en';
+  pagesIds = [];
 
   constructor({ store }) {
     mobx.makeAutoObservable(this);
     this.store = store;
 
     store.on("change", () => {
-      this.requestSave();
+      const pagesIds = store.pages?.map(page => page.id);
+      console.log(pagesIds, this.pagesIds)
+      if (JSON.stringify(pagesIds) !== JSON.stringify(this.pagesIds)) {
+        this.id = "local";
+        this.updateUrlWithProjectId();
+        this.requestSave(true);
+      } else {
+        this.requestSave();
+      }
     });
 
     // mobx.reaction(
@@ -39,6 +48,10 @@ class Project {
     //     this.requestSave();
     //   }
     // );
+  }
+
+  setPagesIds(_pagesIds) {
+    this.pagesIds = _pagesIds;
   }
 
   setLanguage(lang) {
@@ -122,6 +135,7 @@ class Project {
   }
 
   async loadById(id) {
+    console.log("loadById", id)
     this.id = id;
     this.updateUrlWithProjectId();
     this.setLoading(true);
@@ -135,6 +149,9 @@ class Project {
       });
       console.log(store, name);
       if (store) {
+        const pagesIds = store.pages?.map((page) => page.id)
+        this.setPagesIds(pagesIds);
+
         // this.saveTimeout = {};
         this.store.loadJSON(store);
         // await this.store.waitLoading();

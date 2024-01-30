@@ -11,7 +11,7 @@ const imgStyle = { maxHeight: "5rem", maxWidth: "100%", backgroundColor: "white"
 
 const BrandCard = ({brand}) => {
   return (
-    <Card>
+    <Card key={brand.id}>
       <div style={{ fontSize: 20, marginBottom: 10, textAlign: "center" }}>{brand.name}</div>
       <div style={{ display: "grid", gridTemplateColumns: "min-content auto", rowGap: 5, columnGap: 5 }}>
         <span style={fieldStyle}>industry:</span>
@@ -76,7 +76,7 @@ export const MyBrandsPanel = observer(({ store }) => {
         <div style={{ display: "flex", paddingTop: "5px", height: "100%", overflow: "auto", flexDirection: "column" }}>
           <p>{brands.length} brands total</p>
           {brands.map(brand => (
-            <BrandCard brand={brand} key={brand.id} />
+            <BrandCard brand={brand} />
           ))}
         </div>}
     </div>

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from 'polotno';
 import { Toolbar } from 'polotno/toolbar/toolbar';
 import { ZoomButtons } from 'polotno/toolbar/zoom-buttons';
-import { SidePanel, DEFAULT_SECTIONS } from 'polotno/side-panel';
+import { SidePanel, DEFAULT_SECTIONS, TemplatesSection } from 'polotno/side-panel';
 import { Workspace } from 'polotno/canvas/workspace';
 import { Tooltip } from 'polotno/canvas/tooltip';
 import { setTranslations } from 'polotno/config';
@@ -30,6 +30,7 @@ import ru from './translations/ru';
 import ptBr from './translations/pt-br';
 
 import Topbar from './topbar/topbar';
+import { BrandedDesignsSection } from './sections/branded-designs-section';
 
 // DEFAULT_SECTIONS.splice(3, 0, IllustrationsSection);
 // replace elements section with just shapes
@@ -110,7 +111,7 @@ const App = observer(({ store }) => {
 
   const customSections = [...DEFAULT_SECTIONS];
 
-  // customSections.unshift(TemplatesSection)
+  customSections.splice(0, 0, BrandedDesignsSection);
   customSections.splice(3, 1, ShapesSection);
   customSections.splice(3, 0, IconsSection);
   customSections.push(QuotesSection, QrSection);

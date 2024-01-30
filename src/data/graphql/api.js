@@ -72,19 +72,19 @@ export async function getDesignById({ id, user }) {
   // console.log("=============");
   return { // why are things in store?
     store: {
-      ...data.brandedDesign,
-      pages: data?.brandedDesign?.pages?.map((page) => ({
+      ...data.design,
+      pages: data?.design?.pages?.map((page) => ({
         ...page,
         duration: page.duration || 0,
         id: page.polotnoId,
       })),
     },
-    name: data.brandedDesign.name,
-    public: data.brandedDesign.public,
-    categories: data.brandedDesign.categories,
-    tags: data.brandedDesign.tags,
-    creator: data.brandedDesign.creator,
-    preview: data.brandedDesign.preview,
+    name: data.design.name,
+    public: data.design.public,
+    categories: data.design.categories,
+    tags: data.design.tags,
+    creator: data.design.creator,
+    preview: data.design.preview,
   };
 }
 
@@ -242,7 +242,7 @@ export async function saveDesign({ store, preview, categories, tags, public: _pu
 
 export function useDesigns({ where, orderBy, take, skip, cursor, user }) {
   console.log(user)
-  const { data, loading, error, refetch } = useQuery(getBrandedDesignsQuery, {
+  const { data, loading, error, refetch } = useQuery(getDesignsQuery, {
     variables: { where, orderBy, take, skip, cursor, email: user.email }
   });
 
@@ -264,7 +264,15 @@ export function useDesigns({ where, orderBy, take, skip, cursor, user }) {
     }
   }
 
-  return [data?.brandedDesigns || [], data?.designsCount, loading, error, refetch, deleteDesign]
+  return [data?.designs || [], data?.designsCount, loading, error, refetch, deleteDesign]
+}
+
+export function useBrandedDesigns({ where, user }) {
+  const { data, loading, error, refetch } = useQuery(getBrandedDesignsQuery, {
+    variables: { where, email: user?.email }
+  });
+
+  return [data?.brandedDesigns || [], data?.designsCount, loading, error, refetch]
 }
 
 export function useCategories({ where, orderBy, take, skip, cursor }) {

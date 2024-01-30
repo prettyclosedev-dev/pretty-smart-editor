@@ -38,7 +38,7 @@ const BrandCard = ({brand}) => {
         <span style={fieldStyle}>colors:</span>
         <div style={{display: "flex", flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
           {brand.colors.map(color => (
-            <div style={{ backgroundColor: color.value, width: "2rem", height: "2rem", padding: 3, borderRadius: 3 }}>
+            <div key={color.id} style={{ backgroundColor: color.value, width: "2rem", height: "2rem", padding: 3, borderRadius: 3 }}>
               {color.primary && <FaCrown color={contrast(color.value)} />}
             </div>
           ))}
@@ -47,14 +47,14 @@ const BrandCard = ({brand}) => {
         <span style={fieldStyle}>fonts:</span>
         <div style={{display: "flex", flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
           {brand.fonts.map(font => (
-            <div style={{ fontFamily: font.value, fontWeight: font.bold ? "bold" : "normal", fontStyle: font.italic ? "italic" : "normal" }}>{font.name}</div>
+            <div key={font.id} style={{ fontFamily: font.value, fontWeight: font.bold ? "bold" : "normal", fontStyle: font.italic ? "italic" : "normal" }}>{font.name}</div>
           ))}
         </div>
 
         <span style={fieldStyle}>categories:</span>
         <div style={{display: "flex", flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
           {brand.specialCategories.map(category => (
-            <Tag>{category.name}</Tag>
+            <Tag key={category.id}>{category.name}</Tag>
           ))}
         </div>
       </div>
@@ -73,7 +73,7 @@ export const MyBrandsPanel = observer(({ store }) => {
         </div> :
       error ? 
         <div>Error loading brands</div> :
-        <div style={{ display: "flex", paddingTop: "5px", height: "100%", overflow: "auto", flexDirection: "column" }}>
+        <div style={{ display: "flex", paddingTop: "5px", height: "100%", overflow: "auto", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
           <p>{brands.length} brands total</p>
           {brands.map(brand => (
             <BrandCard brand={brand} key={brand.id} />

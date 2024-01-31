@@ -5,13 +5,14 @@ import { SectionTab } from "polotno/side-panel"
 import { useBrands } from "../data/graphql/api";
 import { Spinner, Card, Tag } from "@blueprintjs/core";
 import { contrast } from "../tools/colors"
+import { useProject } from "../data/graphql/project";
 
 const fieldStyle = { opacity: 0.8, marginRight: 10, justifySelf: "end" }
 const imgStyle = { maxHeight: "5rem", maxWidth: "100%", backgroundColor: "white", borderRadius: 10, padding: 5 }
 
-const BrandCard = ({brand}) => {
+const BrandCard = ({brand, selected, selectBrand}) => {
   return (
-    <Card key={brand.id}>
+    <Card key={brand.id} style={selected ? {border: "3px solid gold"}: {}} onClick={selectBrand}>
       <div style={{ fontSize: 20, marginBottom: 10, textAlign: "center" }}>{brand.name}</div>
       <div style={{ display: "grid", gridTemplateColumns: "min-content auto", rowGap: 5, columnGap: 5 }}>
         <span style={fieldStyle}>industry:</span>
@@ -64,7 +65,8 @@ const BrandCard = ({brand}) => {
 
 export const MyBrandsPanel = observer(({ store }) => {
   const [ brands, loading, error ] = useBrands()
-  
+  const project = useProject()
+
   return (
     <div style={{ height: "100%" }}>
       {loading ?
@@ -76,7 +78,7 @@ export const MyBrandsPanel = observer(({ store }) => {
         <div style={{ display: "flex", paddingTop: "5px", height: "100%", overflow: "auto", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
           <p>{brands.length} brands total</p>
           {brands.map(brand => (
-            <BrandCard brand={brand} />
+            <BrandCard key={brand.id} brand={brand} selected={project.brand?.id === brand.id} selectBrand={() => project.setBrand(brand)} />
           ))}
         </div>}
     </div>

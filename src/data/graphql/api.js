@@ -3,6 +3,7 @@ import localforage from "localforage";
 import { loader } from "graphql.macro";
 import { client } from "./client";
 import { useQuery, useMutation } from "react-apollo";
+import { makeId } from "../../tools/id";
 
 // query
 const getDesignsQuery = loader("./queries/getDesigns.graphql");
@@ -30,11 +31,20 @@ export async function getDesignById({ id, user, brand }) {
     const json = await localforage.getItem("polotno-state");
 
     if (json) {
-      json.pages = json.pages?.createMany?.data.map((page) => ({
+      json.pages = json.pages?.set?.map((page) => ({
         ...page,
         duration: page.duration || 0,
-        children: page.children?.set?.data,
-      }));
+      })) || [
+        {
+          background: "white",
+          bleed: 0,
+          children: [],
+          duration: 5000,
+          height: "auto",
+          id: makeId(10),
+          width: "auto",
+        },
+      ];
       json.fonts = []; // need to change eventually to fonts.set...
 
       return {
@@ -49,8 +59,8 @@ export async function getDesignById({ id, user, brand }) {
     }
   }
   const variables = {
-    where: { id: Number(id) }
-  }
+    where: { id: Number(id) },
+  };
 
   if (user) {
     variables.email = user.email;
@@ -62,9 +72,9 @@ export async function getDesignById({ id, user, brand }) {
 
   const { data, loading, error } = await client.query({
     query: getDesignQuery,
-    variables
+    variables,
   });
-  
+
   // console.log(data, loading, error);
 
   // const req = await fetch(`${API}/designs/get?id=${id}`, {
@@ -209,7 +219,7 @@ export async function createDesign({
   doCreate,
 }) {
   if (!doCreate && (!id || id === "local" || !authToken)) {
-    localforage.setItem("polotno-state", store); // store clean?
+    localforage.setItem("polotno-state", store);
 
     return {
       id: "local",
@@ -318,15 +328,61 @@ export function useDesigns({ where, orderBy, take, skip, cursor, user }) {
     }
   };
 
-  return [data?.designs || [], data?.designsCount, loading, error, refetch, deleteDesign]
+  return [
+    data?.designs || [],
+    data?.designsCount,
+    loading,
+    error,
+    refetch,
+    deleteDesign,
+  ];
 }
 
-export function useBrandedDesigns({ where, user }) {
+export function useBrandedDesigns({ where, orderBy, take, skip, cursor, user, brand }) {
+  const variables = {where, orderBy, take, skip, cursor}
+
+  if (user?.email) {
+    variables.email = user.email
+  }
+
+  if (brand?.id) {
+    variables.brandWhere = {id: brand.id}
+  }
+
   const { data, loading, error, refetch } = useQuery(getBrandedDesignsQuery, {
-    variables: { where, email: user?.email }
+    variables,
   });
 
-  return [data?.brandedDesigns || [], data?.designsCount, loading, error, refetch]
+  return [
+    data?.brandedDesigns || [],
+    data?.designsCount,
+    loading,
+    error,
+    refetch,
+  ];
+}
+
+export function useBrandedDesign({ where, user, brand }) {
+  const variables = {where}
+
+  if (user?.email) {
+    variables.email = user.email
+  }
+
+  if (brand?.id) {
+    variables.brandWhere = {id: brand.id}
+  }
+
+  const { data, loading, error, refetch } = useQuery(getBrandedDesignQuery, {
+    variables,
+  });
+
+  return [
+    data?.brandedDesign || [],
+    loading,
+    error,
+    refetch,
+  ];
 }
 
 export function useCategories({ where, orderBy, take, skip, cursor }) {

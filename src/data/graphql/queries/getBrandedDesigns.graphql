@@ -1,4 +1,22 @@
-query brandedDesigns($where: DesignWhereInput, $email: String!, $brandWhere: BrandWhereUniqueInput) {
-  brandedDesigns(where: $where, email: $email, brandWhere: $brandWhere)
+query brandedDesigns(
+  $email: String!
+  $where: DesignWhereInput
+  $take: Int
+  $skip: Int
+  $orderBy: DesignOrderByWithRelationInput
+  $cursor: DesignWhereUniqueInput
+  $brandWhere: BrandWhereUniqueInput
+  $withPreview: Boolean
+) {
+  brandedDesigns(
+    email: $email
+    where: $where
+    take: $take
+    skip: $skip
+    orderBy: $orderBy
+    cursor: $cursor
+    brandWhere: $brandWhere
+    withPreview: $withPreview
+  )
   designsCount(where: $where)
 }

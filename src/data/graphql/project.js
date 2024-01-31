@@ -1,7 +1,7 @@
 import * as mobx from "mobx";
 import { createContext, useContext } from "react";
 import * as api from "./api";
-import { makeid } from "../../tools/id";
+import { makeId } from "../../tools/id";
 
 export const ProjectContext = createContext({});
 
@@ -20,7 +20,7 @@ class Project {
   loading = false;
   error = null;
   language =
-    localStorage.getItem('polotno-language') || navigator.language || 'en';
+    localStorage.getItem("polotno-language") || navigator.language || "en";
   pagesIds = [];
 
   constructor({ store }) {
@@ -28,7 +28,7 @@ class Project {
     this.store = store;
 
     store.on("change", () => {
-      const pagesIds = store.pages?.map(page => page.id);
+      const pagesIds = store.pages?.map((page) => page.id);
       if (JSON.stringify(pagesIds) !== JSON.stringify(this.pagesIds)) {
         this.setPagesIds(pagesIds);
         this.setName("");
@@ -62,7 +62,7 @@ class Project {
 
   setLanguage(lang) {
     this.language = lang;
-    localStorage.setItem('polotno-language', lang);
+    localStorage.setItem("polotno-language", lang);
   }
 
   setName(_name) {
@@ -104,9 +104,7 @@ class Project {
   }
 
   removeTag(_tag) {
-    this.tags = this.tags.filter(
-      (tag) => tag !==_tag
-    );
+    this.tags = this.tags.filter((tag) => tag !== _tag);
   }
 
   setPublic(_public) {
@@ -119,6 +117,7 @@ class Project {
 
   setBrand(_brand) {
     this.brand = _brand;
+    // fetch branded with this id
   }
 
   togglePublic() {
@@ -151,7 +150,13 @@ class Project {
     this.setError(null);
 
     try {
-      const { store, name, public: _public, categories, tags } = await api.getDesignById({
+      const {
+        store,
+        name,
+        public: _public,
+        categories,
+        tags,
+      } = await api.getDesignById({
         id,
         authToken: this.authToken,
         user: this.user,
@@ -159,7 +164,7 @@ class Project {
       });
       console.log(store, name);
       if (store) {
-        const pagesIds = store.pages?.map((page) => page.id)
+        const pagesIds = store.pages?.map((page) => page.id);
         this.setPagesIds(pagesIds);
 
         // this.saveTimeout = {};
@@ -182,21 +187,20 @@ class Project {
     }
   }
 
-
   async loadBranded(design) {
     this.setLoading(true);
 
-    this.id = 'local'
-    this.updateUrlWithProjectId()
+    this.id = "local";
+    this.updateUrlWithProjectId();
     const store = {
       ...design,
       pages: design?.pages?.map((page) => ({
         ...page,
         duration: page.duration || 0,
-        id: makeid(10),
+        id: makeId(10),
       })),
-    }
-    this.setPagesIds(store.pages?.map(page => page.id))
+    };
+    this.setPagesIds(store.pages?.map((page) => page.id));
     this.store.loadJSON(store);
     this.setName(design.name);
     this.setPublic(false);
@@ -207,7 +211,6 @@ class Project {
 
     this.requestSave(true);
   }
-
 
   updateUrlWithProjectId() {
     if (!this.id || this.id === "local") {
@@ -261,7 +264,7 @@ class Project {
         store: {
           ...json,
           fonts: null,
-          pages: {set: json.pages}
+          pages: { set: json.pages },
         },
         preview,
         // id: this.id,

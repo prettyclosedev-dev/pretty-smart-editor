@@ -37,10 +37,10 @@ class Project {
         this.setPublic(false);
         this.id = "local";
         this.updateUrlWithProjectId();
-        this.requestSave(true);
-      } else {
-        this.requestSave();
-      }
+      //   this.requestSave(true);
+      } // else {
+      //   this.requestSave();
+      // }
     });
 
     // mobx.reaction(

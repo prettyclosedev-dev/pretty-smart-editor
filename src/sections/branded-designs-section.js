@@ -156,6 +156,7 @@ export const BrandedDesignsPanel = observer(({ store }) => {
   const [designs, count, loading, error, refetch] = useBrandedDesigns({
     where: designWhere(user),
     user,
+    brand: project.brand,
   })
 
   // state of search

@@ -109,13 +109,13 @@ const App = observer(({ store }) => {
     }
   };
 
-  const customSections = [...DEFAULT_SECTIONS];
+  const customSections = [BrandedDesignsSection, ...DEFAULT_SECTIONS];
 
-  customSections.splice(0, 0, BrandedDesignsSection);
-  customSections.splice(3, 1, ShapesSection);
-  customSections.splice(3, 0, IconsSection);
+  // customSections.push(BrandedDesignsSection);
+  // customSections.push(ShapesSection);
+  customSections.push(IconsSection);
   customSections.push(QuotesSection, QrSection);
-  customSections.unshift(MyDesignsSection);
+  customSections.push(MyDesignsSection);
   customSections.push(StableDiffusionSection);
   customSections.push(MyBrandsSection);
 

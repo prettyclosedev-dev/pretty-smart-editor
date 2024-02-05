@@ -209,7 +209,7 @@ class Project {
 
     this.setLoading(false);
 
-    this.requestSave(true);
+    // this.requestSave(true);
   }
 
   updateUrlWithProjectId() {

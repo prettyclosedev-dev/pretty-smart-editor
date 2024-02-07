@@ -4,6 +4,7 @@ import { loader } from "graphql.macro";
 import { client } from "./client";
 import { useQuery, useMutation } from "react-apollo";
 import { makeId } from "../../tools/id";
+import { useAuth0 } from '@auth0/auth0-react';
 
 // query
 const getDesignsQuery = loader("./queries/getDesigns.graphql");
@@ -243,9 +244,9 @@ export async function createDesign({
       },
       refetchQueries: ["designs"],
     });
-    return { id: data?.createOneDesign?.id, status: "saved" } || {};
+    return { id: data?.createOneDesign?.id, status: !error ? "saved" : "error", error };
   } catch (e) {
-    console.log(e);
+    return { status: "error", error: e.message };
   }
 }
 
@@ -287,9 +288,9 @@ export async function saveDesign({
       },
       refetchQueries: ["designs"],
     });
-    return { id: data?.createOneDesign?.id, status: "saved" } || {};
+    return { id: data?.createOneDesign?.id, status: !error ? "saved" : "error", error };
   } catch (e) {
-    console.log(e);
+    return { status: "error", error: e.message };
   }
 }
 
@@ -437,17 +438,18 @@ export function useCategories({ where, orderBy, take, skip, cursor }) {
   return [data?.categories || [], loading, error, addCategory];
 }
 
-export function useUser({ email }) {
+export function useUser() {
+  const { isAuthenticated, user, isLoading, auth0error } = useAuth0();
   const { data, loading, error } = useQuery(getUserQuery, {
-    skip: !email?.length,
+    skip: !user?.email?.length,
     variables: {
       where: {
-        email,
+        email: isAuthenticated ? user?.email : null,
       },
     },
   });
 
-  return [data?.user || {}, loading, error];
+  return [isAuthenticated, data?.user, isLoading || loading, auth0error || error];
 }
 
 export function useTemplates() {
@@ -456,8 +458,10 @@ export function useTemplates() {
   return [data?.templates || [], loading, error];
 }
 
-export function useBrands() {
-  const { data, loading, error } = useQuery(getBrands);
+export function useBrands({ where }) {
+  const { data, loading, error } = useQuery(getBrands, {
+    variables: { where }
+  });
 
   return [data?.brands || [], loading, error];
 }

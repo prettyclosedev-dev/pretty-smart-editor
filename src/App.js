@@ -20,6 +20,7 @@ import { StableDiffusionSection } from './sections/stable-diffusion-section';
 import { MyDesignsSection } from './sections/my-designs-section';
 import { MyBrandsSection } from './sections/brands-section';
 import { useProject } from './data/graphql/project';
+import { Intent } from "@blueprintjs/core";
 
 import { ImageRemoveBackground } from './tools/background-remover';
 
@@ -31,6 +32,7 @@ import ptBr from './translations/pt-br';
 
 import Topbar from './topbar/topbar';
 import { BrandedDesignsSection } from './sections/branded-designs-section';
+import { useUser } from './data/graphql/api';
 
 // DEFAULT_SECTIONS.splice(3, 0, IllustrationsSection);
 // replace elements section with just shapes
@@ -48,7 +50,12 @@ import { BrandedDesignsSection } from './sections/branded-designs-section';
 const App = observer(({ store }) => {
   const project = useProject();
 
-  const { isAuthenticated, getAccessTokenSilently, isLoading, user } = useAuth0();
+  const { getAccessTokenSilently, isLoading, user, logout } = useAuth0();
+
+  const [isAuthenticated, gqlUser, userLoading, userError] = useUser();
+  console.log({gqlUser, userLoading, userError})
+
+  const [disabled, setDisabled] = React.useState(false)
 
   React.useEffect(() => {
     if (project.language.startsWith('fr')) {
@@ -73,10 +80,35 @@ const App = observer(({ store }) => {
   };
 
   React.useEffect(() => {
-    if (isLoading) {
+    if (isLoading || userLoading) {
       return;
     }
-    if (isAuthenticated) {
+    if (isAuthenticated && (userError || !gqlUser)) {
+      setDisabled(true);
+      project.toastRef?.show({
+        timeout: 5000,
+        action: {
+            onClick: () => {
+              logout();
+              setDisabled(false);
+            },
+            text: "Log Out",
+        },
+        onDismiss: (didTimeoutExpire) => {
+          if (didTimeoutExpire) {
+            logout();
+            setDisabled(false);
+          }
+        },
+        isCloseButtonShown: false,
+        intent: Intent.DANGER,
+        message:
+            "You need to first sign up at pretty smart",
+      });
+      
+      return;
+    }
+    if (isAuthenticated && !userError && gqlUser) {
       project.setUser({email: user.email})
       getAccessTokenSilently()
         .then((token) => {
@@ -92,7 +124,7 @@ const App = observer(({ store }) => {
       project.authToken = null;
       load();
     }
-  }, [isAuthenticated, project, getAccessTokenSilently, isLoading, user]);
+  }, [isAuthenticated, project, getAccessTokenSilently, isLoading, user, gqlUser, userLoading, userError]);
 
   const handleDrop = (ev) => {
     // Prevent default behavior (Prevent file from being opened)
@@ -120,34 +152,38 @@ const App = observer(({ store }) => {
   customSections.push(MyBrandsSection);
 
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-      onDrop={handleDrop}
-    >
-      {!window.PrettySmartEmbeddedMode && <Topbar store={store} />}
-      <div style={{ height: !window.PrettySmartEmbeddedMode ? 'calc(100% - 50px)' : "100%" }}>
-        <PolotnoContainer className="polotno-app-container">
-          <SidePanelWrap>
-            <SidePanel store={store} sections={customSections} />
-          </SidePanelWrap>
-          <WorkspaceWrap>
-            <Toolbar
-              store={store}
-              components={{
-                ImageRemoveBackground,
-              }}
-            />
-            <Workspace store={store} components={{ Tooltip }} />
-            <ZoomButtons store={store} />
-          </WorkspaceWrap>
-        </PolotnoContainer>
+    <>
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          pointerEvents: disabled ? 'none' : 'auto',
+          opacity: disabled ? '0.5' : '1',
+        }}
+        onDrop={handleDrop}
+      >
+        {!window.PrettySmartEmbeddedMode && <Topbar store={store} />}
+        <div style={{ height: !window.PrettySmartEmbeddedMode ? 'calc(100% - 50px)' : "100%" }}>
+          <PolotnoContainer className="polotno-app-container">
+            <SidePanelWrap>
+              <SidePanel store={store} sections={customSections} />
+            </SidePanelWrap>
+            <WorkspaceWrap>
+              <Toolbar
+                store={store}
+                components={{
+                  ImageRemoveBackground,
+                }}
+              />
+              <Workspace store={store} components={{ Tooltip }} />
+              <ZoomButtons store={store} />
+            </WorkspaceWrap>
+          </PolotnoContainer>
+        </div>
       </div>
-    </div>
+    </>
   );
 });
 

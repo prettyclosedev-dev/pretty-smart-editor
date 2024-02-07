@@ -2,6 +2,8 @@ import * as mobx from "mobx";
 import { createContext, useContext } from "react";
 import * as api from "./api";
 import { makeId } from "../../tools/id";
+import { debounce } from "lodash";
+import { Intent } from "@blueprintjs/core";
 
 export const ProjectContext = createContext({});
 
@@ -22,6 +24,7 @@ class Project {
   language =
     localStorage.getItem("polotno-language") || navigator.language || "en";
   pagesIds = [];
+  toastRef = null;
 
   constructor({ store }) {
     mobx.makeAutoObservable(this);
@@ -56,6 +59,10 @@ class Project {
     // );
   }
 
+  setToastRef(_ref) {
+    this.toastRef = _ref;
+  }
+
   setPagesIds(_pagesIds) {
     this.pagesIds = _pagesIds;
   }
@@ -79,7 +86,7 @@ class Project {
     }
 
     if (!this.categories.some((category) => category.id === _category.id)) {
-      this.categories.push(_category);
+      this.categories = [_category, ...this.categories];
     }
   }
 
@@ -130,18 +137,22 @@ class Project {
 
   setError(_error) {
     this.error = _error;
+
+    if (_error) {
+      this.toastRef?.show({
+        timeout: 5000,
+        onDismiss: () => {
+          this.setError(null)
+        },
+        intent: Intent.DANGER,
+        message: _error,
+      });
+    }
   }
 
-  requestSave(doCreate) {
-    if (this.saveTimeout) {
-      return;
-    }
-    this.saveTimeout = setTimeout(() => {
-      this.saveTimeout = null;
-      // skip autosave if no project opened
-      this.save(doCreate);
-    }, 1000);
-  }
+  requestSave = debounce((doCreate) => {
+    this.save(doCreate)
+  }, 1000)
 
   async loadById(id) {
     this.id = id;
@@ -167,12 +178,8 @@ class Project {
         const pagesIds = store.pages?.map((page) => page.id);
         this.setPagesIds(pagesIds);
 
-        // this.saveTimeout = {};
         this.store.loadJSON(store);
         // await this.store.waitLoading();
-        // setTimeout(() => {
-        //   this.saveTimeout = null;
-        // }, 1000)
       }
       this.setName(name);
       this.setPublic(_public);
@@ -249,6 +256,8 @@ class Project {
   // }
 
   async save(doCreate) {
+    if (this.loading) return;
+    this.setLoading(true);
     const json = this.store.toJSON();
     const maxWidth = 200;
     const preview = await this.store.toDataURL({
@@ -281,9 +290,12 @@ class Project {
       if (res?.status === "saved") {
         this.id = res.id;
         this.updateUrlWithProjectId();
+        this.setError(null);
+      } else if (res?.status === "error") {
+        this.setError(res?.error)
       }
     } else {
-      const res = api.saveDesign({
+      const res = await api.saveDesign({
         store: {
           ...json,
           width: { set: json.width },
@@ -306,7 +318,14 @@ class Project {
         authToken: this.authToken,
         creator: { connect: { email: this.user.email } },
       });
+      
+      if (res?.status === "saved") {
+        this.setError(null);
+      } else if (res?.status === "error") {
+        this.setError(res?.error)
+      }
     }
+    this.setLoading(false);
   }
 
   async duplicate() {

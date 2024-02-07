@@ -7,6 +7,7 @@ import { unstable_setAnimationsEnabled } from "polotno/config";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { createProject, ProjectContext } from "./data/graphql/project";
 import { AUTH_DOMAIN, AUTH_ID, POLOTNO_KEY } from "./data/config";
+import { OverlayToaster, Position } from "@blueprintjs/core";
 
 /* redux */
 import { Provider } from "react-redux";
@@ -98,6 +99,7 @@ export function mountEditor(elem, config = { mode: "standalone" }) {
           </ProjectContext.Provider>
         </ApolloProvider>
       </Provider>
+      <OverlayToaster position={Position.TOP} usePortal={true} ref={r => project.setToastRef(r)} />
     </ErrorBoundary>
   );
 }

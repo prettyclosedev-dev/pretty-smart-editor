@@ -1,7 +1,7 @@
 #import '../fragments/brand.graphql'
 
-query brands {
-    brands {
+query Brands($where: BrandWhereInput) {
+    brands(where: $where) {
         ...Brand
     }
 }

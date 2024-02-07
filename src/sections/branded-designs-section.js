@@ -9,7 +9,8 @@ import {
   Position,
   Spinner,
   InputGroup,
-  Popover
+  Popover,
+  SegmentedControl,
 } from "@blueprintjs/core";
 
 import { SectionTab } from "polotno/side-panel";
@@ -163,6 +164,8 @@ export const BrandedDesignsPanel = observer(({ store }) => {
   const [text, setText] = useState("")
   const [visibility, setVisibility] = useState("all") // "all" | "public" | "private"
   const [categories, setCategories] = useState([])
+  // local filter
+  const [aspect, setAspect]= useState("all") // "all" | "square" | "landscape" | "portrait"
 
   useEffect(() => {
     fireSearch(refetch, user, text, visibility, categories)
@@ -171,7 +174,15 @@ export const BrandedDesignsPanel = observer(({ store }) => {
   const half1 = [];
   const half2 = [];
 
-  designs?.forEach((design, index) => {
+  designs?.filter(design => {
+    if (aspect === "square") {
+      return design.width === design.height;
+    } else if (aspect === "landscape") {
+      return design.width > design.height;
+    } else if (aspect === "portrait") {
+      return design.width < design.height;
+    } return true;
+  })?.forEach((design, index) => {
     if (index % 2 === 0) {
       half1.push(design);
     } else {
@@ -191,7 +202,21 @@ export const BrandedDesignsPanel = observer(({ store }) => {
         selected={categories}
         onAddSelected={cat => setCategories( old => old.some(c => c.id === cat.id) ? old : [...old, cat])}
         onRemoveSelected={cat => setCategories(old => old.filter(c => c.id !== cat.id))} />
-      {count !== null && !loading && <p style={{ marginBottom: 0 }}>{count} result{count > 1 ? "s" : ""}</p>}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexDirection: "row-reverse" }}>
+        <SegmentedControl
+            value={aspect}
+            inline={true}
+            options={[
+              { label: "All", value: "all", },
+              { label: "Square", value: "square", },
+              { label: "Landscape", value: "landscape", },
+              { label: "Portrait", value: "portrait", },
+            ]}
+            onValueChange={val => setAspect(val)}
+            small={true}
+            />
+        {count !== null && !loading && <p style={{ marginBottom: 0 }}>{count} result{count > 1 ? "s" : ""}</p>}
+      </div>
       {!isAuthenticated ? 
         <div>Please authenticate</div> :
       loading ?

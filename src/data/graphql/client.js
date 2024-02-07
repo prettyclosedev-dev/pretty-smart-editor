@@ -61,24 +61,7 @@ const onErrorLink = onError(
 
 const link = ApolloLink.from([authLink, afterwareLink, onErrorLink, httpLink]);
 
-const cache = new InMemoryCache({
-  typePolicies: {
-    Design: {
-      fields: {
-        categories: {
-          merge(existing = [], incoming) {
-            return [...existing, ...incoming];
-          },
-        },
-        tags: {
-          merge(existing = [], incoming) {
-            return [...existing, ...incoming];
-          },
-        },
-      },
-    },
-  },
-});
+const cache = new InMemoryCache();
 
 export const client = new ApolloClient({
   link,

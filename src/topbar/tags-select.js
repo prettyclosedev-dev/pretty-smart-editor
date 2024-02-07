@@ -3,7 +3,6 @@ import { observer } from "mobx-react-lite";
 import { Popover, PopoverPosition, Button, MenuItem, Tag } from "@blueprintjs/core";
 import { MultiSelect } from "@blueprintjs/select";
 import { useUser } from "../data/graphql/api";
-import { useAuth0 } from "@auth0/auth0-react";
 
 const filterTag = (query, tag, _index, exactMatch) => {
   const normalizedTitle = tag.toLowerCase();
@@ -58,10 +57,7 @@ function createTagFromQuery(tag) {
 export const TagsSelect = observer(({ store }) => {
   const project = useProject();
   const { tags = [] } = project || {};
-  const { isAuthenticated, user } = useAuth0();
-  const [gqlUser, userLoading, userError] = useUser({
-    email: isAuthenticated ? user.email : null,
-  });
+  const [isAuthenticated, user, userLoading, userError] = useUser();
 
   if (project.loading || userLoading) return "Loading...";
   if (project.error) return `Error! ${project.error.message}`;
@@ -97,10 +93,11 @@ export const TagsSelect = observer(({ store }) => {
         }}
         createNewItemFromQuery={createTagFromQuery}
         // allow creating tags only for admins
-        createNewItemRenderer={gqlUser.role === "ADMIN" ? renderCreateTagOption : undefined}
+        createNewItemRenderer={user?.role === "ADMIN" ? renderCreateTagOption : undefined}
         items={tags}
         itemPredicate={filterTag}
         itemRenderer={renderTag}
+        resetOnSelect
         noResults={
           <MenuItem
             disabled={true}

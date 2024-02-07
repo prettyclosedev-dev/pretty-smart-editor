@@ -6,7 +6,10 @@ import {
   Alignment,
   NavbarDivider,
   EditableText,
+  Spinner,
+  Intent,
 } from "@blueprintjs/core";
+import { FloppyDisk } from "@blueprintjs/icons";
 import { FileMenu } from "./file-menu";
 import { DownloadButton } from "./download-button";
 import { UserMenu } from "./user-menu";
@@ -100,11 +103,12 @@ export default observer(({ store }) => {
               >
                 <EditableText
                   value={project.name}
-                  placeholder="Design Name"
+                  placeholder="Untitled Design"
                   onChange={(name) => {
                     project.setName(name);
                     project.requestSave();
                   }}
+                  intent={project.name ? Intent.NONE : Intent.WARNING}
                 />
               </div>
               <CategoriesPopover store={store} />
@@ -130,9 +134,9 @@ export default observer(({ store }) => {
               <NavbarDivider />
               <Button
                 text="Save"
-                icon={"floppy-disk"}
+                icon={project.loading ? <Spinner size={20} /> : <FloppyDisk />}
                 onClick={() => {
-                  project.requestSave(true);
+                  project.save(true);
                 }}
               />
               <NavbarDivider />

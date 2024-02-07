@@ -3,7 +3,6 @@ import { observer } from "mobx-react-lite";
 import { Popover, PopoverPosition, Button, MenuItem, Tag } from "@blueprintjs/core";
 import { MultiSelect } from "@blueprintjs/select";
 import { useCategories, useUser } from "../data/graphql/api";
-import { useAuth0 } from "@auth0/auth0-react";
 
 const filterCategory = (query, category, _index, exactMatch) => {
   const normalizedTitle = category.name.toLowerCase();
@@ -57,12 +56,9 @@ function createCategoryFromQuery(name) {
 
 export const CategoriesSelect = observer(({ store }) => {
   const project = useProject();
-  const { isAuthenticated, user } = useAuth0();
   const [categories, categoriesLoading, categoriesError, addCategory] =
     useCategories({where: {public: {equals: true}}}); // filter for public categories
-  const [gqlUser, userLoading, userError] = useUser({
-    email: isAuthenticated ? user.email : null,
-  });
+  const [isAuthenticated, user, userLoading, userError] = useUser();
 
   if (project.loading || categoriesLoading || userLoading) return "Loading...";
   if (project.error) return `Error! ${project.error.message}`;
@@ -70,12 +66,12 @@ export const CategoriesSelect = observer(({ store }) => {
   if (userError) return `Error! ${userError.message}`;
 
   const onItemSelect = ({ name, id }) => {
-    if (id === undefined && !!gqlUser?.id && gqlUser?.role === "ADMIN") {
+    if (id === undefined && !!user?.id && user?.role === "ADMIN") {
       addCategory({
         name,
         creator: {
           connect: {
-            id: gqlUser?.id,
+            id: user?.id,
           },
         },
         public: true
@@ -116,7 +112,7 @@ export const CategoriesSelect = observer(({ store }) => {
         }}
         createNewItemFromQuery={createCategoryFromQuery}
         // allow creating categories only for admins
-        createNewItemRenderer={gqlUser.role === "ADMIN" ? renderCreateCategoryOption : undefined}
+        createNewItemRenderer={user?.role === "ADMIN" ? renderCreateCategoryOption : undefined}
         items={categories}
         itemPredicate={filterCategory}
         itemRenderer={renderCategory}
@@ -130,6 +126,7 @@ export const CategoriesSelect = observer(({ store }) => {
         onItemSelect={onItemSelect}
         tagRenderer={renderTag}
         onRemove={onItemRemove}
+        resetOnSelect
         selectedItems={project.categories || []}
       >
         <Button
@@ -184,6 +181,7 @@ export const CategoriesSelectSearch = ({selected, onAddSelected, onRemoveSelecte
         itemPredicate={filterCategory}
         itemRenderer={renderCategory}
         placeholder="Search categories"
+        resetOnSelect
         noResults={
           <MenuItem
             disabled={true}

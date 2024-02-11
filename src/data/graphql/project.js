@@ -10,7 +10,7 @@ export const ProjectContext = createContext({});
 export const useProject = () => useContext(ProjectContext);
 
 class Project {
-  id = "";
+  id = "local";
   name = "";
   authToken = "";
   public = false;
@@ -25,6 +25,7 @@ class Project {
     localStorage.getItem("polotno-language") || navigator.language || "en";
   pagesIds = [];
   toastRef = null;
+  brandedDesignId = "";
 
   constructor({ store }) {
     mobx.makeAutoObservable(this);
@@ -125,6 +126,12 @@ class Project {
   setBrand(_brand) {
     this.brand = _brand;
     // fetch branded with this id
+
+    if (!!this.brandedDesignId && this.id === "local") {
+      api.getBrandedDesignById({ id: this.brandedDesignId, user: this.user, brand: this.brand }).then(res => {
+        this.loadBranded(res)
+      })
+    }
   }
 
   togglePublic() {
@@ -173,7 +180,6 @@ class Project {
         user: this.user,
         brand: this.brand,
       });
-      console.log(store, name);
       if (store) {
         const pagesIds = store.pages?.map((page) => page.id);
         this.setPagesIds(pagesIds);
@@ -196,6 +202,8 @@ class Project {
 
   async loadBranded(design) {
     this.setLoading(true);
+
+    this.brandedDesignId = design.id;
 
     this.id = "local";
     this.updateUrlWithProjectId();

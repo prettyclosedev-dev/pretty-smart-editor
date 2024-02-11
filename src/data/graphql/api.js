@@ -27,7 +27,6 @@ const createOneCategoryMutation = loader(
 const API = "https://polotno-studio-api.vercel.app/api";
 
 export async function getDesignById({ id, user, brand }) {
-  console.log(id);
   if (id === "local") {
     const json = await localforage.getItem("polotno-state");
 
@@ -109,6 +108,20 @@ export async function getDesignById({ id, user, brand }) {
     creator: data.design.creator,
     preview: data.design.preview,
   };
+}
+
+export async function getBrandedDesignById({ id, user, brand }) {
+  const { data, loading, error } = await client.query({
+    query: getBrandedDesignQuery,
+    variables: {
+      where: {
+        id
+      },
+      email: user.email,
+      brandWhere: {id: brand.id}
+    },
+  });
+  return data?.brandedDesign;
 }
 
 // export async function useDesign(id) {

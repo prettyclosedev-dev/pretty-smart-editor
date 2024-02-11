@@ -53,7 +53,6 @@ const App = observer(({ store }) => {
   const { getAccessTokenSilently, isLoading, user, logout } = useAuth0();
 
   const [isAuthenticated, gqlUser, userLoading, userError] = useUser();
-  console.log({gqlUser, userLoading, userError})
 
   const [disabled, setDisabled] = React.useState(false)
 

@@ -3,7 +3,7 @@ query brandedDesigns(
   $where: DesignWhereInput
   $take: Int
   $skip: Int
-  $orderBy: DesignOrderByWithRelationInput
+  $orderBy: [DesignOrderByWithRelationInput!]
   $cursor: DesignWhereUniqueInput
   $brandWhere: BrandWhereUniqueInput
   $withPreview: Boolean

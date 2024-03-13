@@ -3,7 +3,7 @@ import localforage from "localforage";
 import { loader } from "graphql.macro";
 import { client } from "./client";
 import { useQuery, useMutation } from "react-apollo";
-import { makeId } from "../../tools/id";
+import { nanoid } from 'nanoid'
 import { useAuth0 } from '@auth0/auth0-react';
 
 // query
@@ -41,7 +41,7 @@ export async function getDesignById({ id, user, brand }) {
           children: [],
           duration: 5000,
           height: "auto",
-          id: makeId(10),
+          id: nanoid(10),
           width: "auto",
         },
       ];

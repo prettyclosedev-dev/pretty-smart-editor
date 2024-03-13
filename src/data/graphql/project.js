@@ -1,7 +1,7 @@
 import * as mobx from "mobx";
 import { createContext, useContext } from "react";
 import * as api from "./api";
-import { makeId } from "../../tools/id";
+import { nanoid } from 'nanoid'
 import { debounce } from "lodash";
 import { Intent } from "@blueprintjs/core";
 
@@ -212,7 +212,7 @@ class Project {
       pages: design?.pages?.map((page) => ({
         ...page,
         duration: page.duration || 0,
-        id: makeId(10),
+        id: nanoid(10),
       })),
     };
     this.setPagesIds(store.pages?.map((page) => page.id));

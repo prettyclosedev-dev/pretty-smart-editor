@@ -95,12 +95,13 @@ function designWhere(user, text, visibility, categories) {
     OR: text?.length > 0 ? [
       {
         name: {
-          contains: text
+          contains: text,
+          mode: "insensitive"
         }
       },
       {
         tags: {
-          has: text
+          has: text,
         }
       },
     ] : undefined,
@@ -193,7 +194,7 @@ export const BrandedDesignsPanel = observer(({ store }) => {
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
       <InputGroup
-        placeholder="Search in name and tags"
+        placeholder="Search name or tags"
         onChange={(e) => setText(e.target.value)}
         value={text}
         rightElement={visibilityMenu({selected: visibility, onChangeSelection: setVisibility})}>
@@ -253,7 +254,7 @@ export const BrandedDesignsPanel = observer(({ store }) => {
 
 // define the new custom section
 export const BrandedDesignsSection = {
-  name: "pretteysmart-branded-designs",
+  name: "pretty-smart-branded-designs",
   Tab: (props) => (
     <SectionTab name="Designs" {...props}>
       <FaBox />

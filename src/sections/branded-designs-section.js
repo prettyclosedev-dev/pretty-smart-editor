@@ -108,7 +108,7 @@ function designWhere(user, text, visibility, categories) {
     public: visibility && visibility !== "all" ?
       { equals: visibility === "public" } : undefined,
     categories: categories?.length > 0 ? {
-      every: {
+      some: {
         id : {
           in: categories.map(cat => cat.id)
         }

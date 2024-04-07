@@ -1,7 +1,7 @@
 import * as mobx from "mobx";
 import { createContext, useContext } from "react";
 import * as api from "./api";
-import { nanoid } from 'nanoid'
+import { nanoid } from "nanoid";
 import { debounce } from "lodash";
 import { Intent } from "@blueprintjs/core";
 
@@ -26,6 +26,7 @@ class Project {
   pagesIds = [];
   toastRef = null;
   brandedDesignId = "";
+  isBranded = false;
 
   constructor({ store }) {
     mobx.makeAutoObservable(this);
@@ -41,7 +42,7 @@ class Project {
         this.setPublic(false);
         this.id = "local";
         this.updateUrlWithProjectId();
-      //   this.requestSave(true);
+        //   this.requestSave(true);
       } // else {
       //   this.requestSave();
       // }
@@ -128,14 +129,24 @@ class Project {
     // fetch branded with this id
 
     if (!!this.brandedDesignId && this.id === "local") {
-      api.getBrandedDesignById({ id: this.brandedDesignId, user: this.user, brand: this.brand }).then(res => {
-        this.loadBranded(res)
-      })
+      api
+        .getBrandedDesignById({
+          id: this.brandedDesignId,
+          user: this.user,
+          brand: this.brand,
+        })
+        .then((res) => {
+          this.loadBranded(res);
+        });
     }
   }
 
   togglePublic() {
     this.public = !this.public;
+  }
+
+  setIsBranded(_isBranded) {
+    this.isBranded = _isBranded;
   }
 
   setLoading(_loading) {
@@ -149,7 +160,7 @@ class Project {
       this.toastRef?.show({
         timeout: 5000,
         onDismiss: () => {
-          this.setError(null)
+          this.setError(null);
         },
         intent: Intent.DANGER,
         message: _error,
@@ -158,8 +169,13 @@ class Project {
   }
 
   requestSave = debounce((doCreate) => {
-    this.save(doCreate)
-  }, 1000)
+    this.save(doCreate);
+  }, 1000);
+
+  loadBrandedById(id) {
+    this.brandedDesignId = id;
+    this.loadById(id);
+  }
 
   async loadById(id) {
     this.id = id;
@@ -168,18 +184,21 @@ class Project {
     this.setError(null);
 
     try {
+      const apiMethod = this.isBranded ? api.getBrandedDesignById : api.getDesignById;
+
       const {
         store,
         name,
         public: _public,
         categories,
         tags,
-      } = await api.getDesignById({
+      } = await apiMethod({
         id,
         authToken: this.authToken,
         user: this.user,
         brand: this.brand,
       });
+
       if (store) {
         const pagesIds = store.pages?.map((page) => page.id);
         this.setPagesIds(pagesIds);
@@ -187,6 +206,7 @@ class Project {
         this.store.loadJSON(store);
         // await this.store.waitLoading();
       }
+
       this.setName(name);
       this.setPublic(_public);
       this.setCategories(categories || []);
@@ -235,7 +255,11 @@ class Project {
     let url = new URL(window.location.href);
     let params = new URLSearchParams(url.search);
     params.set("id", this.id);
-    window.history.replaceState({}, null, `/design/${this.id}`);
+    window.history.replaceState(
+      {},
+      null,
+      `/${this.isBranded ? "branded-design" : "design"}/${this.id}`
+    );
   }
 
   // async loadProject(dataJSON) {
@@ -300,7 +324,7 @@ class Project {
         this.updateUrlWithProjectId();
         this.setError(null);
       } else if (res?.status === "error") {
-        this.setError(res?.error)
+        this.setError(res?.error);
       }
     } else {
       const res = await api.saveDesign({
@@ -326,11 +350,11 @@ class Project {
         authToken: this.authToken,
         creator: { connect: { email: this.user.email } },
       });
-      
+
       if (res?.status === "saved") {
         this.setError(null);
       } else if (res?.status === "error") {
-        this.setError(res?.error)
+        this.setError(res?.error);
       }
     }
     this.setLoading(false);

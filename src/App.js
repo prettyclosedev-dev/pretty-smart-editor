@@ -1,38 +1,43 @@
-import React from 'react';
-import { observer } from 'mobx-react-lite';
-import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from 'polotno';
-import { Toolbar } from 'polotno/toolbar/toolbar';
-import { ZoomButtons } from 'polotno/toolbar/zoom-buttons';
-import { SidePanel, DEFAULT_SECTIONS, TemplatesSection } from 'polotno/side-panel';
-import { Workspace } from 'polotno/canvas/workspace';
-import { Tooltip } from 'polotno/canvas/tooltip';
-import { setTranslations } from 'polotno/config';
-import { useAuth0 } from '@auth0/auth0-react';
+import React from "react";
+import { observer } from "mobx-react-lite";
+import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from "polotno";
+import { Toolbar } from "polotno/toolbar/toolbar";
+import { ZoomButtons } from "polotno/toolbar/zoom-buttons";
+import {
+  SidePanel,
+  DEFAULT_SECTIONS,
+  TemplatesSection,
+} from "polotno/side-panel";
+import { Workspace } from "polotno/canvas/workspace";
+import { Tooltip } from "polotno/canvas/tooltip";
+import { setTranslations } from "polotno/config";
+import { useAuth0 } from "@auth0/auth0-react";
 
-import { loadFile } from './tools/file';
-import { QrSection } from './sections/qr-section';
+import { loadFile } from "./tools/file";
+import { QrSection } from "./sections/qr-section";
 // import { ThenounprojectSection } from './thenounproject-section';
 // import { TemplatesSection } from "./sections/templates-section";
-import { QuotesSection } from './sections/quotes-section';
-import { IconsSection } from './sections/icons-section';
-import { ShapesSection } from './sections/shapes-section';
-import { StableDiffusionSection } from './sections/stable-diffusion-section';
-import { MyDesignsSection } from './sections/my-designs-section';
-import { MyBrandsSection } from './sections/brands-section';
-import { useProject } from './data/graphql/project';
+import { QuotesSection } from "./sections/quotes-section";
+import { IconsSection } from "./sections/icons-section";
+import { ShapesSection } from "./sections/shapes-section";
+import { StableDiffusionSection } from "./sections/stable-diffusion-section";
+import { MyDesignsSection } from "./sections/my-designs-section";
+import { MyBrandsSection } from "./sections/brands-section";
+import { useProject } from "./data/graphql/project";
 import { Intent } from "@blueprintjs/core";
 
-import { ImageRemoveBackground } from './tools/background-remover';
+import { ImageRemoveBackground } from "./tools/background-remover";
 
-import fr from './translations/fr';
-import en from './translations/en';
-import id from './translations/id';
-import ru from './translations/ru';
-import ptBr from './translations/pt-br';
+import fr from "./translations/fr";
+import en from "./translations/en";
+import id from "./translations/id";
+import ru from "./translations/ru";
+import ptBr from "./translations/pt-br";
 
-import Topbar from './topbar/topbar';
-import { BrandedDesignsSection } from './sections/branded-designs-section';
-import { useUser } from './data/graphql/api';
+import Topbar from "./topbar/topbar";
+import { BrandedDesignsSection } from "./sections/branded-designs-section";
+import { useUser } from "./data/graphql/api";
+import { IN_APP } from "./data/config";
 
 // DEFAULT_SECTIONS.splice(3, 0, IllustrationsSection);
 // replace elements section with just shapes
@@ -46,7 +51,6 @@ import { useUser } from './data/graphql/api';
 
 // DEFAULT_SECTIONS.push(StableDiffusionSection);
 
-
 const App = observer(({ store }) => {
   const project = useProject();
 
@@ -54,16 +58,16 @@ const App = observer(({ store }) => {
 
   const [isAuthenticated, gqlUser, userLoading, userError] = useUser();
 
-  const [disabled, setDisabled] = React.useState(false)
+  const [disabled, setDisabled] = React.useState(false);
 
   React.useEffect(() => {
-    if (project.language.startsWith('fr')) {
+    if (project.language.startsWith("fr")) {
       setTranslations(fr);
-    } else if (project.language.startsWith('id')) {
+    } else if (project.language.startsWith("id")) {
       setTranslations(id);
-    } else if (project.language.startsWith('ru')) {
+    } else if (project.language.startsWith("ru")) {
       setTranslations(ru);
-    } else if (project.language.startsWith('pt')) {
+    } else if (project.language.startsWith("pt")) {
       setTranslations(ptBr);
     } else {
       setTranslations(en);
@@ -72,10 +76,28 @@ const App = observer(({ store }) => {
 
   const load = () => {
     let url = new URL(window.location.href);
-    // url example https://studio.polotno.com/design/5f9f1b0b
-    const reg = new RegExp('design/([a-zA-Z0-9_-]+)').exec(url.pathname);
-    const designId = (reg && reg[1]) || 'local';
-    project.loadById(designId);
+
+    // Match both 'design/id' and 'branded-design/id'
+    // This regex matches 'design/id' explicitly and excludes 'branded-design/id'
+    // Determine the prefix based on whether IN_APP is true
+    const prefix = IN_APP ? "editor/" : "";
+
+    const regDesign = new RegExp(`^\/?${prefix}design\/([a-zA-Z0-9_-]+)$`).exec(
+      url.pathname
+    );
+    const regBrandedDesign = new RegExp(
+      `^\/?${prefix}branded-design\/([a-zA-Z0-9_-]+)$`
+    ).exec(url.pathname);
+
+    project.setIsBranded(!!regBrandedDesign);
+
+    if (regDesign) {
+      const designId = regDesign[1] || "local";
+      project.loadById(designId);
+    } else if (regBrandedDesign) {
+      const designId = regBrandedDesign[1] || "local";
+      project.loadBrandedById(designId);
+    }
   };
 
   React.useEffect(() => {
@@ -87,11 +109,11 @@ const App = observer(({ store }) => {
       project.toastRef?.show({
         timeout: 5000,
         action: {
-            onClick: () => {
-              logout();
-              setDisabled(false);
-            },
-            text: "Log Out",
+          onClick: () => {
+            logout();
+            setDisabled(false);
+          },
+          text: "Log Out",
         },
         onDismiss: (didTimeoutExpire) => {
           if (didTimeoutExpire) {
@@ -101,14 +123,13 @@ const App = observer(({ store }) => {
         },
         isCloseButtonShown: false,
         intent: Intent.DANGER,
-        message:
-            "You need to first sign up at pretty smart",
+        message: "You need to first sign up at pretty smart",
       });
-      
+
       return;
     }
     if (isAuthenticated && !userError && gqlUser) {
-      project.setUser({email: user.email})
+      project.setUser({ email: user.email });
       getAccessTokenSilently()
         .then((token) => {
           project.authToken = token;
@@ -123,7 +144,16 @@ const App = observer(({ store }) => {
       project.authToken = null;
       load();
     }
-  }, [isAuthenticated, project, getAccessTokenSilently, isLoading, user, gqlUser, userLoading, userError]);
+  }, [
+    isAuthenticated,
+    project,
+    getAccessTokenSilently,
+    isLoading,
+    user,
+    gqlUser,
+    userLoading,
+    userError,
+  ]);
 
   const handleDrop = (ev) => {
     // Prevent default behavior (Prevent file from being opened)
@@ -154,17 +184,23 @@ const App = observer(({ store }) => {
     <>
       <div
         style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          pointerEvents: disabled ? 'none' : 'auto',
-          opacity: disabled ? '0.5' : '1',
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          pointerEvents: disabled ? "none" : "auto",
+          opacity: disabled ? "0.5" : "1",
         }}
         onDrop={handleDrop}
       >
         {!window.PrettySmartEmbeddedMode && <Topbar store={store} />}
-        <div style={{ height: !window.PrettySmartEmbeddedMode ? 'calc(100% - 50px)' : "100%" }}>
+        <div
+          style={{
+            height: !window.PrettySmartEmbeddedMode
+              ? "calc(100% - 50px)"
+              : "100%",
+          }}
+        >
           <PolotnoContainer className="polotno-app-container">
             <SidePanelWrap>
               <SidePanel store={store} sections={customSections} />

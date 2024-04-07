@@ -75,25 +75,7 @@ export async function getDesignById({ id, user, brand }) {
     variables,
   });
 
-  // console.log(data, loading, error);
-
-  // const req = await fetch(`${API}/designs/get?id=${id}`, {
-  //   headers: {
-  //     Authorization: authToken,
-  //     'Content-Type': 'application/json',
-  //   },
-  // });
-  // if (!req.ok) {
-  //   throw new Error('Design not found');
-  // }
-  // // const json = await req.json();
-  // console.log("=============");
-  // console.log("=============");
-  // console.log(data);
-  // console.log("=============");
-  // console.log("=============");
   return {
-    // why are things in store?
     store: {
       ...data.design,
       pages: data?.design?.pages?.map((page) => ({
@@ -111,17 +93,69 @@ export async function getDesignById({ id, user, brand }) {
 }
 
 export async function getBrandedDesignById({ id, user, brand }) {
+  if (id === "local") {
+    const json = await localforage.getItem("polotno-state");
+
+    if (json) {
+      json.pages = json.pages?.set?.map((page) => ({
+        ...page,
+        duration: page.duration || 0,
+      })) || [
+        {
+          background: "white",
+          bleed: 0,
+          children: [],
+          duration: 5000,
+          height: "auto",
+          id: nanoid(10),
+          width: "auto",
+        },
+      ];
+      json.fonts = []; // need to change eventually to fonts.set...
+
+      return {
+        store: json, // need to clean object
+        name: "",
+      };
+    } else {
+      return {
+        store: null,
+        name: "",
+      };
+    }
+  }
+  const variables = {
+    where: { id: Number(id) },
+  };
+
+  if (user) {
+    variables.email = user.email;
+  }
+
+  if (brand) {
+    variables.brandWhere = { id: brand.id };
+  }
+
   const { data, loading, error } = await client.query({
     query: getBrandedDesignQuery,
-    variables: {
-      where: {
-        id
-      },
-      email: user.email,
-      brandWhere: {id: brand.id}
-    },
+    variables,
   });
-  return data?.brandedDesign;
+
+  return {
+    store: {
+      ...data.brandedDesign,
+      pages: data?.brandedDesign?.pages?.map((page) => ({
+        ...page,
+        duration: page.duration || 0,
+      })),
+    },
+    name: data.brandedDesign.name,
+    public: data.brandedDesign.public,
+    categories: data.brandedDesign.categories,
+    tags: data.brandedDesign.tags,
+    creator: data.brandedDesign.creator,
+    preview: data.brandedDesign.preview,
+  };
 }
 
 // export async function useDesign(id) {

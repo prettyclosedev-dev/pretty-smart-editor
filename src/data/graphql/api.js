@@ -3,8 +3,8 @@ import localforage from "localforage";
 import { loader } from "graphql.macro";
 import { client } from "./client";
 import { useQuery, useMutation } from "react-apollo";
-import { nanoid } from 'nanoid'
-import { useAuth0 } from '@auth0/auth0-react';
+import { nanoid } from "nanoid";
+import { useAuth0 } from "@auth0/auth0-react";
 
 // query
 const getDesignsQuery = loader("./queries/getDesigns.graphql");
@@ -27,135 +27,143 @@ const createOneCategoryMutation = loader(
 const API = "https://polotno-studio-api.vercel.app/api";
 
 export async function getDesignById({ id, user, brand }) {
-  if (id === "local") {
-    const json = await localforage.getItem("polotno-state");
+  try {
+    if (id === "local") {
+      const json = await localforage.getItem("polotno-state");
 
-    if (json) {
-      json.pages = json.pages?.set?.map((page) => ({
-        ...page,
-        duration: page.duration || 0,
-      })) || [
-        {
-          background: "white",
-          bleed: 0,
-          children: [],
-          duration: 5000,
-          height: "auto",
-          id: nanoid(10),
-          width: "auto",
-        },
-      ];
-      json.fonts = []; // need to change eventually to fonts.set...
+      if (json) {
+        json.pages = json.pages?.set?.map((page) => ({
+          ...page,
+          duration: page.duration || 0,
+        })) || [
+          {
+            background: "white",
+            bleed: 0,
+            children: [],
+            duration: 5000,
+            height: "auto",
+            id: nanoid(10),
+            width: "auto",
+          },
+        ];
+        json.fonts = []; // need to change eventually to fonts.set...
 
-      return {
-        store: json, // need to clean object
-        name: "",
-      };
-    } else {
-      return {
-        store: null,
-        name: "",
-      };
+        return {
+          store: json, // need to clean object
+          name: "",
+        };
+      } else {
+        return {
+          store: null,
+          name: "",
+        };
+      }
     }
+    const variables = {
+      where: { id: Number(id) },
+    };
+
+    if (user) {
+      variables.email = user.email;
+    }
+
+    if (brand) {
+      variables.brandWhere = { id: brand.id };
+    }
+
+    const { data, loading, error } = await client.query({
+      query: getDesignQuery,
+      variables,
+    });
+
+    return {
+      store: {
+        ...data.design,
+        pages: data?.design?.pages?.map((page) => ({
+          ...page,
+          duration: page.duration || 0,
+        })),
+      },
+      name: data.design.name,
+      public: data.design.public,
+      categories: data.design.categories,
+      tags: data.design.tags,
+      creator: data.design.creator,
+      preview: data.design.preview,
+    };
+  } catch (e) {
+    throw e;
   }
-  const variables = {
-    where: { id: Number(id) },
-  };
-
-  if (user) {
-    variables.email = user.email;
-  }
-
-  if (brand) {
-    variables.brandWhere = { id: brand.id };
-  }
-
-  const { data, loading, error } = await client.query({
-    query: getDesignQuery,
-    variables,
-  });
-
-  return {
-    store: {
-      ...data.design,
-      pages: data?.design?.pages?.map((page) => ({
-        ...page,
-        duration: page.duration || 0,
-      })),
-    },
-    name: data.design.name,
-    public: data.design.public,
-    categories: data.design.categories,
-    tags: data.design.tags,
-    creator: data.design.creator,
-    preview: data.design.preview,
-  };
 }
 
 export async function getBrandedDesignById({ id, user, brand }) {
-  if (id === "local") {
-    const json = await localforage.getItem("polotno-state");
+  try {
+    if (id === "local") {
+      const json = await localforage.getItem("polotno-state");
 
-    if (json) {
-      json.pages = json.pages?.set?.map((page) => ({
-        ...page,
-        duration: page.duration || 0,
-      })) || [
-        {
-          background: "white",
-          bleed: 0,
-          children: [],
-          duration: 5000,
-          height: "auto",
-          id: nanoid(10),
-          width: "auto",
-        },
-      ];
-      json.fonts = []; // need to change eventually to fonts.set...
+      if (json) {
+        json.pages = json.pages?.set?.map((page) => ({
+          ...page,
+          duration: page.duration || 0,
+        })) || [
+          {
+            background: "white",
+            bleed: 0,
+            children: [],
+            duration: 5000,
+            height: "auto",
+            id: nanoid(10),
+            width: "auto",
+          },
+        ];
+        json.fonts = []; // need to change eventually to fonts.set...
 
-      return {
-        store: json, // need to clean object
-        name: "",
-      };
-    } else {
-      return {
-        store: null,
-        name: "",
-      };
+        return {
+          store: json, // need to clean object
+          name: "",
+        };
+      } else {
+        return {
+          store: null,
+          name: "",
+        };
+      }
     }
+    const variables = {
+      where: { id: Number(id) },
+    };
+
+    if (user) {
+      variables.email = user.email;
+    }
+
+    if (brand) {
+      variables.brandWhere = { id: brand.id };
+    }
+
+    const { data, loading, error } = await client.query({
+      query: getBrandedDesignQuery,
+      variables,
+    });
+
+    return {
+      store: {
+        ...data.brandedDesign,
+        pages: data?.brandedDesign?.pages?.map((page) => ({
+          ...page,
+          duration: page.duration || 0,
+        })),
+      },
+      name: data.brandedDesign.name,
+      public: data.brandedDesign.public,
+      categories: data.brandedDesign.categories,
+      tags: data.brandedDesign.tags,
+      creator: data.brandedDesign.creator,
+      preview: data.brandedDesign.preview,
+    };
+  } catch (e) {
+    throw e;
   }
-  const variables = {
-    where: { id: Number(id) },
-  };
-
-  if (user) {
-    variables.email = user.email;
-  }
-
-  if (brand) {
-    variables.brandWhere = { id: brand.id };
-  }
-
-  const { data, loading, error } = await client.query({
-    query: getBrandedDesignQuery,
-    variables,
-  });
-
-  return {
-    store: {
-      ...data.brandedDesign,
-      pages: data?.brandedDesign?.pages?.map((page) => ({
-        ...page,
-        duration: page.duration || 0,
-      })),
-    },
-    name: data.brandedDesign.name,
-    public: data.brandedDesign.public,
-    categories: data.brandedDesign.categories,
-    tags: data.brandedDesign.tags,
-    creator: data.brandedDesign.creator,
-    preview: data.brandedDesign.preview,
-  };
 }
 
 // export async function useDesign(id) {
@@ -291,7 +299,11 @@ export async function createDesign({
       },
       refetchQueries: ["designs"],
     });
-    return { id: data?.createOneDesign?.id, status: !error ? "saved" : "error", error };
+    return {
+      id: data?.createOneDesign?.id,
+      status: !error ? "saved" : "error",
+      error,
+    };
   } catch (e) {
     return { status: "error", error: e.message };
   }
@@ -335,7 +347,11 @@ export async function saveDesign({
       },
       refetchQueries: ["designs"],
     });
-    return { id: data?.createOneDesign?.id, status: !error ? "saved" : "error", error };
+    return {
+      id: data?.createOneDesign?.id,
+      status: !error ? "saved" : "error",
+      error,
+    };
   } catch (e) {
     return { status: "error", error: e.message };
   }
@@ -386,15 +402,23 @@ export function useDesigns({ where, orderBy, take, skip, cursor, user }) {
   ];
 }
 
-export function useBrandedDesigns({ where, orderBy, take, skip, cursor, user, brand }) {
-  const variables = {where, orderBy, take, skip, cursor}
+export function useBrandedDesigns({
+  where,
+  orderBy,
+  take,
+  skip,
+  cursor,
+  user,
+  brand,
+}) {
+  const variables = { where, orderBy, take, skip, cursor };
 
   if (user?.email) {
-    variables.email = user.email
+    variables.email = user.email;
   }
 
   if (brand?.id) {
-    variables.brandWhere = {id: brand.id}
+    variables.brandWhere = { id: brand.id };
   }
 
   const { data, loading, error, refetch } = useQuery(getBrandedDesignsQuery, {
@@ -411,26 +435,21 @@ export function useBrandedDesigns({ where, orderBy, take, skip, cursor, user, br
 }
 
 export function useBrandedDesign({ where, user, brand }) {
-  const variables = {where}
+  const variables = { where };
 
   if (user?.email) {
-    variables.email = user.email
+    variables.email = user.email;
   }
 
   if (brand?.id) {
-    variables.brandWhere = {id: brand.id}
+    variables.brandWhere = { id: brand.id };
   }
 
   const { data, loading, error, refetch } = useQuery(getBrandedDesignQuery, {
     variables,
   });
 
-  return [
-    data?.brandedDesign || [],
-    loading,
-    error,
-    refetch,
-  ];
+  return [data?.brandedDesign || [], loading, error, refetch];
 }
 
 export function useCategories({ where, orderBy, take, skip, cursor }) {
@@ -496,7 +515,12 @@ export function useUser() {
     },
   });
 
-  return [isAuthenticated, data?.user, isLoading || loading, auth0error || error];
+  return [
+    isAuthenticated,
+    data?.user,
+    isLoading || loading,
+    auth0error || error,
+  ];
 }
 
 export function useTemplates() {
@@ -507,7 +531,7 @@ export function useTemplates() {
 
 export function useBrands({ where }) {
   const { data, loading, error } = useQuery(getBrands, {
-    variables: { where }
+    variables: { where },
   });
 
   return [data?.brands || [], loading, error];

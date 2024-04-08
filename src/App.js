@@ -37,7 +37,7 @@ import ptBr from "./translations/pt-br";
 import Topbar from "./topbar/topbar";
 import { BrandedDesignsSection } from "./sections/branded-designs-section";
 import { useUser } from "./data/graphql/api";
-import { IN_APP } from "./data/config";
+import { URL_PREFIX } from "./data/config";
 
 // DEFAULT_SECTIONS.splice(3, 0, IllustrationsSection);
 // replace elements section with just shapes
@@ -77,16 +77,18 @@ const App = observer(({ store }) => {
   const load = () => {
     let url = new URL(window.location.href);
 
+    const email = url.searchParams.get("email");
+    if (email) {
+      project.setUser({email});
+    }
+
     // Match both 'design/id' and 'branded-design/id'
     // This regex matches 'design/id' explicitly and excludes 'branded-design/id'
-    // Determine the prefix based on whether IN_APP is true
-    const prefix = IN_APP ? "editor/" : "";
-
-    const regDesign = new RegExp(`^\/?${prefix}design\/([a-zA-Z0-9_-]+)$`).exec(
+    const regDesign = new RegExp(`^\/?${URL_PREFIX}design\/([a-zA-Z0-9_-]+)$`).exec(
       url.pathname
     );
     const regBrandedDesign = new RegExp(
-      `^\/?${prefix}branded-design\/([a-zA-Z0-9_-]+)$`
+      `^\/?${URL_PREFIX}branded-design\/([a-zA-Z0-9_-]+)$`
     ).exec(url.pathname);
 
     project.setIsBranded(!!regBrandedDesign);

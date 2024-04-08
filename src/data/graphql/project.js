@@ -4,6 +4,7 @@ import * as api from "./api";
 import { nanoid } from "nanoid";
 import { debounce } from "lodash";
 import { Intent } from "@blueprintjs/core";
+import { URL_PREFIX } from "../config";
 
 export const ProjectContext = createContext({});
 
@@ -163,7 +164,7 @@ class Project {
           this.setError(null);
         },
         intent: Intent.DANGER,
-        message: _error,
+        message: JSON.stringify(_error),
       });
     }
   }
@@ -184,7 +185,9 @@ class Project {
     this.setError(null);
 
     try {
-      const apiMethod = this.isBranded ? api.getBrandedDesignById : api.getDesignById;
+      const apiMethod = this.isBranded
+        ? api.getBrandedDesignById
+        : api.getDesignById;
 
       const {
         store,
@@ -214,7 +217,6 @@ class Project {
     } catch (e) {
       console.log(e);
       this.setError(e);
-      alert("Project can't be loaded !!!");
     } finally {
       this.setLoading(false);
     }
@@ -252,13 +254,17 @@ class Project {
       window.history.replaceState({}, null, `/`);
       return;
     }
-    let url = new URL(window.location.href);
-    let params = new URLSearchParams(url.search);
-    params.set("id", this.id);
+    
+    // let url = new URL(window.location.href);
+    // let params = new URLSearchParams(url.search);
+    // params.set("id", this.id);
+    // const newPath = `/${URL_PREFIX}${this.isBranded ? "branded-design" : "design"}/${this.id}`;
+    // const newUrl = `${newPath}?${params.toString()}`; // if we wanna keep other queries like email in in app editor
+
     window.history.replaceState(
       {},
       null,
-      `/${this.isBranded ? "branded-design" : "design"}/${this.id}`
+      `/${URL_PREFIX}${this.isBranded ? "branded-design" : "design"}/${this.id}`
     );
   }
 

@@ -145,7 +145,7 @@ export const MyDesignsPanel = observer(({ store }) => {
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
-      {count !== null && !loading && <p style={{ marginBottom: 0 }}>{count} result{count > 1 ? "s" : ""}</p>}
+      {!!count && !loading && <p style={{ marginBottom: 0 }}>{count} result{count > 1 ? "s" : ""}</p>}
       {!isAuthenticated ? 
         <div>Please authenticate</div> :
       loading ?

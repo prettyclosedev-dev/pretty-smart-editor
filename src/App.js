@@ -37,7 +37,7 @@ import ptBr from "./translations/pt-br";
 import Topbar from "./topbar/topbar";
 import { BrandedDesignsSection } from "./sections/branded-designs-section";
 import { useUser } from "./data/graphql/api";
-import { URL_PREFIX } from "./data/config";
+import { IN_APP, URL_PREFIX } from "./data/config";
 
 // DEFAULT_SECTIONS.splice(3, 0, IllustrationsSection);
 // replace elements section with just shapes
@@ -172,7 +172,11 @@ const App = observer(({ store }) => {
     }
   };
 
-  const customSections = [BrandedDesignsSection, ...DEFAULT_SECTIONS];
+  const customSections = [...DEFAULT_SECTIONS];
+
+  if (!IN_APP) {
+    customSections.unshift(BrandedDesignsSection);
+  }
 
   // customSections.push(BrandedDesignsSection);
   // customSections.push(ShapesSection);
@@ -180,7 +184,10 @@ const App = observer(({ store }) => {
   customSections.push(QuotesSection, QrSection);
   customSections.push(MyDesignsSection);
   customSections.push(StableDiffusionSection);
-  customSections.push(MyBrandsSection);
+  
+  if (!IN_APP) {
+    customSections.push(MyBrandsSection);
+  }
 
   return (
     <>

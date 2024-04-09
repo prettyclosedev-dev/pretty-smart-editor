@@ -185,9 +185,9 @@ const App = observer(({ store }) => {
   customSections.push(MyDesignsSection);
   customSections.push(StableDiffusionSection);
   
-  if (!IN_APP) {
+  // if (!IN_APP) {
     customSections.push(MyBrandsSection);
-  }
+  // }
 
   return (
     <>

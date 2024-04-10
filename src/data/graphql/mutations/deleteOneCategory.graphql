@@ -1,7 +1,5 @@
-#import '../fragments/category.graphql'
-
 mutation deleteOneCategory($where: CategoryWhereUniqueInput!) {
   deleteOneCategory(where: $where) {
-    ...Category
+      id
   }
 }

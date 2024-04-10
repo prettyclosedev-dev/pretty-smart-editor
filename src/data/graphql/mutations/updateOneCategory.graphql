@@ -1,0 +1,7 @@
+#import '../fragments/category.graphql'
+
+mutation UpdateOneCategory($data: CategoryUpdateInput!, $where: CategoryWhereUniqueInput!) {
+  updateOneCategory(data: $data, where: $where) {
+      ...Category
+  }
+}

@@ -1,58 +1,7 @@
 import { useProject } from "../data/graphql/project";
 import { observer } from "mobx-react-lite";
-import { Popover, PopoverPosition, Button, MenuItem, Tag } from "@blueprintjs/core";
-import { MultiSelect } from "@blueprintjs/select";
+import { Popover, PopoverPosition, Button, TagInput } from "@blueprintjs/core";
 import { useUser } from "../data/graphql/api";
-
-const filterTag = (query, tag, _index, exactMatch) => {
-  const normalizedTitle = tag.toLowerCase();
-  const normalizedQuery = query.toLowerCase();
-
-  if (exactMatch) {
-    return normalizedTitle === normalizedQuery;
-  } else {
-    return `${normalizedTitle}`.indexOf(normalizedQuery) >= 0;
-  }
-};
-
-const renderTag = (
-  tag,
-  { handleClick, handleFocus, modifiers, query, index }
-) => {
-  if (!modifiers.matchesPredicate) {
-    return null;
-  }
-
-  return (
-    <MenuItem
-      active={modifiers.active}
-      disabled={modifiers.disabled}
-      key={index}
-      label={index.toString()}
-      onClick={handleClick}
-      onFocus={handleFocus}
-      roleStructure="listoption"
-      text={`${tag}`}
-    />
-  );
-};
-
-function renderCreateTagOption(query, active, handleClick) {
-  return (
-    <MenuItem
-      icon="add"
-      text={`Create "${query}"`}
-      roleStructure="listoption"
-      active={active}
-      onClick={handleClick}
-      shouldDismissPopover={false}
-    />
-  );
-}
-
-function createTagFromQuery(tag) {
-  return tag;
-}
 
 export const TagsSelect = observer(({ store }) => {
   const project = useProject();
@@ -63,20 +12,14 @@ export const TagsSelect = observer(({ store }) => {
   if (project.error) return `Error! ${project.error.message}`;
   if (userError) return `Error! ${userError.message}`;
 
-  const onItemSelect = (tag) => {
+  const onAdd = (tag) => {
     project.addTag(tag);
     // project.requestSave();
   };
 
-  const onItemRemove = (tagToRemove) => {
-    project.removeTag(tagToRemove); // add logic to erase tag for admin
+  const onRemove = (tag) => {
+    project.removeTag(tag); // add logic to erase tag for admin
   };
-
-  const renderRemoveTag = (tag, index) => (
-    <span key={index}>
-      {tag}
-    </span>
-  );
 
   return (
     <div
@@ -84,38 +27,11 @@ export const TagsSelect = observer(({ store }) => {
         maxWidth: "200px",
       }}
     >
-      <MultiSelect
-        menuProps={{
-          style: {
-            maxHeight: "400px",
-            overflow: "auto",
-          },
-        }}
-        createNewItemFromQuery={createTagFromQuery}
-        // allow creating tags only for admins
-        createNewItemRenderer={user?.role === "ADMIN" ? renderCreateTagOption : undefined}
-        items={tags}
-        itemPredicate={filterTag}
-        itemRenderer={renderTag}
-        resetOnSelect
-        noResults={
-          <MenuItem
-            disabled={true}
-            text="No results."
-            roleStructure="listoption"
-          />
-        }
-        onItemSelect={onItemSelect}
-        tagRenderer={renderRemoveTag}
-        onRemove={onItemRemove}
-        selectedItems={project.tags || []}
-      >
-        <Button
-          text={project.tags?.length > 0 ? project.tags.join(', ') : "Select tags"}
-          rightIcon="double-caret-vertical"
-          placeholder="Select tags"
-        />
-      </MultiSelect>
+      <TagInput
+        onAdd={onAdd}
+        onRemove={onRemove}
+        values={tags}
+        placeholder="add tags" />
     </div>
   );
 });

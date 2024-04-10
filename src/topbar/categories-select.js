@@ -1,6 +1,6 @@
 import { useProject } from "../data/graphql/project";
 import { observer } from "mobx-react-lite";
-import { Popover, PopoverPosition, Button, MenuItem, Tag } from "@blueprintjs/core";
+import { Popover, PopoverPosition, Button, MenuItem, } from "@blueprintjs/core";
 import { MultiSelect } from "@blueprintjs/select";
 import { useCategories, useUser } from "../data/graphql/api";
 

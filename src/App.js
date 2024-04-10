@@ -33,6 +33,7 @@ import ptBr from './translations/pt-br';
 import Topbar from './topbar/topbar';
 import { BrandedDesignsSection } from './sections/branded-designs-section';
 import { useUser } from './data/graphql/api';
+import { CategoriesSection } from './sections/categories-section';
 
 // DEFAULT_SECTIONS.splice(3, 0, IllustrationsSection);
 // replace elements section with just shapes
@@ -104,7 +105,7 @@ const App = observer(({ store }) => {
         message:
             "You need to first sign up at pretty smart",
       });
-      
+
       return;
     }
     if (isAuthenticated && !userError && gqlUser) {
@@ -149,6 +150,7 @@ const App = observer(({ store }) => {
   customSections.push(MyDesignsSection);
   customSections.push(StableDiffusionSection);
   customSections.push(MyBrandsSection);
+  customSections.push(CategoriesSection);
 
   return (
     <>

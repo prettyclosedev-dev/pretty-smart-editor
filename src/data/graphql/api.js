@@ -23,6 +23,11 @@ const deleteOneDesignMutation = loader("./mutations/deleteOneDesign.graphql");
 const createOneCategoryMutation = loader(
   "./mutations/createOneCategory.graphql"
 );
+const updateOneCategoryMutation = loader("./mutations/updateOneCategory.graphql")
+const deleteOneCategoryMutation = loader("./mutations/deleteOneCategory.graphql")
+
+// fragments
+const categortyFragment = loader("./fragments/category.graphql");
 
 const API = "https://polotno-studio-api.vercel.app/api";
 
@@ -399,16 +404,17 @@ export function useBrandedDesign({ where, user, brand }) {
   ];
 }
 
-export function useCategories({ where, orderBy, take, skip, cursor }) {
+export function useCategories({ where, orderBy, take, skip, cursor } = {}) {
   const { data, loading, error } = useQuery(getCategoriesQuery, {
     variables: { where, orderBy, take, skip, cursor },
   });
 
-  const [addSingleCategory] = useMutation(createOneCategoryMutation);
+  const [createOneCategory] = useMutation(createOneCategoryMutation);
+  const [deleteOneCategory] = useMutation(deleteOneCategoryMutation);
 
   const addCategory = async (input) => {
     try {
-      return await addSingleCategory({
+      return await createOneCategory({
         skip: !input?.creator?.connect?.id,
         variables: {
           data: input,
@@ -436,7 +442,7 @@ export function useCategories({ where, orderBy, take, skip, cursor }) {
                 cursor,
               },
               data: {
-                categories: [...data.categories, createOneCategory],
+                categories: [createOneCategory, ...data.categories],
               },
             });
           }
@@ -448,7 +454,66 @@ export function useCategories({ where, orderBy, take, skip, cursor }) {
     }
   };
 
-  return [data?.categories || [], loading, error, addCategory];
+  const deleteCategory = async (id) => {
+    return deleteOneCategory({
+      variables: {
+        where: { id }
+      },
+      update: (proxy, { data: { deleteCategory } }) => {
+        const data = proxy.readQuery({
+          query: getCategoriesQuery,
+          variables: {
+            where,
+            orderBy,
+            take,
+            skip,
+            cursor,
+          },
+        });
+
+        if (data && createOneCategory) {
+          proxy.writeQuery({
+            query: getCategoriesQuery,
+            variables: {
+              where,
+              orderBy,
+              take,
+              skip,
+              cursor,
+            },
+            data: {
+              categories: data.categories.filter(c => c.id !== id),
+            },
+          });
+        }
+      }
+    })
+  }
+
+  return [data?.categories || [], loading, error, addCategory, deleteCategory];
+}
+
+export function useUpdateCategory() {
+  const [updateOneCategory, { loading }] = useMutation(updateOneCategoryMutation);
+
+  const updateCategory = async (id, input) => {
+    return updateOneCategory({
+      variables: {
+        data: input,
+        where: { id }
+      },
+      update: (proxy, { data: { updateOneCategory } }) => {
+        proxy.writeFragment({
+          data: updateOneCategory,
+          fragment: categortyFragment,
+          fragmentName: "Category",
+          id: proxy.identify(updateOneCategory)
+        })
+      },
+    });
+  }
+
+  return [updateCategory, loading]
 }
 
 export function useUser() {
@@ -471,7 +536,7 @@ export function useTemplates() {
   return [data?.templates || [], loading, error];
 }
 
-export function useBrands({ where }) {
+export function useBrands({ where } = {}) {
   const { data, loading, error } = useQuery(getBrands, {
     variables: { where }
   });

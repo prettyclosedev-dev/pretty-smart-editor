@@ -85,7 +85,7 @@ export const MyBrandsPanel = observer(({ store }) => {
         </div> :
       !isAuthenticated ?
         <div>Please authenticate</div> :
-      error || userError ? 
+      error || userError ?
         <div>Error loading brands</div> :
         <div style={{ display: "flex", paddingTop: "5px", height: "100%", overflow: "auto", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
           <p>{brands.length} brands total</p>

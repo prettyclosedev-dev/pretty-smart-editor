@@ -38,7 +38,11 @@ const DesignCard = observer(({ design, project }) => {
         handleSelect();
       }}
     >
-      <img src={design.preview} style={{ width: "100%" }} alt="design-preview" />
+      <img
+        src={design.preview}
+        style={{ width: "100%" }}
+        alt="design-preview"
+      />
       <div
         style={{
           overflow: "hidden",
@@ -89,53 +93,61 @@ const DesignCard = observer(({ design, project }) => {
 });
 
 function designWhere(user, text, visibility, categories) {
-  // currently the categories are or or 
+  // currently the categories are or or
   // need to check if its supposed to be and and
   return {
-    OR: text?.length > 0 ? [
-      {
-        name: {
-          contains: text,
-          mode: "insensitive"
-        }
-      },
-      {
-        tags: {
-          has: text,
-        }
-      },
-    ] : undefined,
-    public: visibility && visibility !== "all" ?
-      { equals: visibility === "public" } : undefined,
-    categories: categories?.length > 0 ? {
-      every: {
-        id : {
-          in: categories.map(cat => cat.id)
-        }
-      }
-    } : undefined,
-  }
+    OR:
+      text?.length > 0
+        ? [
+            {
+              name: {
+                contains: text,
+                mode: "insensitive",
+              },
+            },
+            {
+              tags: {
+                has: text,
+              },
+            },
+          ]
+        : undefined,
+    public:
+      visibility && visibility !== "all"
+        ? { equals: visibility === "public" }
+        : undefined,
+    categories:
+      categories?.length > 0
+        ? {
+            some: {
+              id: {
+                in: categories.map((cat) => cat.id),
+              },
+            },
+          }
+        : undefined,
+  };
 }
 
 const fireSearch = debounce((refetch, user, text, visibility, categories) => {
   if (refetch !== undefined) {
     refetch({
-      where: designWhere(user, text, visibility, categories)
-    })
+      where: designWhere(user, text, visibility, categories),
+    });
   }
-}, 500)
+}, 500);
 
-function visibilityMenu({selected, onChangeSelection}) {
+function visibilityMenu({ selected, onChangeSelection }) {
   return (
     <Popover
       content={
         <Menu>
-          <MenuItem text="all" 
-            onClick={() => onChangeSelection("all")} />
-          <MenuItem text="public"
-            onClick={() => onChangeSelection("public")} />
-          <MenuItem text="private"
-            onClick={() => onChangeSelection("private")} />
+          <MenuItem text="all" onClick={() => onChangeSelection("all")} />
+          <MenuItem text="public" onClick={() => onChangeSelection("public")} />
+          <MenuItem
+            text="private"
+            onClick={() => onChangeSelection("private")}
+          />
         </Menu>
       }
       placement="bottom-end"
@@ -148,10 +160,7 @@ function visibilityMenu({selected, onChangeSelection}) {
 }
 
 export const BrandedDesignsPanel = observer(({ store }) => {
-  const {
-    isAuthenticated,
-    user,
-  } = useAuth0();
+  const { isAuthenticated, user } = useAuth0();
 
   const project = useProject();
 
@@ -159,74 +168,120 @@ export const BrandedDesignsPanel = observer(({ store }) => {
     where: designWhere(user),
     user,
     brand: project.brand,
-  })
+  });
 
   // state of search
-  const [text, setText] = useState("")
-  const [visibility, setVisibility] = useState("all") // "all" | "public" | "private"
-  const [categories, setCategories] = useState([])
+  const [text, setText] = useState("");
+  const [visibility, setVisibility] = useState("all"); // "all" | "public" | "private"
+  const [categories, setCategories] = useState([]);
   // local filter
-  const [aspect, setAspect]= useState("all") // "all" | "square" | "landscape" | "portrait"
+  const [aspect, setAspect] = useState("all"); // "all" | "square" | "landscape" | "portrait"
 
   useEffect(() => {
-    fireSearch(refetch, user, text, visibility, categories)
-  }, [text, visibility, categories, user, refetch])
+    fireSearch(refetch, user, text, visibility, categories);
+  }, [text, visibility, categories, user, refetch]);
 
   const half1 = [];
   const half2 = [];
 
-  designs?.filter(design => {
-    if (aspect === "square") {
-      return design.width === design.height;
-    } else if (aspect === "landscape") {
-      return design.width > design.height;
-    } else if (aspect === "portrait") {
-      return design.width < design.height;
-    } return true;
-  })?.forEach((design, index) => {
-    if (index % 2 === 0) {
-      half1.push(design);
-    } else {
-      half2.push(design);
-    }
-  });
+  designs
+    ?.filter((design) => {
+      if (aspect === "square") {
+        return design.width === design.height;
+      } else if (aspect === "landscape") {
+        return design.width > design.height;
+      } else if (aspect === "portrait") {
+        return design.width < design.height;
+      }
+      return true;
+    })
+    ?.forEach((design, index) => {
+      if (index % 2 === 0) {
+        half1.push(design);
+      } else {
+        half2.push(design);
+      }
+    });
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
-      <InputGroup
-        placeholder="Search name or tags"
-        onChange={(e) => setText(e.target.value)}
-        value={text}
-        rightElement={visibilityMenu({selected: visibility, onChangeSelection: setVisibility})}>
-      </InputGroup>
-      <CategoriesSelectSearch 
-        selected={categories}
-        onAddSelected={cat => setCategories( old => old.some(c => c.id === cat.id) ? old : [...old, cat])}
-        onRemoveSelected={cat => setCategories(old => old.filter(c => c.id !== cat.id))} />
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexDirection: "row-reverse" }}>
-        <SegmentedControl
+    <div
+      style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        paddingBottom: 10,
+      }}
+    >
+      {isAuthenticated && (
+        <InputGroup
+          placeholder="Search name or tags"
+          onChange={(e) => setText(e.target.value)}
+          value={text}
+          rightElement={visibilityMenu({
+            selected: visibility,
+            onChangeSelection: setVisibility,
+          })}
+        ></InputGroup>
+      )}
+      {isAuthenticated && (
+        <CategoriesSelectSearch
+          selected={categories}
+          onAddSelected={(cat) =>
+            setCategories((old) =>
+              old.some((c) => c.id === cat.id) ? old : [...old, cat]
+            )
+          }
+          onRemoveSelected={(cat) =>
+            setCategories((old) => old.filter((c) => c.id !== cat.id))
+          }
+        />
+      )}
+      {isAuthenticated && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexDirection: "row-reverse",
+          }}
+        >
+          <SegmentedControl
             value={aspect}
             inline={true}
             options={[
-              { label: "All", value: "all", },
-              { label: "Square", value: "square", },
-              { label: "Landscape", value: "landscape", },
-              { label: "Portrait", value: "portrait", },
+              { label: "All", value: "all" },
+              { label: "Square", value: "square" },
+              { label: "Landscape", value: "landscape" },
+              { label: "Portrait", value: "portrait" },
             ]}
-            onValueChange={val => setAspect(val)}
+            onValueChange={(val) => setAspect(val)}
             small={true}
-            />
-        {count !== null && !loading && <p style={{ marginBottom: 0 }}>{count} result{count > 1 ? "s" : ""}</p>}
-      </div>
-      {!isAuthenticated ? 
-        <div>Please authenticate</div> :
-      loading ?
+          />
+          {!!count && !loading && (
+            <p style={{ marginBottom: 0 }}>
+              {count} result{count > 1 ? "s" : ""}
+            </p>
+          )}
+        </div>
+      )}
+      {!isAuthenticated ? (
+        <div>Please authenticate</div>
+      ) : loading ? (
         <div style={{ padding: "30px" }}>
           <Spinner />
-        </div> :
-      error ?
-        <div>Error loading designs</div>:
-        <div style={{ display: "flex", paddingTop: "5px", height: "100%", overflow: "auto" }}>
+        </div>
+      ) : error ? (
+        <div>Error loading designs</div>
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            paddingTop: "5px",
+            height: "100%",
+            overflow: "auto",
+          }}
+        >
           <div style={{ width: "50%" }}>
             {half1.map((design) => (
               <DesignCard
@@ -247,7 +302,8 @@ export const BrandedDesignsPanel = observer(({ store }) => {
               />
             ))}
           </div>
-        </div>}
+        </div>
+      )}
     </div>
   );
 });

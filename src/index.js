@@ -103,7 +103,3 @@ export function mountEditor(elem, config = { mode: "standalone" }) {
     </ErrorBoundary>
   );
 }
-
-if (!window.PrettySmartEmbeddedMode) { // "embedded"
-  mountEditor();
-}

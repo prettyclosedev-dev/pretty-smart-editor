@@ -1,4 +1,4 @@
-import FaCubes from "@meronex/icons/fa/FaCubes"
+import FaSign from "@meronex/icons/fa/FaSign"
 import FaCrown from "@meronex/icons/fa/FaCrown"
 import { observer } from "mobx-react-lite";
 import { SectionTab } from "polotno/side-panel"
@@ -13,9 +13,9 @@ const imgStyle = { maxHeight: "5rem", maxWidth: "100%", backgroundColor: "white"
 
 const BrandCard = ({brand, selected, selectBrand}) => {
   return (
-    <Card key={brand.id} style={selected ? {border: "3px solid gold"}: {}} onClick={selectBrand}>
+    <Card key={brand.id} style={selected ? {outline: "#f5498b solid 3px"}: {}} onClick={selectBrand}>
       <div style={{ fontSize: 20, marginBottom: 10, textAlign: "center" }}>{brand.name}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "min-content auto", rowGap: 5, columnGap: 5 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "min-content auto", rowGap: 5, columnGap: 5, overflowX: "auto" }}>
         <span style={fieldStyle}>industry:</span>
         <span>{brand.industry}</span>
 
@@ -87,7 +87,7 @@ export const MyBrandsPanel = observer(({ store }) => {
         <div>Please authenticate</div> :
       error || userError ?
         <div>Error loading brands</div> :
-        <div style={{ display: "flex", paddingTop: "5px", height: "100%", overflow: "auto", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
+        <div style={{ display: "flex", padding: "5px", height: "100%", overflow: "auto", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
           <p>{brands.length} brands total</p>
           {brands.map(brand => (
             <BrandCard key={brand.id} brand={brand} selected={project.brand?.id === brand.id} selectBrand={() => project.setBrand(brand)} />
@@ -102,7 +102,7 @@ export const MyBrandsSection = {
   name: "brands",
   Tab: (props) => (
     <SectionTab name="Brands" {...props}>
-      <FaCubes />
+      <FaSign />
     </SectionTab>
   ),
   visibleInList: true,

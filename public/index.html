@@ -35,10 +35,10 @@
     <meta property="og:url" content="https://prettysmart.co/" />
     <meta name="twitter:card" content="summary_large_image" />
     <!-- STYLES -->
-    <link
+    <!-- <link
       href="https://unpkg.com/@blueprintjs/core@5/lib/css/blueprint.css"
       rel="stylesheet"
-    />
+    /> -->
     <link
       href="https://unpkg.com/@blueprintjs/icons@4/lib/css/blueprint-icons.css"
       rel="stylesheet"
@@ -115,16 +115,14 @@
         return event;
       });
     </script> -->
-    <!-- <script> window.PrettySmartEmbeddedMode = true </script> -->
-    <!-- <script> 
-      function openEditor() {
+    <script> 
+      window.onload = () => {
         window.PrettySmartEditor.mountEditor(document.getElementById("root"))
       }
-    </script> -->
+    </script>
   </head>
-  <body class="bp5-dark">
+  <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <!-- <button onclick="openEditor()">open</button> -->
     <div id="root"></div>
     <style>
       #root {

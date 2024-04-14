@@ -66,6 +66,7 @@ const BrandsSelect = ({ selectedBrands, addBrand, removeBrand }) => {
         style: {
           maxHeight: "400px",
           overflow: "auto",
+          height: "40vh"
         },
       }}
       items={brands.filter((brand) => !selectedBrands?.find(b => b.id === brand.id))}
@@ -241,7 +242,7 @@ export const CategoriesPanel = observer(({ store }) => {
   }
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 10,paddingBottom: 10 }}>
       <InputGroup
         placeholder="Search name or tags"
         onChange={(e) => setText(e.target.value)}
@@ -260,7 +261,7 @@ export const CategoriesPanel = observer(({ store }) => {
         <div
           style={{
             display: "flex",
-            paddingTop: "5px",
+            padding: 5,
             height: "100%",
             overflow: "auto",
             flexDirection: "column",

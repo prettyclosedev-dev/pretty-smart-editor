@@ -2,7 +2,6 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { Button, Position, Menu, MenuItem, Popover } from '@blueprintjs/core';
-import { useAuth0 } from '@auth0/auth0-react';
 import * as api from '../data/graphql/api';
 import { ProfileModal } from './profile-modal';
 
@@ -13,7 +12,7 @@ export const UserMenu = observer(({ store }) => {
     getAccessTokenSilently,
     isAuthenticated,
     logout,
-  } = useAuth0();
+  } = {};
   const [subModalOpen, toggleSubModal] = React.useState(false);
 
   React.useEffect(() => {

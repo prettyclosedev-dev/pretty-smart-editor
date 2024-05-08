@@ -117,7 +117,12 @@
     </script> -->
     <script> 
       window.onload = () => {
-        window.PrettySmartEditor.mountEditor(document.getElementById("root"))
+        window.PrettySmartEditor.mountEditor(document.getElementById("root"), {
+          mode: "standalone",
+          authToken: "insert token here",
+          email: "avrahams655@gmail.com",
+          designId: 202
+        })
       }
     </script>
   </head>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { observer } from "mobx-react-lite";
-import { useAuth0 } from "@auth0/auth0-react";
 import {
   Button,
   Card,
@@ -99,18 +98,18 @@ function designWhere(user, text, visibility, categories) {
     OR:
       text?.length > 0
         ? [
-            {
-              name: {
-                contains: text,
-                mode: "insensitive",
-              },
+          {
+            name: {
+              contains: text,
+              mode: "insensitive",
             },
-            {
-              tags: {
-                has: text,
-              },
+          },
+          {
+            tags: {
+              has: text,
             },
-          ]
+          },
+        ]
         : undefined,
     public:
       visibility && visibility !== "all"
@@ -119,12 +118,12 @@ function designWhere(user, text, visibility, categories) {
     categories:
       categories?.length > 0
         ? {
-            some: {
-              id: {
-                in: categories.map((cat) => cat.id),
-              },
+          some: {
+            id: {
+              in: categories.map((cat) => cat.id),
             },
-          }
+          },
+        }
         : undefined,
   };
 }
@@ -160,9 +159,8 @@ function visibilityMenu({ selected, onChangeSelection }) {
 }
 
 export const BrandedDesignsPanel = observer(({ store }) => {
-  const { isAuthenticated, user } = useAuth0();
-
   const project = useProject();
+  const { user } = project;
 
   const [designs, count, loading, error, refetch] = useBrandedDesigns({
     where: designWhere(user),
@@ -213,61 +211,53 @@ export const BrandedDesignsPanel = observer(({ store }) => {
         paddingBottom: 10,
       }}
     >
-      {isAuthenticated && (
-        <InputGroup
-          placeholder="Search name or tags"
-          onChange={(e) => setText(e.target.value)}
-          value={text}
-          rightElement={visibilityMenu({
-            selected: visibility,
-            onChangeSelection: setVisibility,
-          })}
-        ></InputGroup>
-      )}
-      {isAuthenticated && (
-        <CategoriesSelectSearch
-          selected={categories}
-          onAddSelected={(cat) =>
-            setCategories((old) =>
-              old.some((c) => c.id === cat.id) ? old : [...old, cat]
-            )
-          }
-          onRemoveSelected={(cat) =>
-            setCategories((old) => old.filter((c) => c.id !== cat.id))
-          }
+      <InputGroup
+        placeholder="Search name or tags"
+        onChange={(e) => setText(e.target.value)}
+        value={text}
+        rightElement={visibilityMenu({
+          selected: visibility,
+          onChangeSelection: setVisibility,
+        })}
+      ></InputGroup>
+      <CategoriesSelectSearch
+        selected={categories}
+        onAddSelected={(cat) =>
+          setCategories((old) =>
+            old.some((c) => c.id === cat.id) ? old : [...old, cat]
+          )
+        }
+        onRemoveSelected={(cat) =>
+          setCategories((old) => old.filter((c) => c.id !== cat.id))
+        }
+      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexDirection: "row-reverse",
+        }}
+      >
+        <SegmentedControl
+          value={aspect}
+          inline={true}
+          options={[
+            { label: "All", value: "all" },
+            { label: "Square", value: "square" },
+            { label: "Landscape", value: "landscape" },
+            { label: "Portrait", value: "portrait" },
+          ]}
+          onValueChange={(val) => setAspect(val)}
+          small={true}
         />
-      )}
-      {isAuthenticated && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexDirection: "row-reverse",
-          }}
-        >
-          <SegmentedControl
-            value={aspect}
-            inline={true}
-            options={[
-              { label: "All", value: "all" },
-              { label: "Square", value: "square" },
-              { label: "Landscape", value: "landscape" },
-              { label: "Portrait", value: "portrait" },
-            ]}
-            onValueChange={(val) => setAspect(val)}
-            small={true}
-          />
-          {!!count && !loading && (
-            <p style={{ marginBottom: 0 }}>
-              {count} result{count > 1 ? "s" : ""}
-            </p>
-          )}
-        </div>
-      )}
-      {!isAuthenticated ? (
-        <div>Please authenticate</div>
-      ) : loading ? (
+        {!!count && !loading && (
+          <p style={{ marginBottom: 0 }}>
+            {count} result{count > 1 ? "s" : ""}
+          </p>
+        )}
+      </div>
+      {loading ? (
         <div style={{ padding: "30px" }}>
           <Spinner />
         </div>

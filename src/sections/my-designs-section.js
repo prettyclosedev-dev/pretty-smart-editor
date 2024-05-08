@@ -1,6 +1,5 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
-import { useAuth0 } from "@auth0/auth0-react";
 import {
   Button,
   Card,
@@ -120,12 +119,8 @@ function designWhere(user) {
 
 
 export const MyDesignsPanel = observer(({ store }) => {
-  const {
-    isAuthenticated,
-    user,
-  } = useAuth0();
-
   const project = useProject();
+  const { user } = project;
 
   const [designs, count, loading, error, refetch, deleteDesign] = useDesigns({
     where: designWhere(user),
@@ -146,9 +141,7 @@ export const MyDesignsPanel = observer(({ store }) => {
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
       {!!count && !loading && <p style={{ marginBottom: 0 }}>{count} result{count > 1 ? "s" : ""}</p>}
-      {!isAuthenticated ? 
-        <div>Please authenticate</div> :
-      loading ?
+      {loading ?
         <div style={{ padding: "30px" }}>
           <Spinner />
         </div> :

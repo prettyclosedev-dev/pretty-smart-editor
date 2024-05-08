@@ -5,10 +5,7 @@ import { nanoid } from "nanoid";
 import { debounce } from "lodash";
 import { Intent } from "@blueprintjs/core";
 import { URL_PREFIX } from "../config";
-
-export const ProjectContext = createContext({});
-
-export const useProject = () => useContext(ProjectContext);
+import  { getUser } from "../graphql/api"
 
 class Project {
   id = "local";
@@ -29,9 +26,17 @@ class Project {
   brandedDesignId = "";
   isBranded = false;
 
-  constructor({ store }) {
+  constructor({ store, authToken, email, id }) {
     mobx.makeAutoObservable(this);
     this.store = store;
+    this.authToken = authToken
+    this.user = { email }
+    this.loadBrandedById(id)
+    console.log({authToken, email, id})
+
+    getUser(email).then(user => {
+      this.setUser(user)
+    })
 
     store.on("change", () => {
       const pagesIds = store.pages?.map((page) => page.id);
@@ -180,7 +185,7 @@ class Project {
 
   async loadById(id) {
     this.id = id;
-    this.updateUrlWithProjectId();
+    // this.updateUrlWithProjectId();
     this.setLoading(true);
     this.setError(null);
 
@@ -375,6 +380,13 @@ class Project {
     // await api.deleteDesign();
   }
 }
+
+/**
+ * @type React.Context<Project>
+ */
+export const ProjectContext = createContext({});
+
+export const useProject = () => useContext(ProjectContext);
 
 export const createProject = (...args) => new Project(...args);
 export default createProject;

@@ -19,9 +19,9 @@ import {
   Menu,
 } from "@blueprintjs/core";
 import { MultiSelect } from "@blueprintjs/select";
-import { useUser } from "../data/graphql/api";
 import { useState, useEffect, useMemo } from "react";
 import { debounce, isEqual } from "lodash";
+import { useProject } from "../data/graphql/project";
 
 
 const renderBrand = (brand, { handleClick, handleFocus, modifiers, query }) => {
@@ -209,7 +209,7 @@ function visibilityMenu({selected, onChangeSelection}) {
 }
 
 export const CategoriesPanel = observer(({ store }) => {
-  const [isAuthenticated, user, userLoading, userError] = useUser();
+  const project = useProject()
   const [categories, loading, error, addCategory, deleteCategory] = useCategories();
 
   // search state
@@ -234,7 +234,7 @@ export const CategoriesPanel = observer(({ store }) => {
       name: "",
       creator: {
         connect: {
-          id: user?.id,
+          id: project.user?.id,
         },
       },
       public: false
@@ -249,13 +249,11 @@ export const CategoriesPanel = observer(({ store }) => {
         value={text}
         rightElement={visibilityMenu({selected: visibility, onChangeSelection: setVisibility})}>
       </InputGroup>
-      {loading || userLoading ? (
+      {loading ? (
         <div style={{ padding: "30px" }}>
           <Spinner />
         </div>
-      ) : !isAuthenticated ? (
-        <div>Please authenticate</div>
-      ) : error || userError ? (
+      ) : error ? (
         <div>Error loading brands</div>
       ) : (
         <div

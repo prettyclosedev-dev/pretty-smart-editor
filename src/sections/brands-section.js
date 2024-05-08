@@ -6,7 +6,6 @@ import { useBrands } from "../data/graphql/api";
 import { Spinner, Card, Tag } from "@blueprintjs/core";
 import { contrast } from "../tools/colors"
 import { useProject } from "../data/graphql/project";
-import { useUser } from "../data/graphql/api";
 
 const fieldStyle = { opacity: 0.8, marginRight: 10, justifySelf: "end" }
 const imgStyle = { maxHeight: "5rem", maxWidth: "100%", backgroundColor: "white", borderRadius: 10, padding: 5 }
@@ -71,21 +70,19 @@ function brandsWhere(user) {
 }
 
 export const MyBrandsPanel = observer(({ store }) => {
-  const [isAuthenticated, user, userLoading, userError] = useUser();
-  const [ brands, loading, error ] = useBrands({
-    where: brandsWhere(user)
-  })
   const project = useProject()
+
+  const [ brands, loading, error ] = useBrands({
+    where: brandsWhere(project.user)
+  })
 
   return (
     <div style={{ height: "100%" }}>
-      {loading || userLoading ?
+      {loading ?
         <div style={{ padding: "30px" }}>
           <Spinner />
         </div> :
-      !isAuthenticated ?
-        <div>Please authenticate</div> :
-      error || userError ?
+      error ?
         <div>Error loading brands</div> :
         <div style={{ display: "flex", padding: "5px", height: "100%", overflow: "auto", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
           <p>{brands.length} brands total</p>

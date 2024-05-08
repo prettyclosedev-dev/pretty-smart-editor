@@ -2,9 +2,8 @@ import localforage from "localforage";
 
 import { loader } from "graphql.macro";
 import { client } from "./client";
-import { useQuery, useMutation } from "react-apollo";
+import { useQuery, useMutation } from "@apollo/client";
 import { nanoid } from "nanoid";
-import { useAuth0 } from "@auth0/auth0-react";
 
 // query
 const getDesignsQuery = loader("./queries/getDesigns.graphql");
@@ -569,23 +568,11 @@ export function useUpdateCategory() {
   return [updateCategory, loading]
 }
 
-export function useUser() {
-  const { isAuthenticated, user, isLoading, auth0error } = useAuth0();
-  const { data, loading, error } = useQuery(getUserQuery, {
-    skip: !user?.email?.length,
-    variables: {
-      where: {
-        email: isAuthenticated ? user?.email : null,
-      },
-    },
-  });
-
-  return [
-    isAuthenticated,
-    data?.user,
-    isLoading || loading,
-    auth0error || error,
-  ];
+export async function getUser(email) {
+  return client.query({
+    query: getUserQuery,
+    variables: { where: { email } },
+  }).then(res => res.data.user)
 }
 
 export function useTemplates() {

@@ -2,7 +2,6 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { Button, Dialog, Classes } from '@blueprintjs/core';
-import { useAuth0 } from '@auth0/auth0-react';
 import * as api from '../data/graphql/api';
 
 export const ProfileModal = observer(({ store, onClose, isOpen }) => {
@@ -13,7 +12,7 @@ export const ProfileModal = observer(({ store, onClose, isOpen }) => {
     user,
     isAuthenticated,
     logout,
-  } = useAuth0();
+  } = {};
 
   React.useEffect(() => {
     if (isLoading) {

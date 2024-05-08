@@ -4,7 +4,6 @@ import ReactDOM from "react-dom/client";
 import { createStore } from "polotno/model/store";
 import { unstable_setRemoveBackgroundEnabled } from "polotno/config";
 import { unstable_setAnimationsEnabled } from "polotno/config";
-import { Auth0Provider } from "@auth0/auth0-react";
 import { createProject, ProjectContext } from "./data/graphql/project";
 import { AUTH_DOMAIN, AUTH_ID, POLOTNO_KEY } from "./data/config";
 import { OverlayToaster, Position } from "@blueprintjs/core";
@@ -15,7 +14,7 @@ import reduxStore from "./data/redux/store";
 
 /* graphql */
 import { client } from "./data/graphql/client";
-import { ApolloProvider } from "react-apollo";
+import { ApolloProvider } from "@apollo/client";
 
 import { setTranslations } from "polotno/config";
 import fr from "./translations/fr.json";
@@ -25,7 +24,14 @@ import App from "./App";
 import "./logger";
 import { ErrorBoundary } from "react-error-boundary";
 
-export function mountEditor(elem, config = { mode: "standalone" }) {
+// need to get config
+// mode: "standalone" | "integrated"
+// email
+// token
+// project id
+
+// than ditch auth0 and make pretteysmart privide token and clyps to use the tokens
+export function mountEditor(elem, { mode, authToken, email, designId }) {
   
   if (window.location.host !== "studio.polotno.com") {
     console.log(
@@ -46,7 +52,7 @@ export function mountEditor(elem, config = { mode: "standalone" }) {
   window.store = store;
   store.addPage();
   
-  const project = createProject({ store });
+  const project = createProject({ store, authToken, email, id: designId });
   window.project = project;
   
   
@@ -89,13 +95,7 @@ export function mountEditor(elem, config = { mode: "standalone" }) {
       <Provider store={reduxStore}>
         <ApolloProvider client={client}>
           <ProjectContext.Provider value={project}>
-            <Auth0Provider
-              domain={AUTH_DOMAIN}
-              clientId={AUTH_ID}
-              redirectUri={window.location.origin}
-            >
               <App store={store} />
-            </Auth0Provider>
           </ProjectContext.Provider>
         </ApolloProvider>
       </Provider>

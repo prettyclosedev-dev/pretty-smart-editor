@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { observer } from "mobx-react-lite";
-import { useAuth0 } from "@auth0/auth0-react";
 import { useStopwatch } from "react-timer-hook";
 import {
   Button,
@@ -36,25 +35,12 @@ import {
 const chatGPT = loader("../data/graphql/queries/chatGPT.graphql");
 
 export const ChatPanel = observer(({ store }) => {
-  const {
-    isAuthenticated,
-    isLoading,
-    loginWithPopup,
-    getAccessTokenSilently,
-    user,
-    logout,
-  } = useAuth0();
   const [contentHistory, setContentHistory] = useState([]); //{json, prompt}
   const [textContent, setTextContent] = useState("");
   const [promptText, setPromptText] = useState("");
   const [finalTime, setFinalTime] = useState("");
 
   const project = useProject();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-    }
-  }, [isAuthenticated, isLoading]);
 
   useEffect(() => {
     fetch(systemPrompt)
@@ -472,74 +458,66 @@ export const ChatPanel = observer(({ store }) => {
 
   return (
     <div style={{ height: "100%" }}>
-      {isLoading && <div>Loading...</div>}
-      {isLoading && (
-        <div style={{ padding: "30px" }}>
-          <Spinner />
-        </div>
-      )}
-      {!isLoading && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            paddingTop: "5px",
-          }}
-        >
-          <Text>Tell me what you need! &nbsp;</Text>
-          <TextArea
-            style={{ marginTop: "10px" }}
-            fill={true}
-            onChange={onInputChange}
-            value={textContent}
-            placeholder="Post about the galaxy"
-          />
-          <Button
-            style={{ marginTop: "10px" }} // alignSelf: "flex-end",
-            text="Generate"
-            icon={"circle-arrow-right"}
-            onClick={runChat}
-          />
-          {isRunning && (
-            <Text
-              style={{ alignSelf: "center", marginTop: 10, marginBottom: 10 }}
-            >
-              Wait up to 3 minutes{" "}
-              {formatTime(`${hours}:${minutes}:${seconds}`)}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          paddingTop: "5px",
+        }}
+      >
+        <Text>Tell me what you need! &nbsp;</Text>
+        <TextArea
+          style={{ marginTop: "10px" }}
+          fill={true}
+          onChange={onInputChange}
+          value={textContent}
+          placeholder="Post about the galaxy"
+        />
+        <Button
+          style={{ marginTop: "10px" }} // alignSelf: "flex-end",
+          text="Generate"
+          icon={"circle-arrow-right"}
+          onClick={runChat}
+        />
+        {isRunning && (
+          <Text
+            style={{ alignSelf: "center", marginTop: 10, marginBottom: 10 }}
+          >
+            Wait up to 3 minutes{" "}
+            {formatTime(`${hours}:${minutes}:${seconds}`)}
+          </Text>
+        )}
+        {contentHistory?.length > 0 && (
+          <div>
+            <Divider style={{ marginTop: "30px", marginBottom: "20px" }} />
+            <Text style={{ color: "lightgray", marginBottom: "10px" }}>
+              History &nbsp;
             </Text>
-          )}
-          {contentHistory?.length > 0 && (
-            <div>
-              <Divider style={{ marginTop: "30px", marginBottom: "20px" }} />
-              <Text style={{ color: "lightgray", marginBottom: "10px" }}>
-                History &nbsp;
-              </Text>
-              {contentHistory?.map((history, index) => {
-                return (
-                  <div
-                    onClick={() => window.store?.loadJSON(history?.json)}
-                    key={index}
-                    style={{
-                      margin: "5px",
-                      marginTop: "10px",
-                      marginBottom: "10px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Text>
-                      {index + 1}: {history?.prompt}{" "}
-                      <span style={{ color: "gray" }}>
-                        - Time: {formatTime(history?.time)}
-                      </span>
-                    </Text>
-                  </div>
-                );
-              })}
-              <Divider style={{ marginTop: "20px", marginBottom: "10px" }} />
-            </div>
-          )}
-        </div>
-      )}
+            {contentHistory?.map((history, index) => {
+              return (
+                <div
+                  onClick={() => window.store?.loadJSON(history?.json)}
+                  key={index}
+                  style={{
+                    margin: "5px",
+                    marginTop: "10px",
+                    marginBottom: "10px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Text>
+                    {index + 1}: {history?.prompt}{" "}
+                    <span style={{ color: "gray" }}>
+                      - Time: {formatTime(history?.time)}
+                    </span>
+                  </Text>
+                </div>
+              );
+            })}
+            <Divider style={{ marginTop: "20px", marginBottom: "10px" }} />
+          </div>
+        )}
+      </div>
     </div>
   );
 });

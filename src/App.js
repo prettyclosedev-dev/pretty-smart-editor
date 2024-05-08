@@ -11,7 +11,6 @@ import {
 import { Workspace } from "polotno/canvas/workspace";
 import { Tooltip } from "polotno/canvas/tooltip";
 import { setTranslations } from "polotno/config";
-import { useAuth0 } from "@auth0/auth0-react";
 
 import { loadFile } from "./tools/file";
 import { QrSection } from "./sections/qr-section";
@@ -36,7 +35,6 @@ import ptBr from "./translations/pt-br";
 
 import Topbar from "./topbar/topbar";
 import { BrandedDesignsSection } from "./sections/branded-designs-section";
-import { useUser } from "./data/graphql/api";
 import { IN_APP, URL_PREFIX } from "./data/config";
 import { CategoriesSection } from './sections/categories-section';
 
@@ -55,10 +53,6 @@ import { CategoriesSection } from './sections/categories-section';
 const App = observer(({ store }) => {
   const project = useProject();
 
-  const { getAccessTokenSilently, isLoading, user, logout } = useAuth0();
-
-  const [isAuthenticated, gqlUser, userLoading, userError] = useUser();
-
   const [disabled, setDisabled] = React.useState(false);
 
   React.useEffect(() => {
@@ -74,89 +68,6 @@ const App = observer(({ store }) => {
       setTranslations(en);
     }
   }, [project.language]);
-
-  const load = () => {
-    let url = new URL(window.location.href);
-
-    const email = url.searchParams.get("email");
-    if (email) {
-      project.setUser({email});
-    }
-
-    // Match both 'design/id' and 'branded-design/id'
-    // This regex matches 'design/id' explicitly and excludes 'branded-design/id'
-    const regDesign = new RegExp(`^\/?${URL_PREFIX}design\/([a-zA-Z0-9_-]+)$`).exec(
-      url.pathname
-    );
-    const regBrandedDesign = new RegExp(
-      `^\/?${URL_PREFIX}branded-design\/([a-zA-Z0-9_-]+)$`
-    ).exec(url.pathname);
-
-    project.setIsBranded(!!regBrandedDesign);
-
-    if (regDesign) {
-      const designId = regDesign[1] || "local";
-      project.loadById(designId);
-    } else if (regBrandedDesign) {
-      const designId = regBrandedDesign[1] || "local";
-      project.loadBrandedById(designId);
-    }
-  };
-
-  React.useEffect(() => {
-    if (isLoading || userLoading) {
-      return;
-    }
-    if (isAuthenticated && (userError || !gqlUser)) {
-      setDisabled(true);
-      project.toastRef?.show({
-        timeout: 5000,
-        action: {
-          onClick: () => {
-            logout();
-            setDisabled(false);
-          },
-          text: "Log Out",
-        },
-        onDismiss: (didTimeoutExpire) => {
-          if (didTimeoutExpire) {
-            logout();
-            setDisabled(false);
-          }
-        },
-        isCloseButtonShown: false,
-        intent: Intent.DANGER,
-        message: "You need to first sign up at pretty smart",
-      });
-
-      return;
-    }
-    if (isAuthenticated && !userError && gqlUser) {
-      project.setUser({ email: user.email });
-      getAccessTokenSilently()
-        .then((token) => {
-          project.authToken = token;
-          load();
-        })
-        .catch((err) => {
-          project.authToken = null;
-          load();
-          console.log(err);
-        });
-    } else {
-      project.authToken = null;
-      load();
-    }
-  }, [
-    isAuthenticated,
-    project,
-    getAccessTokenSilently,
-    isLoading,
-    user,
-    gqlUser,
-    userLoading,
-    userError,
-  ]);
 
   const handleDrop = (ev) => {
     // Prevent default behavior (Prevent file from being opened)
@@ -204,12 +115,10 @@ const App = observer(({ store }) => {
         }}
         onDrop={handleDrop}
       >
-        {!window.PrettySmartEmbeddedMode && <Topbar store={store} />}
+        <Topbar store={store} />
         <div
           style={{
-            height: !window.PrettySmartEmbeddedMode
-              ? "calc(100% - 50px)"
-              : "100%",
+            height: "calc(100% - 50px)"
           }}
         >
           <PolotnoContainer className="polotno-app-container">

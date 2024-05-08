@@ -2,7 +2,7 @@ import { useProject } from "../data/graphql/project";
 import { observer } from "mobx-react-lite";
 import { Popover, PopoverPosition, Button, MenuItem, } from "@blueprintjs/core";
 import { MultiSelect } from "@blueprintjs/select";
-import { useCategories, useUser } from "../data/graphql/api";
+import { useCategories } from "../data/graphql/api";
 
 const filterCategory = (query, category, _index, exactMatch) => {
   const normalizedTitle = category.name.toLowerCase();
@@ -56,14 +56,13 @@ function createCategoryFromQuery(name) {
 
 export const CategoriesSelect = observer(({ store }) => {
   const project = useProject();
+  const { user } = project;
   const [categories, categoriesLoading, categoriesError, addCategory] =
     useCategories({where: {public: {equals: true}}}); // filter for public categories
-  const [isAuthenticated, user, userLoading, userError] = useUser();
 
-  if (project.loading || categoriesLoading || userLoading) return "Loading...";
+  if (project.loading || categoriesLoading) return "Loading...";
   if (project.error) return `Error! ${project.error.message}`;
   if (categoriesError) return `Error! ${categoriesError.message}`;
-  if (userError) return `Error! ${userError.message}`;
 
   const onItemSelect = ({ name, id }) => {
     if (id === undefined && !!user?.id && user?.role === "ADMIN") {

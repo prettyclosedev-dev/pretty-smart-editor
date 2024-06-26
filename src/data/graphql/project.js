@@ -5,14 +5,15 @@ import { nanoid } from "nanoid";
 import { debounce } from "lodash";
 import { Intent } from "@blueprintjs/core";
 import { URL_PREFIX } from "../config";
-import  { getUser } from "../graphql/api"
+import { getUser } from "../graphql/api";
 
 class Project {
   id = "local";
   name = "";
-  authToken = "";
+  authToken = localStorage.getItem("authToken") || "";
   public = false;
-  user = {};
+  user = JSON.parse(localStorage.getItem("user")) || {}; // Regular user field
+  loginUser = JSON.parse(localStorage.getItem("loginUser")) || {}; // New loginUser field
   brand = {};
   categories = [];
   tags = [];
@@ -27,44 +28,52 @@ class Project {
   isBranded = false;
 
   constructor({ store, authToken, email, id }) {
-    mobx.makeAutoObservable(this);
-    this.store = store;
-    this.authToken = authToken
-    this.user = { email }
-    this.loadBrandedById(id)
-    console.log({authToken, email, id})
-
-    getUser(email).then(user => {
-      this.setUser(user)
-    })
-
-    store.on("change", () => {
-      const pagesIds = store.pages?.map((page) => page.id);
-      if (JSON.stringify(pagesIds) !== JSON.stringify(this.pagesIds)) {
-        this.setPagesIds(pagesIds);
-        this.setName("");
-        this.setCategories([]);
-        this.setTags([]);
-        this.setPublic(false);
-        this.id = "local";
-        this.updateUrlWithProjectId();
-        //   this.requestSave(true);
-      } // else {
-      //   this.requestSave();
-      // }
+    mobx.makeAutoObservable(this, {
+      isAuthenticated: mobx.computed,
     });
 
-    // mobx.reaction(
-    //   () => ({
-    //     name: this.name,
-    //     categories: this.categories,
-    //     tags: this.tags,
-    //     public: this.public,
-    //   }),
-    //   () => {
-    //     this.requestSave();
-    //   }
-    // );
+    this.store = store;
+
+    if (this.loginUser.email || email) {
+      this.fetchUserByEmail(this.loginUser.email || email);
+    }
+
+    if (authToken) {
+      this.setAuthToken(authToken);
+    }
+    if (id) {
+      this.loadBrandedById(id);
+    }
+
+    store.on("change", () => {
+      this.handleStoreChange();
+    });
+  }
+
+  async fetchUserByEmail(email) {
+    try {
+      const user = await getUser(email);
+      this.setUser(user);
+    } catch (error) {
+      console.error("Error fetching user by email:", error);
+    }
+  }
+
+  handleStoreChange() {
+    const pagesIds = this.store.pages?.map((page) => page.id);
+    if (JSON.stringify(pagesIds) !== JSON.stringify(this.pagesIds)) {
+      this.setPagesIds(pagesIds);
+      this.resetProjectDetails();
+      this.updateUrlWithProjectId();
+    }
+  }
+
+  resetProjectDetails() {
+    this.setName("");
+    this.setCategories([]);
+    this.setTags([]);
+    this.setPublic(false);
+    this.id = "local";
   }
 
   setToastRef(_ref) {
@@ -92,7 +101,6 @@ class Project {
     if (!this.categories) {
       this.categories = [];
     }
-
     if (!this.categories.some((category) => category.id === _category.id)) {
       this.categories = [_category, ...this.categories];
     }
@@ -112,7 +120,6 @@ class Project {
     if (!this.tags) {
       this.tags = [];
     }
-
     if (!this.tags.some((tag) => tag === _tag)) {
       this.tags.push(_tag);
     }
@@ -128,22 +135,18 @@ class Project {
 
   setUser(_user) {
     this.user = _user;
+    localStorage.setItem("user", JSON.stringify(_user));
+  }
+
+  setAuthToken(_authToken) {
+    this.authToken = _authToken;
+    localStorage.setItem("authToken", _authToken);
   }
 
   setBrand(_brand) {
     this.brand = _brand;
-    // fetch branded with this id
-
-    if (!!this.brandedDesignId && this.id === "local") {
-      api
-        .getBrandedDesignById({
-          id: this.brandedDesignId,
-          user: this.user,
-          brand: this.brand,
-        })
-        .then((res) => {
-          this.loadBranded(res);
-        });
+    if (this.brandedDesignId && this.id === "local") {
+      this.loadBrandedById(this.brandedDesignId);
     }
   }
 
@@ -161,7 +164,6 @@ class Project {
 
   setError(_error) {
     this.error = _error;
-
     if (_error) {
       this.toastRef?.show({
         timeout: 5000,
@@ -185,15 +187,12 @@ class Project {
 
   async loadById(id) {
     this.id = id;
-    // this.updateUrlWithProjectId();
     this.setLoading(true);
     this.setError(null);
-
     try {
       const apiMethod = this.isBranded
         ? api.getBrandedDesignById
         : api.getDesignById;
-
       const {
         store,
         name,
@@ -210,11 +209,8 @@ class Project {
       if (store) {
         const pagesIds = store.pages?.map((page) => page.id);
         this.setPagesIds(pagesIds);
-
         this.store.loadJSON(store);
-        // await this.store.waitLoading();
       }
-
       this.setName(name);
       this.setPublic(_public);
       this.setCategories(categories || []);
@@ -229,9 +225,7 @@ class Project {
 
   async loadBranded(design) {
     this.setLoading(true);
-
     this.brandedDesignId = design.id;
-
     this.id = "local";
     this.updateUrlWithProjectId();
     const store = {
@@ -248,10 +242,7 @@ class Project {
     this.setPublic(false);
     this.setCategories(design.categories || []);
     this.setTags(design.tags || []);
-
     this.setLoading(false);
-
-    // this.requestSave(true);
   }
 
   updateUrlWithProjectId() {
@@ -259,44 +250,12 @@ class Project {
       window.history.replaceState({}, null, `/`);
       return;
     }
-    
-    // let url = new URL(window.location.href);
-    // let params = new URLSearchParams(url.search);
-    // params.set("id", this.id);
-    // const newPath = `/${URL_PREFIX}${this.isBranded ? "branded-design" : "design"}/${this.id}`;
-    // const newUrl = `${newPath}?${params.toString()}`; // if we wanna keep other queries like email in in app editor
-
     window.history.replaceState(
       {},
       null,
       `/${URL_PREFIX}${this.isBranded ? "branded-design" : "design"}/${this.id}`
     );
   }
-
-  // async loadProject(dataJSON) {
-  //   this.name = dataJSON.name || '';
-  //   this.templateid = dataJSON.templateid || '';
-  //   this.productconfiguration = dataJSON.productconfiguration || {};
-
-  //   this.editorFunctions = await api.getEditorFunctions({
-  //     templateid: this.templateid,
-  //   });
-  //   const req = await fetch(dataJSON.project + '?timestamp=' + Date.now());
-  //   const json = await req.json();
-  //   json.pages.forEach((page) => {
-  //     page.children.forEach((element) => {
-  //       if (element.custom?.logoBlock) {
-  //         element.selectable = this.role === 'admin' ? true : false;
-  //       }
-  //     });
-  //   });
-  //   this.skipSaving = true;
-  //   this.store.loadJSON(json);
-  //   await this.store.waitLoading();
-  //   await new Promise((resolve) => setTimeout(resolve, 50));
-  //   this.store.history.clear();
-  //   this.skipSaving = false;
-  // }
 
   async save(doCreate) {
     if (this.loading) return;
@@ -310,25 +269,37 @@ class Project {
 
     if (!this.authToken) return;
 
-    if (!this.id || this.id === "local") {
-      const res = await api.createDesign({
-        doCreate,
-        store: {
-          ...json,
-          fonts: null,
-          pages: { set: json.pages },
-        },
-        preview,
-        // id: this.id,
-        name: this.name,
-        public: this.public,
-        categories: {
-          connect: this.categories.map((category) => ({ id: category.id })),
-        },
-        tags: { set: this.tags },
-        creator: { connect: { email: this.user.email } },
-        authToken: this.authToken,
-      });
+    const saveData = {
+      store: {
+        ...json,
+        width: { set: json.width },
+        height: { set: json.height },
+        unit: { set: json.unit },
+        dpi: { set: json.dpi },
+        fonts: null,
+        pages: { set: json.pages },
+      },
+      preview: { set: preview },
+      id: Number(this.id),
+      name: { set: this.name },
+      public: this.public,
+      categories: {
+        set: this.categories.map((category) => ({ id: category.id })),
+      },
+      tags: {
+        set: this.tags,
+      },
+      authToken: this.authToken,
+      creator: { connect: { email: this.user.email } },
+    };
+
+    try {
+      let res;
+      if (!this.id || this.id === "local") {
+        res = await api.createDesign({ doCreate, ...saveData });
+      } else {
+        res = await api.saveDesign(saveData);
+      }
 
       if (res?.status === "saved") {
         this.id = res.id;
@@ -337,38 +308,11 @@ class Project {
       } else if (res?.status === "error") {
         this.setError(res?.error);
       }
-    } else {
-      const res = await api.saveDesign({
-        store: {
-          ...json,
-          width: { set: json.width },
-          height: { set: json.height },
-          unit: { set: json.unit },
-          dpi: { set: json.dpi },
-          fonts: null,
-          pages: { set: json.pages },
-        },
-        preview: { set: preview },
-        id: Number(this.id),
-        name: { set: this.name },
-        public: this.public,
-        categories: {
-          set: this.categories.map((category) => ({ id: category.id })),
-        },
-        tags: {
-          set: this.tags,
-        },
-        authToken: this.authToken,
-        creator: { connect: { email: this.user.email } },
-      });
-
-      if (res?.status === "saved") {
-        this.setError(null);
-      } else if (res?.status === "error") {
-        this.setError(res?.error);
-      }
+    } catch (error) {
+      console.error("Error saving design:", error);
+    } finally {
+      this.setLoading(false);
     }
-    this.setLoading(false);
   }
 
   async duplicate() {
@@ -379,6 +323,32 @@ class Project {
   async clear() {
     // await api.deleteDesign();
   }
+
+  get isAuthenticated() {
+    return !!this.user && !!this.user.email;
+  }
+
+  logout = () => {
+    this.setUser({});
+    this.setLoginUser({});
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("loginUser");
+  };
+
+  setLoginUser = async (_loginUser) => {
+    this.loginUser = _loginUser;
+    localStorage.setItem("loginUser", JSON.stringify(_loginUser));
+
+    if (this.loginUser.email) {
+      try {
+        const user = await getUser(this.loginUser.email);
+        this.setUser(user);
+      } catch (error) {
+        console.error("Error fetching user by email:", error);
+      }
+    }
+  };
 }
 
 /**

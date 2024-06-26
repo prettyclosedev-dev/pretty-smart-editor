@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { observer } from "mobx-react-lite";
 import {
   Button,
@@ -111,21 +111,26 @@ function designWhere(user) {
   return {
     creator: {
       email: {
-        equals: user?.email
-      }
+        equals: user?.email,
+      },
     },
-  }
+  };
 }
 
+const PAGE_SIZE = 10;
 
 export const MyDesignsPanel = observer(({ store }) => {
   const project = useProject();
   const { user } = project;
 
+  const [page, setPage] = useState(1);
+
   const [designs, count, loading, error, refetch, deleteDesign] = useDesigns({
     where: designWhere(user),
-    user,
-  })
+    // user,
+    take: PAGE_SIZE,
+    skip: (page - 1) * PAGE_SIZE,
+  });
 
   const half1 = [];
   const half2 = [];
@@ -138,16 +143,38 @@ export const MyDesignsPanel = observer(({ store }) => {
     }
   });
 
+  const totalPages = Math.ceil(count / PAGE_SIZE);
+
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 10, paddingBottom: 10 }}>
-      {!!count && !loading && <p style={{ marginBottom: 0 }}>{count} result{count > 1 ? "s" : ""}</p>}
-      {loading ?
+    <div
+      style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        paddingBottom: 10,
+      }}
+    >
+      {!!count && !loading && (
+        <p style={{ marginBottom: 0 }}>
+          {count} result{count > 1 ? "s" : ""}
+        </p>
+      )}
+      {loading ? (
         <div style={{ padding: "30px" }}>
           <Spinner />
-        </div> :
-      error ?
-        <div>Error loading designs</div>:
-        <div style={{ display: "flex", paddingTop: "5px", height: "100%", overflow: "auto" }}>
+        </div>
+      ) : error ? (
+        <div>Error loading designs</div>
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            paddingTop: "5px",
+            height: "100%",
+            overflow: "auto",
+          }}
+        >
           <div style={{ width: "50%" }}>
             {half1.map((design) => (
               <DesignCard
@@ -170,7 +197,28 @@ export const MyDesignsPanel = observer(({ store }) => {
               />
             ))}
           </div>
-        </div>}
+        </div>
+      )}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: 10,
+        }}
+      >
+        <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
+          Previous
+        </Button>
+        <span>
+          Page {page} of {totalPages}
+        </span>
+        <Button
+          disabled={page === totalPages}
+          onClick={() => setPage(page + 1)}
+        >
+          Next
+        </Button>
+      </div>
     </div>
   );
 });

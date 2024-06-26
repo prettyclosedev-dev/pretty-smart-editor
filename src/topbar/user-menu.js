@@ -1,41 +1,53 @@
-import React from 'react';
-import { observer } from 'mobx-react-lite';
+import React from "react";
+import { observer } from "mobx-react-lite";
 
-import { Button, Position, Menu, MenuItem, Popover } from '@blueprintjs/core';
-import * as api from '../data/graphql/api';
-import { ProfileModal } from './profile-modal';
+import { Button, Position, Menu, MenuItem, Popover } from "@blueprintjs/core";
+import * as api from "../data/graphql/api";
+import { ProfileModal } from "./profile-modal";
+import { LoginModal } from "./login-modal";
+import { useProject } from "../data/graphql/project";
 
 export const UserMenu = observer(({ store }) => {
+  const project = useProject();
   const {
-    loginWithPopup,
-    isLoading,
-    getAccessTokenSilently,
+    loading,
+    // getAccessTokenSilently,
     isAuthenticated,
     logout,
-  } = {};
+  } = project;
   const [subModalOpen, toggleSubModal] = React.useState(false);
+  const [loginModalOpen, setLoginModalOpen] = React.useState(false);
+
+  const handleLoginSuccess = () => {
+    // Implement the logic for logging in the user here
+    // This might include updating the state to indicate the user is authenticated
+  };
 
   React.useEffect(() => {
-    if (isLoading) {
+    if (loading) {
       return;
     }
     if (!isAuthenticated) {
       return;
     }
-  }, [isLoading, isAuthenticated, getAccessTokenSilently]);
+  }, [loading, isAuthenticated]); // getAccessTokenSilently
 
   return (
     <>
       <Popover
         content={
-          <Menu style={{ width: '80px !important' }}>
+          <Menu style={{ width: "80px !important" }}>
             {!isAuthenticated && (
-              <MenuItem text="Login" icon="log-in" onClick={loginWithPopup} />
+              <MenuItem
+                text="Login"
+                icon="log-in"
+                onClick={() => setLoginModalOpen(true)}
+              />
             )}
             {isAuthenticated && (
               <MenuItem
                 text="Profile"
-                icon={'thumbs-up'}
+                icon={"thumbs-up"}
                 onClick={() => {
                   toggleSubModal(true);
                 }}
@@ -60,6 +72,11 @@ export const UserMenu = observer(({ store }) => {
         store={store}
         isOpen={subModalOpen}
         onClose={() => toggleSubModal(false)}
+      />
+      <LoginModal
+        isOpen={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
       />
     </>
   );

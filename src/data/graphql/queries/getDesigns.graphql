@@ -1,7 +1,19 @@
 #import '../fragments/compactDesign.graphql'
 
-query designs($where: DesignWhereInput) {
-  designs(where: $where) {
+query designs(
+  $where: DesignWhereInput
+  $orderBy: [DesignOrderByWithRelationInput!]
+  $take: Int
+  $skip: Int
+  $cursor: DesignWhereUniqueInput
+) {
+  designs(
+    where: $where
+    orderBy: $orderBy
+    take: $take
+    skip: $skip
+    cursor: $cursor
+  ) {
     ...CompactDesign
   }
   designsCount(where: $where)

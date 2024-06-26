@@ -52,9 +52,8 @@ export function mountEditor(elem, { mode, authToken, email, designId }) {
   window.store = store;
   store.addPage();
   
-  const project = createProject({ store, authToken, email, id: designId });
+  const project = createProject({ store/*, authToken, email, id: designId*/ });
   window.project = project;
-  
   
   function Fallback({ error, resetErrorBoundary }) {
     // Call resetErrorBoundary() to reset the error boundary and retry the render.

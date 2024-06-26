@@ -3,25 +3,25 @@ import { observer } from 'mobx-react-lite';
 
 import { Button, Dialog, Classes } from '@blueprintjs/core';
 import * as api from '../data/graphql/api';
+import { useProject } from '../data/graphql/project';
 
 export const ProfileModal = observer(({ store, onClose, isOpen }) => {
+  const project = useProject();
   const {
-    loginWithPopup,
-    isLoading,
-    getAccessTokenSilently,
+    loading,
+    // getAccessTokenSilently,
     user,
     isAuthenticated,
-    logout,
-  } = {};
+  } = project;
 
   React.useEffect(() => {
-    if (isLoading) {
+    if (loading) {
       return;
     }
     if (!isAuthenticated) {
       return;
     }
-  }, [isLoading, isAuthenticated, getAccessTokenSilently]);
+  }, [loading, isAuthenticated]); // getAccessTokenSilently
 
   return (
     <Dialog

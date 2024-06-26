@@ -15,13 +15,14 @@ import { DownloadButton } from "./download-button";
 import { UserMenu } from "./user-menu";
 import { ProfileModal } from "./profile-modal";
 import { CategoriesPopover } from "./categories-select";
-import { forEveryChild } from 'polotno/model/group-model';
+import { forEveryChild } from "polotno/model/group-model";
 import { useProject } from "../data/graphql/project";
 
 import styled from "polotno/utils/styled";
 import { TagsPopover } from "./tags-select";
+import { IN_APP } from "../data/config";
 
-const NavbarContainer = styled('div')`
+const NavbarContainer = styled("div")`
   white-space: nowrap;
 
   @media screen and (max-width: 500px) {
@@ -31,7 +32,7 @@ const NavbarContainer = styled('div')`
   }
 `;
 
-const NavInner = styled('div')`
+const NavInner = styled("div")`
   @media screen and (max-width: 500px) {
     display: flex;
   }
@@ -50,7 +51,7 @@ const PlayButton = observer(({ store }) => {
   }
   return (
     <Button
-      icon={store.isPlaying ? 'pause' : 'play'}
+      icon={store.isPlaying ? "pause" : "play"}
       onClick={() => {
         if (store.isPlaying) {
           store.stop();
@@ -59,7 +60,7 @@ const PlayButton = observer(({ store }) => {
         }
       }}
       style={{
-        marginRight: '10px',
+        marginRight: "10px",
       }}
     >
       Preview
@@ -77,72 +78,82 @@ export default observer(({ store }) => {
       <NavInner>
         <Navbar.Group align={Alignment.LEFT}>
           <FileMenu store={store} project={project} />
+          {project.isAuthenticated && (
             <Button
               text="My Designs"
               intent="primary"
-              style={{ marginLeft: '20px' }}
+              style={{ marginLeft: "20px" }}
               onClick={() => {
                 store.openSidePanel("my-designs");
               }}
             />
+          )}
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>
-          <div
-            style={{
-              paddingRight: "10px",
-              maxWidth: "200px",
-            }}
-          >
-            <EditableText
-              value={project.name}
-              placeholder="Untitled Design"
-              onChange={(name) => {
-                project.setName(name);
-                project.requestSave();
-              }}
-              intent={project.name ? Intent.NONE : Intent.WARNING}
-            />
-          </div>
-          <CategoriesPopover store={store} />
-          <NavbarDivider />
-          <TagsPopover store={store} />
-          <NavbarDivider />
-          <Button
-            text={
-              project.loading
-                ? "Loading..."
-                : project.error
-                ? "---"
-                : project.public
-                ? "Make Private"
-                : "Make Public"
-            }
-            icon={project.public ? "eye-on" : "eye-off"}
-            onClick={() => {
-              project.togglePublic();
-              project.requestSave();
-            }}
-          />
-          <NavbarDivider />
-          <Button
-            text="Save"
-            icon={project.loading ? <Spinner size={20} /> : <FloppyDisk />}
-            onClick={() => {
-              project.save(true);
-            }}
-          />
-          <NavbarDivider />
-          {/* <ProfileModal
+          {project.isAuthenticated && (
+            <>
+              <div
+                style={{
+                  paddingRight: "10px",
+                  maxWidth: "200px",
+                }}
+              >
+                <EditableText
+                  value={project.name}
+                  placeholder="Untitled Design"
+                  onChange={(name) => {
+                    project.setName(name);
+                    project.requestSave();
+                  }}
+                  intent={project.name ? Intent.NONE : Intent.WARNING}
+                />
+              </div>
+              <CategoriesPopover store={store} />
+              <NavbarDivider />
+              <TagsPopover store={store} />
+              <NavbarDivider />
+              <Button
+                text={
+                  project.loading
+                    ? "Loading..."
+                    : project.error
+                    ? "---"
+                    : project.public
+                    ? "Make Private"
+                    : "Make Public"
+                }
+                icon={project.public ? "eye-on" : "eye-off"}
+                onClick={() => {
+                  project.togglePublic();
+                  project.requestSave();
+                }}
+              />
+              <NavbarDivider />
+              <Button
+                text="Save"
+                icon={project.loading ? <Spinner size={20} /> : <FloppyDisk />}
+                onClick={() => {
+                  project.save(true);
+                }}
+              />
+              <NavbarDivider />
+              {/* <ProfileModal
             isOpen={modalVisible}
             onClose={() => {
               setModalVisible(false);
             }}
             store={store}
           /> */}
-          <PlayButton store={store} />
-          <DownloadButton store={store} />
-          {/* <NavbarDivider />
-          <UserMenu store={store} project={project} /> */}
+              <PlayButton store={store} />
+              <DownloadButton store={store} />
+            </>
+          )}
+          {!IN_APP && (
+            <>
+              <NavbarDivider />
+              <UserMenu store={store} project={project} />
+            </>
+          )}
           {/* <NavbarHeading>Polotno Studio</NavbarHeading> */}
         </Navbar.Group>
       </NavInner>

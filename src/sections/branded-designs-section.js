@@ -21,6 +21,8 @@ import { useBrandedDesigns } from "../data/graphql/api";
 import { CategoriesSelectSearch } from "../topbar/categories-select";
 import { debounce } from "lodash";
 
+const PAGE_SIZE = 10;
+
 const DesignCard = observer(({ design, project }) => {
   const [loading, setLoading] = React.useState(false);
   const handleSelect = async () => {
@@ -128,10 +130,12 @@ function designWhere(user, text, visibility, categories) {
   };
 }
 
-const fireSearch = debounce((refetch, user, text, visibility, categories) => {
+const fireSearch = debounce((refetch, user, text, visibility, categories, take, skip) => {
   if (refetch !== undefined) {
     refetch({
       where: designWhere(user, text, visibility, categories),
+      take,
+      skip,
     });
   }
 }, 500);
@@ -162,22 +166,29 @@ export const BrandedDesignsPanel = observer(({ store }) => {
   const project = useProject();
   const { user } = project;
 
-  const [designs, count, loading, error, refetch] = useBrandedDesigns({
-    where: designWhere(user),
-    user,
-    brand: project.brand,
-  });
-
-  // state of search
   const [text, setText] = useState("");
   const [visibility, setVisibility] = useState("all"); // "all" | "public" | "private"
   const [categories, setCategories] = useState([]);
-  // local filter
   const [aspect, setAspect] = useState("all"); // "all" | "square" | "landscape" | "portrait"
+  const [page, setPage] = useState(1);
+  const [designs, count, loading, error, refetch] = useBrandedDesigns({
+    where: designWhere(user, text, visibility, categories),
+    user,
+    brand: project.brand,
+    take: PAGE_SIZE,
+    skip: (page - 1) * PAGE_SIZE,
+  });
+
+  const handleSearch = (newText, newVisibility, newCategories) => {
+    setText(newText);
+    setVisibility(newVisibility);
+    setCategories(newCategories);
+    setPage(1);
+  };
 
   useEffect(() => {
-    fireSearch(refetch, user, text, visibility, categories);
-  }, [text, visibility, categories, user, refetch]);
+    fireSearch(refetch, user, text, visibility, categories, PAGE_SIZE, (page - 1) * PAGE_SIZE);
+  }, [text, visibility, categories, user, page, refetch]);
 
   const half1 = [];
   const half2 = [];
@@ -201,6 +212,8 @@ export const BrandedDesignsPanel = observer(({ store }) => {
       }
     });
 
+  const totalPages = Math.ceil(count / PAGE_SIZE);
+
   return (
     <div
       style={{
@@ -213,23 +226,17 @@ export const BrandedDesignsPanel = observer(({ store }) => {
     >
       <InputGroup
         placeholder="Search name or tags"
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => handleSearch(e.target.value, visibility, categories)}
         value={text}
         rightElement={visibilityMenu({
           selected: visibility,
-          onChangeSelection: setVisibility,
+          onChangeSelection: (val) => handleSearch(text, val, categories),
         })}
       ></InputGroup>
       <CategoriesSelectSearch
         selected={categories}
-        onAddSelected={(cat) =>
-          setCategories((old) =>
-            old.some((c) => c.id === cat.id) ? old : [...old, cat]
-          )
-        }
-        onRemoveSelected={(cat) =>
-          setCategories((old) => old.filter((c) => c.id !== cat.id))
-        }
+        onAddSelected={(cat) => handleSearch(text, visibility, [...categories, cat])}
+        onRemoveSelected={(cat) => handleSearch(text, visibility, categories.filter(c => c.id !== cat.id))}
       />
       <div
         style={{
@@ -264,35 +271,52 @@ export const BrandedDesignsPanel = observer(({ store }) => {
       ) : error ? (
         <div>Error loading designs</div>
       ) : (
-        <div
-          style={{
-            display: "flex",
-            paddingTop: "5px",
-            height: "100%",
-            overflow: "auto",
-          }}
-        >
-          <div style={{ width: "50%" }}>
-            {half1.map((design) => (
-              <DesignCard
-                design={design}
-                key={design.id}
-                store={store}
-                project={project}
-              />
-            ))}
+        <>
+          <div
+            style={{
+              display: "flex",
+              paddingTop: "5px",
+              height: "100%",
+              overflow: "auto",
+            }}
+          >
+            <div style={{ width: "50%" }}>
+              {half1.map((design) => (
+                <DesignCard
+                  design={design}
+                  key={design.id}
+                  store={store}
+                  project={project}
+                />
+              ))}
+            </div>
+            <div style={{ width: "50%" }}>
+              {half2.map((design) => (
+                <DesignCard
+                  design={design}
+                  key={design.id}
+                  store={store}
+                  project={project}
+                />
+              ))}
+            </div>
           </div>
-          <div style={{ width: "50%" }}>
-            {half2.map((design) => (
-              <DesignCard
-                design={design}
-                key={design.id}
-                store={store}
-                project={project}
-              />
-            ))}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
+            <Button
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              Previous
+            </Button>
+            <span>Page {page} of {totalPages}</span>
+            <Button
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            >
+              Next
+            </Button>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

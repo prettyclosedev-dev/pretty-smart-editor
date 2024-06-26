@@ -86,7 +86,7 @@ const App = observer(({ store }) => {
 
   const customSections = [...DEFAULT_SECTIONS];
 
-  if (!IN_APP) {
+  if (!IN_APP && project.isAuthenticated) {
     customSections.unshift(BrandedDesignsSection);
   }
 
@@ -97,10 +97,13 @@ const App = observer(({ store }) => {
   customSections.push(MyDesignsSection);
   customSections.push(StableDiffusionSection);
   
-  // if (!IN_APP) {
+  if (project.isAuthenticated) { // !IN_APP
     customSections.push(MyBrandsSection);
-  // }
-  customSections.push(CategoriesSection);
+  }
+  
+  if (!IN_APP && project.isAuthenticated) {
+    customSections.push(CategoriesSection);
+  }
 
   return (
     <>

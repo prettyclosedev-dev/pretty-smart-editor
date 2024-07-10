@@ -133,7 +133,7 @@ export default observer(({ store }) => {
                 text="Save"
                 icon={project.loading ? <Spinner size={20} /> : <FloppyDisk />}
                 onClick={() => {
-                  project.save(true);
+                  project.save(true); // why are we sure that we want to create a new design?
                 }}
               />
               <NavbarDivider />

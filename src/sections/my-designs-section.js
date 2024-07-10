@@ -127,7 +127,7 @@ export const MyDesignsPanel = observer(({ store }) => {
 
   const [designs, count, loading, error, refetch, deleteDesign] = useDesigns({
     where: designWhere(user),
-    // user,
+    user,
     take: PAGE_SIZE,
     skip: (page - 1) * PAGE_SIZE,
   });

@@ -6,6 +6,7 @@ import { debounce } from "lodash";
 import { Intent } from "@blueprintjs/core";
 import { URL_PREFIX } from "../config";
 import { getUser } from "../graphql/api";
+import localforage from "localforage";
 
 class Project {
   id = "local";
@@ -34,6 +35,18 @@ class Project {
 
     this.store = store;
 
+    const initializeLocalData = async () => {
+      const localData = await localforage.getItem("polotno-state");
+      if (localData) {
+        this.setName(localData.name || "");
+        this.setCategories(localData.categories || []);
+        this.setTags(localData.tags || []);
+        this.setPublic(localData.public || false);
+      }
+    };
+
+    initializeLocalData();
+
     if (this.loginUser.email || email) {
       this.fetchUserByEmail(this.loginUser.email || email);
     }
@@ -48,6 +61,8 @@ class Project {
     store.on("change", () => {
       this.handleStoreChange();
     });
+
+    this.load();
   }
 
   async fetchUserByEmail(email) {
@@ -59,12 +74,65 @@ class Project {
     }
   }
 
+  load = () => {
+    let url = new URL(window.location.href);
+
+    const email = url.searchParams.get("email");
+    if (email) {
+      this.setUser({ email });
+    }
+
+    if (this.isAuthenticated) {
+      // Match both 'design/id' and 'branded-design/id'
+      // This regex matches 'design/id' explicitly and excludes 'branded-design/id'
+      const regDesign = new RegExp(
+        `^\/?${URL_PREFIX}design\/([a-zA-Z0-9_-]+)$`
+      ).exec(url.pathname);
+      const regBrandedDesign = new RegExp(
+        `^\/?${URL_PREFIX}branded-design\/([a-zA-Z0-9_-]+)$`
+      ).exec(url.pathname);
+
+      this.setIsBranded(!!regBrandedDesign);
+
+      if (regDesign) {
+        const designId = regDesign[1] || "local";
+        this.loadById(designId);
+      } else if (regBrandedDesign) {
+        const designId = regBrandedDesign[1] || "local";
+        this.loadBrandedById(designId);
+      }
+    } else {
+      this.toastRef?.show({
+        timeout: 5000,
+        action: {
+          onClick: () => {
+            this.logout();
+          },
+          text: "Ok",
+        },
+        onDismiss: (didTimeoutExpire) => {
+          if (didTimeoutExpire) {
+            this.logout();
+          }
+        },
+        isCloseButtonShown: false,
+        intent: Intent.DANGER,
+        message: "You need to login!",
+      });
+    }
+  };
+
   handleStoreChange() {
+    this.load();
     const pagesIds = this.store.pages?.map((page) => page.id);
     if (JSON.stringify(pagesIds) !== JSON.stringify(this.pagesIds)) {
       this.setPagesIds(pagesIds);
-      this.resetProjectDetails();
-      this.updateUrlWithProjectId();
+
+      if (this.id !== "local") {
+        this.updateUrlWithProjectId();
+      } else {
+        this.resetProjectDetails();
+      }
     }
   }
 
@@ -267,49 +335,62 @@ class Project {
       mimeType: "image/jpeg",
     });
 
-    if (!this.authToken) return;
-
-    const saveData = {
-      store: {
-        ...json,
-        width: { set: json.width },
-        height: { set: json.height },
-        unit: { set: json.unit },
-        dpi: { set: json.dpi },
-        fonts: null,
-        pages: { set: json.pages },
-      },
-      preview: { set: preview },
-      id: Number(this.id),
-      name: { set: this.name },
-      public: this.public,
-      categories: {
-        set: this.categories.map((category) => ({ id: category.id })),
-      },
-      tags: {
-        set: this.tags,
-      },
-      authToken: this.authToken,
-      creator: { connect: { email: this.user.email } },
-    };
-
     try {
       let res;
       if (!this.id || this.id === "local") {
-        res = await api.createDesign({ doCreate, ...saveData });
+        res = await api.createDesign({
+          doCreate,
+          store: {
+            ...json,
+            fonts: null,
+            pages: { set: json.pages },
+          },
+          preview,
+          name: this.name,
+          public: this.public,
+          categories: {
+            connect: this.categories.map((category) => ({ id: category.id })),
+          },
+          tags: { set: this.tags },
+          creator: { connect: { email: this.user.email } },
+        });
+
+        if (res?.status === "saved") {
+          this.id = res.id;
+          this.updateUrlWithProjectId();
+        }
       } else {
-        res = await api.saveDesign(saveData);
+        res = await api.saveDesign({
+          store: {
+            ...json,
+            width: { set: json.width },
+            height: { set: json.height },
+            unit: { set: json.unit },
+            dpi: { set: json.dpi },
+            fonts: null,
+            pages: { set: json.pages },
+          },
+          preview: { set: preview },
+          id: Number(this.id),
+          name: { set: this.name },
+          public: this.public,
+          categories: {
+            set: this.categories.map((category) => ({ id: category.id })),
+          },
+          tags: { set: this.tags },
+          authToken: this.authToken,
+          creator: { connect: { email: this.user.email } },
+        });
       }
 
       if (res?.status === "saved") {
-        this.id = res.id;
-        this.updateUrlWithProjectId();
         this.setError(null);
       } else if (res?.status === "error") {
         this.setError(res?.error);
       }
     } catch (error) {
       console.error("Error saving design:", error);
+      this.setError(error);
     } finally {
       this.setLoading(false);
     }

@@ -36,7 +36,7 @@ import ptBr from "./translations/pt-br";
 import Topbar from "./topbar/topbar";
 import { BrandedDesignsSection } from "./sections/branded-designs-section";
 import { IN_APP, URL_PREFIX } from "./data/config";
-import { CategoriesSection } from './sections/categories-section';
+import { CategoriesSection } from "./sections/categories-section";
 
 // DEFAULT_SECTIONS.splice(3, 0, IllustrationsSection);
 // replace elements section with just shapes
@@ -69,6 +69,39 @@ const App = observer(({ store }) => {
     }
   }, [project.language]);
 
+  React.useEffect(() => {
+    if (project.loading) {
+      return;
+    }
+    if (!project.isAuthenticated) {
+      setDisabled(true);
+      project.toastRef?.show({
+        timeout: 5000,
+        action: {
+          onClick: () => {
+            project.logout();
+            setDisabled(false);
+          },
+          text: "Ok",
+        },
+        onDismiss: (didTimeoutExpire) => {
+          if (didTimeoutExpire) {
+            project.logout();
+            setDisabled(false);
+          }
+        },
+        isCloseButtonShown: false,
+        intent: Intent.DANGER,
+        message: "You need to login!",
+      });
+
+      return;
+    }
+    if (project.isAuthenticated) {
+      // load();
+    }
+  }, [project]);
+
   const handleDrop = (ev) => {
     // Prevent default behavior (Prevent file from being opened)
     ev.preventDefault();
@@ -96,11 +129,12 @@ const App = observer(({ store }) => {
   customSections.push(QuotesSection, QrSection);
   customSections.push(MyDesignsSection);
   customSections.push(StableDiffusionSection);
-  
-  if (project.isAuthenticated) { // !IN_APP
+
+  if (project.isAuthenticated) {
+    // !IN_APP
     customSections.push(MyBrandsSection);
   }
-  
+
   if (!IN_APP && project.isAuthenticated) {
     customSections.push(CategoriesSection);
   }
@@ -121,7 +155,7 @@ const App = observer(({ store }) => {
         <Topbar store={store} />
         <div
           style={{
-            height: "calc(100% - 50px)"
+            height: "calc(100% - 50px)",
           }}
         >
           <PolotnoContainer className="polotno-app-container">

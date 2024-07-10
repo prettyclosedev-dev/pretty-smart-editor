@@ -278,7 +278,7 @@ export async function createDesign({
   creator,
   doCreate,
 }) {
-  if (!doCreate && (!id || id === "local" || !authToken)) {
+  if (!doCreate && (!id || id === "local")) {
     localforage.setItem("polotno-state", store);
 
     return {
@@ -301,7 +301,7 @@ export async function createDesign({
           creator,
         },
       },
-      refetchQueries: ["designs"],
+      refetchQueries: [{ query: getDesignsQuery }],
     });
     return {
       id: data?.createOneDesign?.id,
@@ -373,9 +373,9 @@ export async function saveDesign({
 //   return await req.json();
 // }
 
-export function useDesigns({ where, orderBy, take, skip, cursor }) { // user
+export function useDesigns({ where, orderBy, take, skip, cursor, user }) {
   const { data, loading, error, refetch } = useQuery(getDesignsQuery, {
-    variables: { where, orderBy, take, skip, cursor }, // email: user.email
+    variables: { where, orderBy, take, skip, cursor, email: user.email },
   });
 
   const [deleteOneDesign] = useMutation(deleteOneDesignMutation);

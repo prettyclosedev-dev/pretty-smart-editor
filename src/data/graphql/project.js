@@ -61,8 +61,6 @@ class Project {
     store.on("change", () => {
       this.handleStoreChange();
     });
-
-    this.load();
   }
 
   async fetchUserByEmail(email) {
@@ -74,56 +72,7 @@ class Project {
     }
   }
 
-  load = () => {
-    let url = new URL(window.location.href);
-
-    const email = url.searchParams.get("email");
-    if (email) {
-      this.setUser({ email });
-    }
-
-    if (this.isAuthenticated) {
-      // Match both 'design/id' and 'branded-design/id'
-      // This regex matches 'design/id' explicitly and excludes 'branded-design/id'
-      const regDesign = new RegExp(
-        `^\/?${URL_PREFIX}design\/([a-zA-Z0-9_-]+)$`
-      ).exec(url.pathname);
-      const regBrandedDesign = new RegExp(
-        `^\/?${URL_PREFIX}branded-design\/([a-zA-Z0-9_-]+)$`
-      ).exec(url.pathname);
-
-      this.setIsBranded(!!regBrandedDesign);
-
-      if (regDesign) {
-        const designId = regDesign[1] || "local";
-        this.loadById(designId);
-      } else if (regBrandedDesign) {
-        const designId = regBrandedDesign[1] || "local";
-        this.loadBrandedById(designId);
-      }
-    } else {
-      this.toastRef?.show({
-        timeout: 5000,
-        action: {
-          onClick: () => {
-            this.logout();
-          },
-          text: "Ok",
-        },
-        onDismiss: (didTimeoutExpire) => {
-          if (didTimeoutExpire) {
-            this.logout();
-          }
-        },
-        isCloseButtonShown: false,
-        intent: Intent.DANGER,
-        message: "You need to login!",
-      });
-    }
-  };
-
   handleStoreChange() {
-    this.load();
     const pagesIds = this.store.pages?.map((page) => page.id);
     if (JSON.stringify(pagesIds) !== JSON.stringify(this.pagesIds)) {
       this.setPagesIds(pagesIds);
@@ -255,6 +204,7 @@ class Project {
 
   async loadById(id) {
     this.id = id;
+    this.updateUrlWithProjectId();
     this.setLoading(true);
     this.setError(null);
     try {

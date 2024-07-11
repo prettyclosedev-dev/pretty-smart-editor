@@ -55,6 +55,54 @@ const App = observer(({ store }) => {
 
   const [disabled, setDisabled] = React.useState(false);
 
+  const load = () => {
+    let url = new URL(window.location.href);
+
+    const email = url.searchParams.get("email");
+    if (email) {
+      project.setUser({ email });
+    }
+
+    if (project.isAuthenticated) {
+      // Match both 'design/id' and 'branded-design/id'
+      // This regex matches 'design/id' explicitly and excludes 'branded-design/id'
+      const regDesign = new RegExp(
+        `^\/?${URL_PREFIX}design\/([a-zA-Z0-9_-]+)$`
+      ).exec(url.pathname);
+      const regBrandedDesign = new RegExp(
+        `^\/?${URL_PREFIX}branded-design\/([a-zA-Z0-9_-]+)$`
+      ).exec(url.pathname);
+
+      project.setIsBranded(!!regBrandedDesign);
+
+      if (regDesign) {
+        const designId = regDesign[1] || "local";
+        project.loadById(designId);
+      } else if (regBrandedDesign) {
+        const designId = regBrandedDesign[1] || "local";
+        project.loadBrandedById(designId);
+      }
+    } else {
+      project.toastRef?.show({
+        timeout: 5000,
+        action: {
+          onClick: () => {
+            project.logout();
+          },
+          text: "Ok",
+        },
+        onDismiss: (didTimeoutExpire) => {
+          if (didTimeoutExpire) {
+            project.logout();
+          }
+        },
+        isCloseButtonShown: false,
+        intent: Intent.DANGER,
+        message: "You need to login!",
+      });
+    }
+  };
+
   React.useEffect(() => {
     if (project.language.startsWith("fr")) {
       setTranslations(fr);
@@ -98,7 +146,7 @@ const App = observer(({ store }) => {
       return;
     }
     if (project.isAuthenticated) {
-      // load();
+      load();
     }
   }, [project]);
 

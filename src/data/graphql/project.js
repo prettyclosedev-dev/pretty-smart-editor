@@ -11,7 +11,6 @@ import localforage from "localforage";
 class Project {
   id = "local";
   name = "";
-  authToken = localStorage.getItem("authToken") || "";
   public = false;
   user = JSON.parse(localStorage.getItem("user")) || {}; // Regular user field
   loginUser = JSON.parse(localStorage.getItem("loginUser")) || {}; // New loginUser field
@@ -26,9 +25,8 @@ class Project {
   pagesIds = [];
   toastRef = null;
   brandedDesignId = "";
-  isBranded = false;
 
-  constructor({ store, authToken, email, id }) {
+  constructor({ store, email, user, id }) {
     mobx.makeAutoObservable(this, {
       isAuthenticated: mobx.computed,
     });
@@ -47,13 +45,10 @@ class Project {
 
     initializeLocalData();
 
-    if (this.loginUser.email || email) {
-      this.fetchUserByEmail(this.loginUser.email || email);
+    if (this.loginUser.email || email || user?.email) {
+      this.fetchUserByEmail(this.loginUser.email || email || user?.email);
     }
 
-    if (authToken) {
-      this.setAuthToken(authToken);
-    }
     if (id) {
       this.loadBrandedById(id);
     }
@@ -155,11 +150,6 @@ class Project {
     localStorage.setItem("user", JSON.stringify(_user));
   }
 
-  setAuthToken(_authToken) {
-    this.authToken = _authToken;
-    localStorage.setItem("authToken", _authToken);
-  }
-
   setBrand(_brand) {
     this.brand = _brand;
     if (this.brandedDesignId && this.id === "local") {
@@ -169,10 +159,6 @@ class Project {
 
   togglePublic() {
     this.public = !this.public;
-  }
-
-  setIsBranded(_isBranded) {
-    this.isBranded = _isBranded;
   }
 
   setLoading(_loading) {
@@ -219,7 +205,6 @@ class Project {
         tags,
       } = await apiMethod({
         id,
-        authToken: this.authToken,
         user: this.user,
         brand: this.brand,
       });
@@ -328,7 +313,6 @@ class Project {
             set: this.categories.map((category) => ({ id: category.id })),
           },
           tags: { set: this.tags },
-          authToken: this.authToken,
           creator: { connect: { email: this.user.email } },
         });
       }
@@ -359,10 +343,13 @@ class Project {
     return !!this.user && !!this.user.email;
   }
 
+  get isBranded() {
+    return !!this.brandedDesignId && this.brandedDesignId.length !== undefined ? this.brandedDesignId.length > 0 : this.brandedDesignId > -1;
+  }
+
   logout = () => {
     this.setUser({});
     this.setLoginUser({});
-    localStorage.removeItem("authToken");
     localStorage.removeItem("user");
     localStorage.removeItem("loginUser");
   };

@@ -273,7 +273,6 @@ export async function createDesign({
   public: _public,
   categories,
   tags,
-  authToken,
   name = "",
   creator,
   doCreate,
@@ -320,12 +319,11 @@ export async function saveDesign({
   tags,
   public: _public,
   id,
-  authToken,
   name = "",
   creator,
   polotnoId,
 }) {
-  if (id === "local" || !authToken) {
+  if (id === "local") {
     localforage.setItem("polotno-state", store);
 
     return {
@@ -360,18 +358,6 @@ export async function saveDesign({
     return { status: "error", error: e.message };
   }
 }
-
-// export async function deleteDesign({ id, authToken }) {
-//   const req = await fetch(`${API}/designs/delete`, {
-//     method: "POST",
-//     headers: {
-//       Authorization: authToken,
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify({ id }),
-//   });
-//   return await req.json();
-// }
 
 export function useDesigns({ where, orderBy, take, skip, cursor, user }) {
   const { data, loading, error, refetch } = useQuery(getDesignsQuery, {

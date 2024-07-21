@@ -73,7 +73,7 @@ const App = observer(({ store }) => {
         `^\/?${URL_PREFIX}branded-design\/([a-zA-Z0-9_-]+)$`
       ).exec(url.pathname);
 
-      project.setIsBranded(!!regBrandedDesign);
+      project.brandedDesignId = regBrandedDesign ? regBrandedDesign[1] : "";
 
       if (regDesign) {
         const designId = regDesign[1] || "local";
@@ -179,7 +179,6 @@ const App = observer(({ store }) => {
   customSections.push(StableDiffusionSection);
 
   if (project.isAuthenticated) {
-    // !IN_APP
     customSections.push(MyBrandsSection);
   }
 

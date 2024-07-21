@@ -1,13 +1,6 @@
-export const IS_DEV = process.env.NODE_ENV === "development";
+export const IS_DEV = false//process.env.NODE_ENV === "development";
 
 export const LOGGING_ON = IS_DEV;
-
-export const AUTH_DOMAIN = IS_DEV
-  ? "prettysmart-dev.us.auth0.com"
-  : "prettysmart.us.auth0.com";
-export const AUTH_ID = IS_DEV
-  ? "l2EdgB8cAh3swlNTBO476nqUlfzJvg2W"
-  : "ioDLFKxzfv1TprtHgwB0lZy4Vy5pQlN1";
 
 export const POLOTNO_KEY = "FA29LdEvOAJdMenXqqEy"
 
@@ -19,7 +12,7 @@ export const API = IS_LOCAL
   
 export const TOKEN = "c819f484-71e7-4514-b5ab-98d980f48442"
 
-export const IN_APP = false;
+export const IN_APP = true;
 
 // Determine the prefix based on whether IN_APP is true
 export const URL_PREFIX = IN_APP ? "editor/" : "";

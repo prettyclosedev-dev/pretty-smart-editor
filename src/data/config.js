@@ -12,7 +12,7 @@ export const API = IS_LOCAL
   
 export const TOKEN = "c819f484-71e7-4514-b5ab-98d980f48442"
 
-export const IN_APP = true;
+export const IN_APP = false;
 
 // Determine the prefix based on whether IN_APP is true
 export const URL_PREFIX = IN_APP ? "editor/" : "";

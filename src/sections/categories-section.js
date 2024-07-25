@@ -1,33 +1,33 @@
+import { useState, useEffect, useMemo } from "react";
+import { debounce, isEqual } from "lodash";
+import { observer } from "mobx-react-lite";
+import { MultiSelect } from "@blueprintjs/select";
+import { 
+  Spinner, 
+  Card, 
+  TagInput, 
+  Switch, 
+  Button, 
+  Tag, 
+  EditableText, 
+  MenuItem, 
+  InputGroup, 
+  Popover, 
+  Menu 
+} from "@blueprintjs/core";
 import FaCubes from "@meronex/icons/fa/FaCubes";
 import FaTrash from "@meronex/icons/fa/FaTrash";
 import FaSave from "@meronex/icons/fa/FaSave";
 import FaPlus from "@meronex/icons/fa/FaPlus";
-import { observer } from "mobx-react-lite";
 import { SectionTab } from "polotno/side-panel";
+
 import { useBrands, useCategories, useUpdateCategory } from "../data/graphql/api";
-import {
-  Spinner,
-  Card,
-  TagInput,
-  Switch,
-  Button,
-  Tag,
-  EditableText,
-  MenuItem,
-  InputGroup,
-  Popover,
-  Menu,
-} from "@blueprintjs/core";
-import { MultiSelect } from "@blueprintjs/select";
-import { useState, useEffect, useMemo } from "react";
-import { debounce, isEqual } from "lodash";
 import { useProject } from "../data/graphql/project";
 
+const pageTemplates = ["Templates", "Generator", "Collateral"];
 
 const renderBrand = (brand, { handleClick, handleFocus, modifiers, query }) => {
-  if (!modifiers.matchesPredicate) {
-    return null;
-  }
+  if (!modifiers.matchesPredicate) return null;
 
   return (
     <MenuItem
@@ -66,10 +66,12 @@ const BrandsSelect = ({ selectedBrands, addBrand, removeBrand }) => {
         style: {
           maxHeight: "400px",
           overflow: "auto",
-          height: "40vh"
+          height: "40vh",
         },
       }}
-      items={brands.filter((brand) => !selectedBrands?.find(b => b.id === brand.id))}
+      items={brands.filter(
+        (brand) => !selectedBrands?.find((b) => b.id === brand.id)
+      )}
       selectedItems={selectedBrands}
       noResults={
         <MenuItem
@@ -87,29 +89,96 @@ const BrandsSelect = ({ selectedBrands, addBrand, removeBrand }) => {
   );
 };
 
-const fieldStyle = { opacity: 0.8, marginRight: 10, justifySelf: "end" };
+const renderPageTemplate = (
+  page,
+  { handleClick, handleFocus, modifiers, query }
+) => {
+  if (!modifiers.matchesPredicate) return null;
+
+  return (
+    <MenuItem
+      active={modifiers.active}
+      disabled={modifiers.disabled}
+      key={page}
+      label={page}
+      onClick={handleClick}
+      onFocus={handleFocus}
+      roleStructure="listoption"
+      text={page}
+    />
+  );
+};
+
+const filterPageTemplate = (query, page, _index, exactMatch) => {
+  const normalizedTitle = page.toLowerCase();
+  const normalizedQuery = query.toLowerCase();
+
+  if (exactMatch) {
+    return normalizedTitle === normalizedQuery;
+  } else {
+    return `${normalizedTitle}`.indexOf(normalizedQuery) >= 0;
+  }
+};
+
+const PageTemplatesSelect = ({ selectedPages, addPage, removePage }) => {
+  return (
+    <MultiSelect
+      menuProps={{
+        style: {
+          maxHeight: "400px",
+          overflow: "auto",
+          height: "40vh",
+        },
+      }}
+      items={pageTemplates.filter((page) => !selectedPages?.includes(page))}
+      selectedItems={selectedPages}
+      noResults={
+        <MenuItem
+          disabled={true}
+          text="No results."
+          roleStructure="listoption"
+        />
+      }
+      itemRenderer={renderPageTemplate}
+      tagRenderer={(page) => <span key={page}>{page}</span>}
+      itemPredicate={filterPageTemplate}
+      onItemSelect={addPage}
+      onRemove={removePage}
+    />
+  );
+};
+
+const fieldStyle = { opacity: 0.8, marginRight: 10, marginBottom: 10 };
 
 const CategoryCard = ({ category, deleteCategory }) => {
   const [name, setName] = useState(category.name);
   const [tags, setTags] = useState(category.tags || []);
   const [_public, setPublic] = useState(category.public);
   const [brands, setBrands] = useState(category.availableForBrands || []);
+  const [pages, setPages] = useState(category.availableOnPages || []);
 
   const [updateOneCategory, loading] = useUpdateCategory();
 
   const usavedChanges = useMemo(() => {
-    return name !== category.name || 
+    return (
+      name !== category.name ||
       !isEqual(tags, category.tags) ||
       _public !== category.public ||
-      !isEqual(brands.map(b => b.id).sort(), category.availableForBrands.map(b => b.id).sort());
-  }, [name, tags, _public, brands, category])
+      !isEqual(
+        brands.map((b) => b.id).sort(),
+        category.availableForBrands.map((b) => b.id).sort()
+      ) ||
+      !isEqual(pages.sort(), category.availableOnPages.sort())
+    );
+  }, [name, tags, _public, brands, pages, category]);
 
   const updateInput = () => ({
-      name: { set: name },
-      public: { set: _public },
-      tags: { set: tags },
-      availableForBrands: { set: brands.map(brand => ({id: brand.id})) },
-  })
+    name: { set: name },
+    public: { set: _public },
+    tags: { set: tags },
+    availableForBrands: { set: brands.map((brand) => ({ id: brand.id })) },
+    availableOnPages: { set: pages },
+  });
 
   return (
     <Card key={category.id}>
@@ -142,7 +211,7 @@ const CategoryCard = ({ category, deleteCategory }) => {
       >
         {category.creator && (
           <>
-            <span style={fieldStyle}>creator:</span>
+            <span style={fieldStyle}>Creator:</span>
             <span>
               {category.creator.name}{" "}
               <Tag intent="primary">{category.creator.role}</Tag>
@@ -150,7 +219,7 @@ const CategoryCard = ({ category, deleteCategory }) => {
           </>
         )}
 
-        <span style={fieldStyle}>tags:</span>
+        <span style={fieldStyle}>Tags:</span>
         <TagInput
           values={tags}
           onAdd={(tag) => setTags([...tags, tag[0]])}
@@ -158,13 +227,20 @@ const CategoryCard = ({ category, deleteCategory }) => {
           placeholder="add tags"
         />
 
-        <span style={fieldStyle}>brands:</span>
+        <span style={fieldStyle}>Brands:</span>
         <BrandsSelect
           selectedBrands={brands}
           addBrand={(brand) => setBrands([...brands, brand])}
           removeBrand={(brand) =>
             setBrands(brands.filter((b) => b.id !== brand.id))
           }
+        />
+
+        <span style={fieldStyle}>Show on:</span>
+        <PageTemplatesSelect
+          selectedPages={pages}
+          addPage={(page) => setPages([...pages, page])}
+          removePage={(page) => setPages(pages.filter((p) => p !== page))}
         />
       </div>
       <div
@@ -175,28 +251,39 @@ const CategoryCard = ({ category, deleteCategory }) => {
           marginTop: 10,
         }}
       >
-        <Button small icon={<FaTrash />} intent="danger" onClick={() => deleteCategory(category.id)} />
-        {usavedChanges && <Button small icon={loading ? <Spinner size={20} /> : <FaSave />} disabled={loading}
-          onClick={() => updateOneCategory(category.id, updateInput())}
-          intent={usavedChanges ? "warning" : "none"}>
-          Save
-        </Button>}
+        <Button
+          small
+          icon={<FaTrash />}
+          intent="danger"
+          onClick={() => deleteCategory(category.id)}
+        />
+        {usavedChanges && (
+          <Button
+            small
+            icon={loading ? <Spinner size={20} /> : <FaSave />}
+            disabled={loading}
+            onClick={() => updateOneCategory(category.id, updateInput())}
+            intent={usavedChanges ? "warning" : "none"}
+          >
+            Save
+          </Button>
+        )}
       </div>
     </Card>
   );
 };
 
-function visibilityMenu({selected, onChangeSelection}) {
+function visibilityMenu({ selected, onChangeSelection }) {
   return (
     <Popover
       content={
         <Menu>
-          <MenuItem text="all"
-            onClick={() => onChangeSelection("all")} />
-          <MenuItem text="public"
-            onClick={() => onChangeSelection("public")} />
-          <MenuItem text="private"
-            onClick={() => onChangeSelection("private")} />
+          <MenuItem text="all" onClick={() => onChangeSelection("all")} />
+          <MenuItem text="public" onClick={() => onChangeSelection("public")} />
+          <MenuItem
+            text="private"
+            onClick={() => onChangeSelection("private")}
+          />
         </Menu>
       }
       placement="bottom-end"
@@ -209,25 +296,27 @@ function visibilityMenu({selected, onChangeSelection}) {
 }
 
 export const CategoriesPanel = observer(({ store }) => {
-  const project = useProject()
-  const [categories, loading, error, addCategory, deleteCategory] = useCategories();
+  const project = useProject();
+  const [categories, loading, error, addCategory, deleteCategory] =
+    useCategories();
 
-  // search state
   const [text, setText] = useState("");
-  const [visibility, setVisibility] = useState("all") // "all" | "public" | "private"
+  const [visibility, setVisibility] = useState("all");
 
-  const categoriesFiltered = categories
-    .filter(category => {
-      if (text.length > 0) {
-        if (!category.name.toLowerCase().includes(text.toLowerCase())
-          && !category.tags.map(x => x.toLowerCase()).includes(text.toLowerCase())) return false;
-      }
-      if (visibility !== "all") {
-        if (visibility === "public" && !category.public) return false;
-        if (visibility === "private" && category.public) return false;
-      }
-      return true
-    })
+  const categoriesFiltered = categories.filter((category) => {
+    if (text.length > 0) {
+      if (
+        !category.name.toLowerCase().includes(text.toLowerCase()) &&
+        !category.tags.map((x) => x.toLowerCase()).includes(text.toLowerCase())
+      )
+        return false;
+    }
+    if (visibility !== "all") {
+      if (visibility === "public" && !category.public) return false;
+      if (visibility === "private" && category.public) return false;
+    }
+    return true;
+  });
 
   const newCategory = () => {
     addCategory({
@@ -237,24 +326,35 @@ export const CategoriesPanel = observer(({ store }) => {
           id: project.user?.id,
         },
       },
-      public: false
-    })
-  }
+      public: false,
+    });
+  };
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 10,paddingBottom: 10 }}>
+    <div
+      style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        paddingBottom: 10,
+      }}
+    >
       <InputGroup
         placeholder="Search name or tags"
         onChange={(e) => setText(e.target.value)}
         value={text}
-        rightElement={visibilityMenu({selected: visibility, onChangeSelection: setVisibility})}>
-      </InputGroup>
+        rightElement={visibilityMenu({
+          selected: visibility,
+          onChangeSelection: setVisibility,
+        })}
+      />
       {loading ? (
         <div style={{ padding: "30px" }}>
           <Spinner />
         </div>
       ) : error ? (
-        <div>Error loading brands</div>
+        <div>Error loading categories</div>
       ) : (
         <div
           style={{
@@ -290,7 +390,7 @@ export const CategoriesPanel = observer(({ store }) => {
               key={category.id}
               category={category}
               deleteCategory={deleteCategory}
-              />
+            />
           ))}
         </div>
       )}
@@ -298,7 +398,6 @@ export const CategoriesPanel = observer(({ store }) => {
   );
 });
 
-// define the new custom section
 export const CategoriesSection = {
   name: "categories",
   Tab: (props) => (
@@ -307,6 +406,5 @@ export const CategoriesSection = {
     </SectionTab>
   ),
   visibleInList: true,
-  // we need observer to update component automatically on any store changes
   Panel: CategoriesPanel,
 };

@@ -209,7 +209,7 @@ const CategoryCard = ({ category, deleteCategory }) => {
       ) ||
       !isEqual(pages.sort(), category.availableOnPages.sort()) ||
       description !== category.description ||
-      iconUrl !== category.iconUrl
+      iconUrl !== category.icon
     );
   }, [name, tags, _public, brands, pages, description, iconUrl, category]);
 
@@ -220,7 +220,7 @@ const CategoryCard = ({ category, deleteCategory }) => {
     availableForBrands: { set: brands.map((brand) => ({ id: brand.id })) },
     availableOnPages: { set: pages },
     description: { set: description },
-    iconUrl: { set: iconUrl },
+    icon: { set: iconUrl },
   });
 
   return (

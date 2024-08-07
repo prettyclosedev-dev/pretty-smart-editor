@@ -2,30 +2,36 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { debounce, isEqual } from "lodash";
 import { observer } from "mobx-react-lite";
 import { MultiSelect } from "@blueprintjs/select";
-import { 
-  Spinner, 
-  Card, 
-  TagInput, 
-  Switch, 
-  Button, 
-  Tag, 
-  EditableText, 
-  MenuItem, 
-  InputGroup, 
-  Popover, 
+import {
+  Spinner,
+  Card,
+  TagInput,
+  Switch,
+  Button,
+  Tag,
+  EditableText,
+  MenuItem,
+  InputGroup,
+  Popover,
   Menu,
   Icon,
-  TextArea
+  TextArea,
 } from "@blueprintjs/core";
+import { SketchPicker } from "react-color";
 import FaCubes from "@meronex/icons/fa/FaCubes";
 import FaTrash from "@meronex/icons/fa/FaTrash";
 import FaSave from "@meronex/icons/fa/FaSave";
 import FaPlus from "@meronex/icons/fa/FaPlus";
 import { SectionTab } from "polotno/side-panel";
 
-import { useBrands, useCategories, useUpdateCategory } from "../data/graphql/api";
+import {
+  useBrands,
+  useCategories,
+  useUpdateCategory,
+} from "../data/graphql/api";
 import { useProject } from "../data/graphql/project";
 import { gql, useMutation } from "@apollo/client";
+import { isColorCloseToWhite } from "../utils/common";
 
 const pageTemplates = ["Templates", "Generator", "Collateral"];
 
@@ -167,14 +173,20 @@ const CategoryCard = ({ category, deleteCategory }) => {
   const [pages, setPages] = useState(category.availableOnPages || []);
   const [description, setDescription] = useState(category.description || "");
   const [iconUrl, setIconUrl] = useState(category.icon || "");
+  const [color, setColor] = useState(category.color || "#ffffff"); // New state for color
+  const [form, setForm] = useState(category.form || ""); // New state for form
+  const [colorPickerOpen, setColorPickerOpen] = useState(false); // State for color picker visibility
 
   const [updateOneCategory, loading] = useUpdateCategory();
-  const [uploadCategoryIcon, { loading: uploading }] = useMutation(UPLOAD_CATEGORY_ICON);
+  const [uploadCategoryIcon, { loading: uploading }] =
+    useMutation(UPLOAD_CATEGORY_ICON);
   const fileInputRef = useRef(null);
 
   const handleFileSelect = async (file) => {
     try {
-      const { data } = await uploadCategoryIcon({ variables: { file, categoryId: category.id } });
+      const { data } = await uploadCategoryIcon({
+        variables: { file, categoryId: category.id },
+      });
       if (data?.uploadFile?.length) {
         setIconUrl(data.uploadFile);
       }
@@ -209,9 +221,22 @@ const CategoryCard = ({ category, deleteCategory }) => {
       ) ||
       !isEqual(pages.sort(), category.availableOnPages.sort()) ||
       description !== category.description ||
-      iconUrl !== category.icon
+      iconUrl !== category.icon ||
+      color !== category.color || // Check for color changes
+      form !== category.form // Check for form changes
     );
-  }, [name, tags, _public, brands, pages, description, iconUrl, category]);
+  }, [
+    name,
+    tags,
+    _public,
+    brands,
+    pages,
+    description,
+    iconUrl,
+    color,
+    form,
+    category,
+  ]);
 
   const updateInput = () => ({
     name: { set: name },
@@ -221,7 +246,11 @@ const CategoryCard = ({ category, deleteCategory }) => {
     availableOnPages: { set: pages },
     description: { set: description },
     icon: { set: iconUrl },
+    color: { set: color },
+    form: { set: form },
   });
+
+  const textColor = isColorCloseToWhite(color) ? 'black' : 'white';
 
   return (
     <Card key={category.id} onDrop={handleDrop} onDragOver={handleDragOver}>
@@ -294,24 +323,60 @@ const CategoryCard = ({ category, deleteCategory }) => {
           placeholder="Enter a description"
         />
 
-        <span style={fieldStyle}>Icon URL:</span>
+        <Button
+          style={fieldStyle}
+          icon={
+            iconUrl ? (
+              <img
+                src={iconUrl}
+                alt="icon"
+                style={{ width: 20, height: 20, objectFit: "contain" }}
+              />
+            ) : (
+              <Icon icon="cloud-upload" />
+            )
+          }
+          onClick={() => fileInputRef.current.click()}
+          intent="primary"
+        >
+          {iconUrl ? "Change" : "Upload"}
+        </Button>
         <InputGroup
           value={iconUrl}
           onChange={(e) => setIconUrl(e.target.value)}
           placeholder="Enter icon URL"
         />
-        <Button
-          icon={iconUrl ? <img src={iconUrl} alt="icon" style={{ width: 20, height: 20, objectFit: 'contain' }} /> : <Icon icon="cloud-upload" />}
-          onClick={() => fileInputRef.current.click()}
-          intent="primary"
-        >
-          {iconUrl ? "Change Icon" : "Upload Icon"}
-        </Button>
+
         <input
           type="file"
           ref={fileInputRef}
           style={{ display: "none" }}
           onChange={handleFileChange}
+        />
+
+        <span style={fieldStyle}>Color:</span>
+        <Popover
+          isOpen={colorPickerOpen}
+          onInteraction={(state) => setColorPickerOpen(state)}
+          content={
+            <SketchPicker
+              color={color}
+              onChangeComplete={(c) => setColor(c.hex)}
+            />
+          }
+        >
+          <Button
+            style={{ backgroundColor: color, color: textColor }}
+            text={color}
+            onClick={() => setColorPickerOpen(!colorPickerOpen)}
+          />
+        </Popover>
+
+        <span style={fieldStyle}>Form:</span>
+        <InputGroup
+          value={form}
+          onChange={(e) => setForm(e.target.value)}
+          placeholder="Enter form id"
         />
       </div>
       <div

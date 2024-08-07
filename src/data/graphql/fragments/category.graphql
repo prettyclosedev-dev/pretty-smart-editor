@@ -16,4 +16,6 @@ fragment Category on Category {
     availableOnPages
     icon
     description
+    color
+    form
 }

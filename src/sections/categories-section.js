@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { debounce, isEqual } from "lodash";
 import { observer } from "mobx-react-lite";
 import { MultiSelect } from "@blueprintjs/select";
@@ -13,7 +13,9 @@ import {
   MenuItem, 
   InputGroup, 
   Popover, 
-  Menu 
+  Menu,
+  Icon,
+  TextArea
 } from "@blueprintjs/core";
 import FaCubes from "@meronex/icons/fa/FaCubes";
 import FaTrash from "@meronex/icons/fa/FaTrash";
@@ -23,6 +25,7 @@ import { SectionTab } from "polotno/side-panel";
 
 import { useBrands, useCategories, useUpdateCategory } from "../data/graphql/api";
 import { useProject } from "../data/graphql/project";
+import { gql, useMutation } from "@apollo/client";
 
 const pageTemplates = ["Templates", "Generator", "Collateral"];
 
@@ -150,14 +153,50 @@ const PageTemplatesSelect = ({ selectedPages, addPage, removePage }) => {
 
 const fieldStyle = { opacity: 0.8, marginRight: 10, marginBottom: 10 };
 
+const UPLOAD_CATEGORY_ICON = gql`
+  mutation UploadCategoryIcon($file: Upload!, $categoryId: Int!) {
+    uploadCategoryIcon(file: $file, categoryId: $categoryId)
+  }
+`;
+
 const CategoryCard = ({ category, deleteCategory }) => {
   const [name, setName] = useState(category.name);
   const [tags, setTags] = useState(category.tags || []);
   const [_public, setPublic] = useState(category.public);
   const [brands, setBrands] = useState(category.availableForBrands || []);
   const [pages, setPages] = useState(category.availableOnPages || []);
+  const [description, setDescription] = useState(category.description || "");
+  const [iconUrl, setIconUrl] = useState(category.icon || "");
 
   const [updateOneCategory, loading] = useUpdateCategory();
+  const [uploadCategoryIcon, { loading: uploading }] = useMutation(UPLOAD_CATEGORY_ICON);
+  const fileInputRef = useRef(null);
+
+  const handleFileSelect = async (file) => {
+    try {
+      const { data } = await uploadCategoryIcon({ variables: { file, categoryId: category.id } });
+      if (data?.uploadFile?.length) {
+        setIconUrl(data.uploadFile);
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) handleFileSelect(file);
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if (file) handleFileSelect(file);
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+  };
 
   const usavedChanges = useMemo(() => {
     return (
@@ -168,9 +207,11 @@ const CategoryCard = ({ category, deleteCategory }) => {
         brands.map((b) => b.id).sort(),
         category.availableForBrands.map((b) => b.id).sort()
       ) ||
-      !isEqual(pages.sort(), category.availableOnPages.sort())
+      !isEqual(pages.sort(), category.availableOnPages.sort()) ||
+      description !== category.description ||
+      iconUrl !== category.iconUrl
     );
-  }, [name, tags, _public, brands, pages, category]);
+  }, [name, tags, _public, brands, pages, description, iconUrl, category]);
 
   const updateInput = () => ({
     name: { set: name },
@@ -178,10 +219,12 @@ const CategoryCard = ({ category, deleteCategory }) => {
     tags: { set: tags },
     availableForBrands: { set: brands.map((brand) => ({ id: brand.id })) },
     availableOnPages: { set: pages },
+    description: { set: description },
+    iconUrl: { set: iconUrl },
   });
 
   return (
-    <Card key={category.id}>
+    <Card key={category.id} onDrop={handleDrop} onDragOver={handleDragOver}>
       <div style={{ fontSize: 20, marginBottom: 10, textAlign: "center" }}>
         <EditableText value={name} onChange={(t) => setName(t)} />
       </div>
@@ -242,6 +285,34 @@ const CategoryCard = ({ category, deleteCategory }) => {
           addPage={(page) => setPages([...pages, page])}
           removePage={(page) => setPages(pages.filter((p) => p !== page))}
         />
+
+        <span style={fieldStyle}>Description:</span>
+        <TextArea
+          style={{ width: "100%", minHeight: "50px" }}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Enter a description"
+        />
+
+        <span style={fieldStyle}>Icon URL:</span>
+        <InputGroup
+          value={iconUrl}
+          onChange={(e) => setIconUrl(e.target.value)}
+          placeholder="Enter icon URL"
+        />
+        <Button
+          icon={iconUrl ? <img src={iconUrl} alt="icon" style={{ width: 20, height: 20, objectFit: 'contain' }} /> : <Icon icon="cloud-upload" />}
+          onClick={() => fileInputRef.current.click()}
+          intent="primary"
+        >
+          {iconUrl ? "Change Icon" : "Upload Icon"}
+        </Button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
       </div>
       <div
         style={{
@@ -260,8 +331,8 @@ const CategoryCard = ({ category, deleteCategory }) => {
         {usavedChanges && (
           <Button
             small
-            icon={loading ? <Spinner size={20} /> : <FaSave />}
-            disabled={loading}
+            icon={loading || uploading ? <Spinner size={20} /> : <FaSave />}
+            disabled={loading || uploading}
             onClick={() => updateOneCategory(category.id, updateInput())}
             intent={usavedChanges ? "warning" : "none"}
           >

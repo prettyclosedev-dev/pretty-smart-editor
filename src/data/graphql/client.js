@@ -1,14 +1,17 @@
 import {
   ApolloClient,
-  HttpLink,
   InMemoryCache,
   ApolloLink,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
+import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 import { API, TOKEN } from "../config";
 
-const httpLink = new HttpLink({
+const uploadLink = createUploadLink({
   uri: API,
+  headers: {
+    "Apollo-Require-Preflight": "true",
+  },
 });
 
 const authLink = new ApolloLink((operation, forward) => {
@@ -17,6 +20,7 @@ const authLink = new ApolloLink((operation, forward) => {
       headers: {
         ...headers,
         Authorization: `Bearer ${TOKEN}`,
+        "Apollo-Require-Preflight": "true",
       },
     };
   });
@@ -59,7 +63,7 @@ const onErrorLink = onError(
   }
 );
 
-const link = ApolloLink.from([authLink, afterwareLink, onErrorLink, httpLink]);
+const link = ApolloLink.from([authLink, afterwareLink, onErrorLink, uploadLink]);
 
 const cache = new InMemoryCache();
 

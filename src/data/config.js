@@ -10,6 +10,8 @@ export const API = IS_LOCAL
   ? "http://localhost:4000/graphql"
   : "https://clyps.io/graphql"
   
+export const BASE_URL = "https://clyps.io"
+
 export const TOKEN = "c819f484-71e7-4514-b5ab-98d980f48442"
 
 export const IN_APP = false;

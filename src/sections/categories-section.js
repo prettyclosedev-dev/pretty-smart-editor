@@ -43,7 +43,7 @@ const renderBrand = (brand, { handleClick, handleFocus, modifiers, query }) => {
       active={modifiers.active}
       disabled={modifiers.disabled}
       key={brand.id}
-      label={brand.id.toString()}
+      label={brand.id?.toString()}
       onClick={handleClick}
       onFocus={handleFocus}
       roleStructure="listoption"
@@ -176,6 +176,7 @@ const CategoryCard = ({ category, deleteCategory }) => {
   const [color, setColor] = useState(category.color || "#ffffff"); // New state for color
   const [form, setForm] = useState(category.form || ""); // New state for form
   const [colorPickerOpen, setColorPickerOpen] = useState(false); // State for color picker visibility
+  const [size, setSize] = useState(category.size !== null ? category.size?.toString() : ""); // Ensure empty if not set
 
   const [updateOneCategory, loading] = useUpdateCategory();
   const [uploadCategoryIcon, { loading: uploading }] =
@@ -223,7 +224,8 @@ const CategoryCard = ({ category, deleteCategory }) => {
       description !== category.description ||
       iconUrl !== category.icon ||
       color !== category.color || // Check for color changes
-      form !== category.form // Check for form changes
+      form !== category.form || // Check for form changes
+      size !== (category.size !== null ? category.size?.toString() : "")
     );
   }, [
     name,
@@ -236,6 +238,7 @@ const CategoryCard = ({ category, deleteCategory }) => {
     color,
     form,
     category,
+    size,
   ]);
 
   const updateInput = () => ({
@@ -248,6 +251,7 @@ const CategoryCard = ({ category, deleteCategory }) => {
     icon: { set: iconUrl },
     color: { set: color },
     form: { set: form },
+    size: size ? { set: parseInt(size) } : { set: null },
   });
 
   const textColor = isColorCloseToWhite(color) ? 'black' : 'white';
@@ -377,6 +381,19 @@ const CategoryCard = ({ category, deleteCategory }) => {
           value={form}
           onChange={(e) => setForm(e.target.value)}
           placeholder="Enter form id"
+        />
+
+        <span style={fieldStyle}>Size:</span>
+        <InputGroup
+          value={size}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^\d*$/.test(value)) {
+              setSize(value); // Only set if the value is a valid number or empty
+            }
+          }}
+          placeholder="Enter size"
+          type="text" // Keep it as text to allow the empty state
         />
       </div>
       <div

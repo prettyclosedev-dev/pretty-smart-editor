@@ -100,7 +100,7 @@ export async function getDesignById({ id, user, brand }) {
   }
 }
 
-export async function getBrandedDesignById({ id, user, brand }) {
+export async function getBrandedDesignById({ id, user, brand, additional }) {
   try {
     if (id === "local") {
       const json = await localforage.getItem("polotno-state");
@@ -136,6 +136,10 @@ export async function getBrandedDesignById({ id, user, brand }) {
     const variables = {
       where: { id: Number(id) },
     };
+
+    if (additional) {
+      variables.additional = additional;
+    }
 
     if (user) {
       variables.email = user.email;

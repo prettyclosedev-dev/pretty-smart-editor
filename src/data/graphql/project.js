@@ -25,13 +25,15 @@ class Project {
   pagesIds = [];
   toastRef = null;
   brandedDesignId = "";
+  additional = {};
 
-  constructor({ store, email, user, id }) {
+  constructor({ store, email, user, id, additional = {} }) {
     mobx.makeAutoObservable(this, {
       isAuthenticated: mobx.computed,
     });
 
     this.store = store;
+    this.setAdditional(additional);
 
     const initializeLocalData = async () => {
       const localData = await localforage.getItem("polotno-state");
@@ -90,6 +92,10 @@ class Project {
 
   setToastRef(_ref) {
     this.toastRef = _ref;
+  }
+
+  setAdditional(additional) {
+    this.additional = additional;
   }
 
   setPagesIds(_pagesIds) {
@@ -207,6 +213,7 @@ class Project {
         id,
         user: this.user,
         brand: this.brand,
+        additional: this.additional,
       });
 
       if (store) {

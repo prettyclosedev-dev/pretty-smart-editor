@@ -24,39 +24,19 @@ import App from "./App";
 import "./logger";
 import { ErrorBoundary } from "react-error-boundary";
 
-// need to get config
-// mode: "standalone" | "integrated"
-// email
-// token
-// project id
-
-// than ditch auth0 and make pretteysmart privide token and clyps to use the tokens
-export function mountEditor(elem, { mode, email, designId }) {
-  
-  // if (window.location.host !== "studio.polotno.com") {
-  //   console.log(
-  //     `%cWelcome to Polotno Studio! Thanks for your interest in the project!
-  // This repository has many customizations from the default version Polotno SDK.
-  // I don't recommend to use it as starting point. 
-  // Instead, you can start from any official demos, e.g.: https://polotno.com/docs/demo-full-editor 
-  // or direct sandbox: https://codesandbox.io/s/github/polotno-project/polotno-site/tree/source/examples/polotno-demo?from-embed.
-  // But feel free to use this repository as a reference for your own project and to learn how to use Polotno SDK.`,
-  //     "background: rgba(54, 213, 67, 1); color: white; padding: 5px;"
-  //   );
-  // }
-  
+export function mountEditor(elem, { mode, email, designId, additional = {} }) {
   unstable_setRemoveBackgroundEnabled(true);
   unstable_setAnimationsEnabled(true);
-  
+
   const store = createStore({ key: POLOTNO_KEY });
   window.store = store;
   store.addPage();
 
   window.mode = mode;
-  
-  const project = createProject({ store, email, id: designId });
+
+  const project = createProject({ store, email, id: designId, additional });
   window.project = project;
-  
+
   function Fallback({ error, resetErrorBoundary }) {
     // Call resetErrorBoundary() to reset the error boundary and retry the render.
   
@@ -84,9 +64,7 @@ export function mountEditor(elem, { mode, email, designId }) {
   root.render(
     <ErrorBoundary
       FallbackComponent={Fallback}
-      onReset={(details) => {
-        // Reset the state of your app so the error doesn't happen again
-      }}
+      onReset={(details) => { /* Reset logic */ }}
       onError={(e) => {
         if (window.Sentry) {
           window.Sentry.captureException(e);
@@ -96,7 +74,7 @@ export function mountEditor(elem, { mode, email, designId }) {
       <Provider store={reduxStore}>
         <ApolloProvider client={client}>
           <ProjectContext.Provider value={project}>
-              <App store={store} />
+            <App store={store} />
           </ProjectContext.Provider>
         </ApolloProvider>
       </Provider>

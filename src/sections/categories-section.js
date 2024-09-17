@@ -257,7 +257,7 @@ const CategoryCard = ({ category, deleteCategory }) => {
   const textColor = isColorCloseToWhite(color) ? 'black' : 'white';
 
   return (
-    <Card key={category.id} onDrop={handleDrop} onDragOver={handleDragOver}>
+    <Card style={{padding: 10}} key={category.id} onDrop={handleDrop} onDragOver={handleDragOver}>
       <div style={{ fontSize: 20, marginBottom: 10, textAlign: "center" }}>
         <EditableText value={name} onChange={(t) => setName(t)} />
       </div>
@@ -532,7 +532,6 @@ export const CategoriesPanel = observer(({ store }) => {
             <Button
               icon={<FaPlus />}
               intent="success"
-              style={{ marginRight: 5 }}
               onClick={newCategory}
             >
               New

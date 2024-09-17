@@ -1,0 +1,7 @@
+#import '../fragments/form.graphql'
+
+mutation createOneForm($data: FormCreateInput!) {
+  createOneForm(data: $data) {
+    ...Form
+  }
+}

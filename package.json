@@ -31,7 +31,7 @@
     "redux-logger": "^4.0.0",
     "redux-thunk": "^2.4.2"
   },
-  "homepage": "/",
+  "homepage": "/editor",
   "scripts": {
     "start": "react-app-rewired start",
     "build": "npm run prebuild && react-app-rewired build",

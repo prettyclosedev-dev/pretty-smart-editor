@@ -37,6 +37,7 @@ import Topbar from "./topbar/topbar";
 import { BrandedDesignsSection } from "./sections/branded-designs-section";
 import { IN_APP, URL_PREFIX } from "./data/config";
 import { CategoriesSection } from "./sections/categories-section";
+import { FormsSection } from "./sections/forms-section";
 
 // DEFAULT_SECTIONS.splice(3, 0, IllustrationsSection);
 // replace elements section with just shapes
@@ -184,6 +185,7 @@ const App = observer(({ store }) => {
 
   if (!IN_APP && project.isAuthenticated) {
     customSections.push(CategoriesSection);
+    customSections.push(FormsSection);
   }
 
   return (

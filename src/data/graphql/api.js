@@ -14,6 +14,7 @@ const getCategoriesQuery = loader("./queries/getCategories.graphql");
 const getUserQuery = loader("./queries/getUser.graphql");
 const getTemplatesQuery = loader("./queries/getTemplates.graphql");
 const getBrands = loader("./queries/getBrands.graphql");
+const getFormsQuery = loader("./queries/getForms.graphql");
 
 // mutation
 const createOneDesignMutation = loader("./mutations/createOneDesign.graphql");
@@ -22,8 +23,15 @@ const deleteOneDesignMutation = loader("./mutations/deleteOneDesign.graphql");
 const createOneCategoryMutation = loader(
   "./mutations/createOneCategory.graphql"
 );
-const updateOneCategoryMutation = loader("./mutations/updateOneCategory.graphql")
-const deleteOneCategoryMutation = loader("./mutations/deleteOneCategory.graphql")
+const updateOneCategoryMutation = loader(
+  "./mutations/updateOneCategory.graphql"
+);
+const deleteOneCategoryMutation = loader(
+  "./mutations/deleteOneCategory.graphql"
+);
+const createOneFormMutation = loader("./mutations/createOneForm.graphql");
+const updateOneFormMutation = loader("./mutations/updateOneForm.graphql");
+const deleteOneFormMutation = loader("./mutations/deleteOneForm.graphql");
 
 // fragments
 const categortyFragment = loader("./fragments/category.graphql");
@@ -499,7 +507,7 @@ export function useCategories({ where, orderBy, take, skip, cursor } = {}) {
   const deleteCategory = async (id) => {
     return deleteOneCategory({
       variables: {
-        where: { id }
+        where: { id },
       },
       update: (proxy, { data: { deleteCategory } }) => {
         const data = proxy.readQuery({
@@ -524,45 +532,49 @@ export function useCategories({ where, orderBy, take, skip, cursor } = {}) {
               cursor,
             },
             data: {
-              categories: data.categories.filter(c => c.id !== id),
+              categories: data.categories.filter((c) => c.id !== id),
             },
           });
         }
-      }
-    })
-  }
+      },
+    });
+  };
 
   return [data?.categories || [], loading, error, addCategory, deleteCategory];
 }
 
 export function useUpdateCategory() {
-  const [updateOneCategory, { loading }] = useMutation(updateOneCategoryMutation);
+  const [updateOneCategory, { loading }] = useMutation(
+    updateOneCategoryMutation
+  );
 
   const updateCategory = async (id, input) => {
     return updateOneCategory({
       variables: {
         data: input,
-        where: { id }
+        where: { id },
       },
       update: (proxy, { data: { updateOneCategory } }) => {
         proxy.writeFragment({
           data: updateOneCategory,
           fragment: categortyFragment,
           fragmentName: "Category",
-          id: proxy.identify(updateOneCategory)
-        })
+          id: proxy.identify(updateOneCategory),
+        });
       },
     });
-  }
+  };
 
-  return [updateCategory, loading]
+  return [updateCategory, loading];
 }
 
 export async function getUser(email) {
-  return client.query({
-    query: getUserQuery,
-    variables: { where: { email } },
-  }).then(res => res.data.user)
+  return client
+    .query({
+      query: getUserQuery,
+      variables: { where: { email } },
+    })
+    .then((res) => res.data.user);
 }
 
 export function useTemplates() {
@@ -577,4 +589,112 @@ export function useBrands({ where } = {}) {
   });
 
   return [data?.brands || [], loading, error];
+}
+
+export function useForms({ where, orderBy, take, skip, cursor } = {}) {
+  const { data, loading: queryLoading, error: queryError } = useQuery(getFormsQuery, {
+    variables: { where, orderBy, take, skip, cursor },
+  });
+
+  const [createOneForm, { loading: createLoading, error: createError }] = useMutation(
+    createOneFormMutation
+  );
+  const [deleteOneForm, { loading: deleteLoading, error: deleteError }] = useMutation(
+    deleteOneFormMutation
+  );
+  const [updateOneForm, { loading: updateLoading, error: updateError }] = useMutation(
+    updateOneFormMutation
+  );
+
+  const addForm = async (input) => {
+    try {
+      return await createOneForm({
+        variables: { data: input },
+        update: (proxy, { data: { createOneForm } }) => {
+          const data = proxy.readQuery({
+            query: getFormsQuery,
+            variables: { where, orderBy, take, skip, cursor },
+          });
+
+          if (data && createOneForm) {
+            proxy.writeQuery({
+              query: getFormsQuery,
+              variables: { where, orderBy, take, skip, cursor },
+              data: {
+                forms: [createOneForm, ...data.forms],
+              },
+            });
+          }
+        },
+      });
+    } catch (e) {
+      throw e;
+    }
+  };
+
+  const deleteForm = async (id) => {
+    try {
+      return await deleteOneForm({
+        variables: { where: { id } },
+        update: (proxy, { data: { deleteForm } }) => {
+          const data = proxy.readQuery({
+            query: getFormsQuery,
+            variables: { where, orderBy, take, skip, cursor },
+          });
+
+          if (data) {
+            proxy.writeQuery({
+              query: getFormsQuery,
+              variables: { where, orderBy, take, skip, cursor },
+              data: {
+                forms: data.forms.filter((form) => form.id !== id),
+              },
+            });
+          }
+        },
+      });
+    } catch (e) {
+      throw e;
+    }
+  };
+
+  const updateForm = async (id, input) => {
+    try {
+      return await updateOneForm({
+        variables: { data: input, where: { id } },
+        update: (proxy, { data: { updateOneForm } }) => {
+          const data = proxy.readQuery({
+            query: getFormsQuery,
+            variables: { where, orderBy, take, skip, cursor },
+          });
+
+          if (data && updateOneForm) {
+            proxy.writeQuery({
+              query: getFormsQuery,
+              variables: { where, orderBy, take, skip, cursor },
+              data: {
+                forms: data.forms.map((form) =>
+                  form.id === id ? updateOneForm : form
+                ),
+              },
+            });
+          }
+        },
+      });
+    } catch (e) {
+      throw e;
+    }
+  };
+
+  // Combine errors from query and mutations
+  const combinedError = queryError || createError || deleteError || updateError;
+
+  return [
+    data?.forms || [],
+    queryLoading || createLoading || deleteLoading || updateLoading,
+    combinedError,
+    addForm,
+    updateForm,
+    deleteForm,
+  ];
 }

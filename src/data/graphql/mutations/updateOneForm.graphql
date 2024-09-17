@@ -1,0 +1,7 @@
+#import '../fragments/form.graphql'
+
+mutation UpdateOneForm($data: FormUpdateInput!, $where: FormWhereUniqueInput!) {
+  updateOneForm(data: $data, where: $where) {
+      ...Form
+  }
+}

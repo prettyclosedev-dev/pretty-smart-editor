@@ -1,0 +1,5 @@
+mutation deleteOneForm($where: FormWhereUniqueInput!) {
+  deleteOneForm(where: $where) {
+      id
+  }
+}

@@ -1,0 +1,7 @@
+#import '../fragments/form.graphql'
+
+query forms($where: FormWhereInput, $orderBy: [FormOrderByWithRelationInput!], $take: Int, $skip: Int, $cursor: FormWhereUniqueInput) {
+  forms(where: $where, orderBy: $orderBy, take: $take, skip: $skip, cursor: $cursor) {
+    ...Form
+  }
+}

@@ -1,0 +1,15 @@
+fragment Form on Form {
+    id           
+    title
+    subTitle
+    hasImage   
+    fields {
+        id
+        title
+        placeholder
+        max
+        key
+        required
+    }
+    createdAt
+}

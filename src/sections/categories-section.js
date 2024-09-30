@@ -33,7 +33,7 @@ import { useProject } from "../data/graphql/project";
 import { gql, useMutation } from "@apollo/client";
 import { isColorCloseToWhite } from "../utils/common";
 
-const pageTemplates = ["Templates", "Generator", "Collateral"];
+const pageTemplates = ["Templates", "Generator", "Collateral", "Zmanim"];
 
 const renderBrand = (brand, { handleClick, handleFocus, modifiers, query }) => {
   if (!modifiers.matchesPredicate) return null;

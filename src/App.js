@@ -185,7 +185,7 @@ const App = observer(({ store }) => {
 
   if (!IN_APP && project.isAuthenticated) {
     customSections.push(CategoriesSection);
-    customSections.push(FormsSection);
+    // customSections.push(FormsSection);
   }
 
   return (

@@ -15,7 +15,7 @@ export const LoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
     setError(null);
     
     try {
-      const raw = await fetch("https://chaim.prettysmart.co/clyps", {
+      const raw = await fetch("https://prettyclose.co/clyps", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

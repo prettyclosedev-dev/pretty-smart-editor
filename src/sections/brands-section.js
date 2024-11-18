@@ -65,7 +65,9 @@ const BrandCard = ({brand, selected, selectBrand}) => {
 
 function brandsWhere(user) {
   return {
-    email: user?.role !== "ADMIN" ? { equals: user?.email } : undefined
+    user: {
+      email: user?.role === "ADMIN" ? undefined : { equals: user?.email }
+    }
   }
 }
 

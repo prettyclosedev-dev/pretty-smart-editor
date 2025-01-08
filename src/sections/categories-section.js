@@ -167,16 +167,19 @@ const UPLOAD_CATEGORY_ICON = gql`
 
 const CategoryCard = ({ category, deleteCategory }) => {
   const [name, setName] = useState(category.name);
+  const [priority, setPriority] = useState(category.priority?.toString() || ""); // New state for priority
   const [tags, setTags] = useState(category.tags || []);
   const [_public, setPublic] = useState(category.public);
   const [brands, setBrands] = useState(category.availableForBrands || []);
   const [pages, setPages] = useState(category.availableOnPages || []);
   const [description, setDescription] = useState(category.description || "");
   const [iconUrl, setIconUrl] = useState(category.icon || "");
-  const [color, setColor] = useState(category.color || "#ffffff"); // New state for color
-  const [form, setForm] = useState(category.form || ""); // New state for form
-  const [colorPickerOpen, setColorPickerOpen] = useState(false); // State for color picker visibility
-  const [size, setSize] = useState(category.size !== null ? category.size?.toString() : ""); // Ensure empty if not set
+  const [color, setColor] = useState(category.color || "#ffffff");
+  const [form, setForm] = useState(category.form || "");
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const [size, setSize] = useState(
+    category.size !== null ? category.size?.toString() : ""
+  );
 
   const [updateOneCategory, loading] = useUpdateCategory();
   const [uploadCategoryIcon, { loading: uploading }] =
@@ -214,6 +217,7 @@ const CategoryCard = ({ category, deleteCategory }) => {
   const usavedChanges = useMemo(() => {
     return (
       name !== category.name ||
+      priority !== (category.priority?.toString() || "") || // Track priority changes
       !isEqual(tags, category.tags) ||
       _public !== category.public ||
       !isEqual(
@@ -223,12 +227,14 @@ const CategoryCard = ({ category, deleteCategory }) => {
       !isEqual(pages.sort(), category.availableOnPages.sort()) ||
       description !== category.description ||
       iconUrl !== category.icon ||
-      color !== category.color || // Check for color changes
-      form !== category.form || // Check for form changes
-      size !== (category.size !== null ? category.size?.toString() : "")
+      color !== category.color ||
+      form !== category.form ||
+      size !== (category.size !== null ? category.size?.toString() : "") ||
+      priority !== (category.priority?.toString() || "")
     );
   }, [
     name,
+    priority,
     tags,
     _public,
     brands,
@@ -252,12 +258,20 @@ const CategoryCard = ({ category, deleteCategory }) => {
     color: { set: color },
     form: { set: form },
     size: size ? { set: parseInt(size) } : { set: null },
+    priority: priority ? { set: parseInt(priority) } : { set: null },
   });
 
-  const textColor = isColorCloseToWhite(color) ? 'black' : 'white';
+  const textColor = isColorCloseToWhite(color) ? "black" : "white";
+
+  const isLoading = loading || uploading;
 
   return (
-    <Card style={{padding: 10}} key={category.id} onDrop={handleDrop} onDragOver={handleDragOver}>
+    <Card
+      style={{ padding: 10 }}
+      key={category.id}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+    >
       <div style={{ fontSize: 20, marginBottom: 10, textAlign: "center" }}>
         <EditableText value={name} onChange={(t) => setName(t)} />
       </div>
@@ -395,6 +409,19 @@ const CategoryCard = ({ category, deleteCategory }) => {
           placeholder="Enter size"
           type="text" // Keep it as text to allow the empty state
         />
+
+        <span style={fieldStyle}>Priority:</span>
+        <InputGroup
+          value={priority}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^\d*$/.test(value)) {
+              setPriority(value); // Only set if the value is numeric
+            }
+          }}
+          placeholder="Set priority"
+          type="text"
+        />
       </div>
       <div
         style={{
@@ -413,8 +440,8 @@ const CategoryCard = ({ category, deleteCategory }) => {
         {usavedChanges && (
           <Button
             small
-            icon={loading || uploading ? <Spinner size={20} /> : <FaSave />}
-            disabled={loading || uploading}
+            icon={isLoading ? <Spinner size={20} /> : <FaSave />}
+            disabled={isLoading}
             onClick={() => updateOneCategory(category.id, updateInput())}
             intent={usavedChanges ? "warning" : "none"}
           >
@@ -529,11 +556,7 @@ export const CategoriesPanel = observer(({ store }) => {
             }}
           >
             <p>{categoriesFiltered.length} categories total</p>
-            <Button
-              icon={<FaPlus />}
-              intent="success"
-              onClick={newCategory}
-            >
+            <Button icon={<FaPlus />} intent="success" onClick={newCategory}>
               New
             </Button>
           </div>

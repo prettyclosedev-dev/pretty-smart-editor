@@ -34,7 +34,7 @@ const updateOneFormMutation = loader("./mutations/updateOneForm.graphql");
 const deleteOneFormMutation = loader("./mutations/deleteOneForm.graphql");
 
 // fragments
-const categortyFragment = loader("./fragments/category.graphql");
+const categoryFragment = loader("./fragments/category.graphql");
 
 const API = "https://polotno-studio-api.vercel.app/api";
 
@@ -557,7 +557,7 @@ export function useUpdateCategory() {
       update: (proxy, { data: { updateOneCategory } }) => {
         proxy.writeFragment({
           data: updateOneCategory,
-          fragment: categortyFragment,
+          fragment: categoryFragment,
           fragmentName: "Category",
           id: proxy.identify(updateOneCategory),
         });
@@ -592,19 +592,20 @@ export function useBrands({ where } = {}) {
 }
 
 export function useForms({ where, orderBy, take, skip, cursor } = {}) {
-  const { data, loading: queryLoading, error: queryError } = useQuery(getFormsQuery, {
+  const {
+    data,
+    loading: queryLoading,
+    error: queryError,
+  } = useQuery(getFormsQuery, {
     variables: { where, orderBy, take, skip, cursor },
   });
 
-  const [createOneForm, { loading: createLoading, error: createError }] = useMutation(
-    createOneFormMutation
-  );
-  const [deleteOneForm, { loading: deleteLoading, error: deleteError }] = useMutation(
-    deleteOneFormMutation
-  );
-  const [updateOneForm, { loading: updateLoading, error: updateError }] = useMutation(
-    updateOneFormMutation
-  );
+  const [createOneForm, { loading: createLoading, error: createError }] =
+    useMutation(createOneFormMutation);
+  const [deleteOneForm, { loading: deleteLoading, error: deleteError }] =
+    useMutation(deleteOneFormMutation);
+  const [updateOneForm, { loading: updateLoading, error: updateError }] =
+    useMutation(updateOneFormMutation);
 
   const addForm = async (input) => {
     try {

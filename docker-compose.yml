@@ -1,0 +1,16 @@
+services:
+  pretty-smart-editor:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: pretty-smart-editor-prod
+    ports:
+      - "18001:80"
+    restart: unless-stopped
+    networks:
+      - prettyclose
+
+networks:
+  prettyclose:
+    external: true
+    name: prettyclose

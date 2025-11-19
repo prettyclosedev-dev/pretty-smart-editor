@@ -8,7 +8,7 @@ const IS_LOCAL = false;
 
 export const API = IS_LOCAL
   ? "http://localhost:4000/graphql"
-  : "https://api.prettysmart.co/graphql"
+  : "https://clyps.io/graphql"
   
 export const BASE_URL = "https://clyps.io"
 

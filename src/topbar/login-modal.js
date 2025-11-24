@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Dialog, InputGroup, Button, Spinner } from "@blueprintjs/core";
 import { useProject } from "../data/graphql/project";
+import { APP_URL, CLYPS_ENDPOINT } from "../data/config";
 
 export const LoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
   const [email, setEmail] = useState("");
@@ -15,7 +16,7 @@ export const LoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
     setError(null);
     
     try {
-      const raw = await fetch("https://prettysmart.co/clyps", {
+      const raw = await fetch(`${APP_URL}${CLYPS_ENDPOINT}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

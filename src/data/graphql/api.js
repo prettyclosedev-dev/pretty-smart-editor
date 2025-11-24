@@ -299,19 +299,62 @@ export async function createDesign({
   }
 
   try {
+    // Map Polotno store state to GraphQL DesignCreateInput while respecting already-shaped inputs
+    const {
+      width,
+      height,
+      fonts,
+      pages,
+      unit,
+      dpi,
+      polotnoId,
+      schemaVersion, // ignored
+      audios, // ignored
+      availableForBrands,
+    } = store || {};
+
+    const normalizePages = () => {
+      if (pages?.set && Array.isArray(pages.set)) return { set: pages.set };
+      if (Array.isArray(pages)) return { set: pages };
+      return { set: [] };
+    };
+
+    const normalizeFonts = () => {
+      if (fonts?.set && Array.isArray(fonts.set)) return { set: fonts.set };
+      if (Array.isArray(fonts)) return { set: fonts };
+      return { set: [] };
+    };
+
+    const normalizeTags = () => {
+      if (tags?.set && Array.isArray(tags.set)) return tags; // already shaped
+      if (Array.isArray(tags)) return { set: tags };
+      return undefined;
+    };
+
+    const createData = {
+      width,
+      height,
+      name: name || "",
+      preview,
+      public: _public,
+      unit: unit || "px",
+      dpi: dpi || 72,
+      polotnoId,
+      fonts: normalizeFonts(),
+      pages: normalizePages(),
+      tags: normalizeTags(),
+      categories, // expect caller to supply connect/create structure
+      creator, // expect { connect: { email }} from caller
+      availableForBrands,
+    };
+
+    Object.keys(createData).forEach(
+      (k) => createData[k] === undefined && delete createData[k]
+    );
+
     const { data, loading, error } = await client.mutate({
       mutation: createOneDesignMutation,
-      variables: {
-        data: {
-          ...store,
-          preview,
-          name,
-          public: _public,
-          categories,
-          tags,
-          creator,
-        },
-      },
+      variables: { data: createData },
       refetchQueries: [{ query: getDesignsQuery }],
     });
     return {
@@ -345,24 +388,78 @@ export async function saveDesign({
   }
 
   try {
+    const {
+      width,
+      height,
+      fonts,
+      pages,
+      unit,
+      dpi,
+      schemaVersion, // ignored
+      audios, // ignored
+      polotnoId,
+    } = store || {};
+
+    const wrapUpdate = (val) => {
+      if (
+        val &&
+        typeof val === "object" &&
+        ("set" in val || "connect" in val || "push" in val)
+      )
+        return val;
+      return { set: val };
+    };
+
+    const normalizePages = () => {
+      if (pages?.set && Array.isArray(pages.set)) return { set: pages.set };
+      if (Array.isArray(pages)) return { set: pages };
+      return { set: [] };
+    };
+    const normalizeFonts = () => {
+      if (fonts?.set && Array.isArray(fonts.set)) return { set: fonts.set };
+      if (Array.isArray(fonts)) return { set: fonts };
+      return { set: [] };
+    };
+    const normalizeTags = () => {
+      if (tags?.set && Array.isArray(tags.set)) return tags;
+      if (Array.isArray(tags)) return { set: tags };
+      return { set: [] };
+    };
+    const normalizeCategories = () => {
+      if (categories?.set || categories?.connect || categories?.create)
+        return categories;
+      if (Array.isArray(categories))
+        return { set: categories.map((c) => ({ id: c.id })) };
+      return undefined;
+    };
+
+    const updateData = {
+      width: wrapUpdate(width),
+      height: wrapUpdate(height),
+      name: wrapUpdate(name),
+      preview: wrapUpdate(preview),
+      public: wrapUpdate(!!_public),
+      unit: wrapUpdate(unit),
+      dpi: wrapUpdate(dpi),
+      polotnoId: wrapUpdate(polotnoId),
+      fonts: normalizeFonts(),
+      pages: normalizePages(),
+      tags: normalizeTags(),
+      categories: normalizeCategories(),
+      creator: creator, // expect already-shaped nested update
+    };
+
+    Object.keys(updateData).forEach(
+      (k) => updateData[k] === undefined && delete updateData[k]
+    );
+
     const { data, loading, error } = await client.mutate({
       mutation: updateOneDesignMutation,
-      variables: {
-        data: {
-          ...store,
-          preview,
-          name,
-          public: { set: !!_public },
-          categories,
-          tags,
-          creator,
-        },
-        where: { id },
-      },
+      variables: { data: updateData, where: { id } },
       refetchQueries: ["designs"],
     });
     return {
-      id: data?.createOneDesign?.id,
+      id: data?.updateOneDesign?.id,
       status: !error ? "saved" : "error",
       error,
     };

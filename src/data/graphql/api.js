@@ -401,12 +401,16 @@ export async function saveDesign({
     } = store || {};
 
     const wrapUpdate = (val) => {
+      // Skip entirely if value is undefined so we don't send an empty update object
+      if (val === undefined) return undefined;
+      // Pass through already-shaped nested update operations
       if (
         val &&
         typeof val === "object" &&
         ("set" in val || "connect" in val || "push" in val)
       )
         return val;
+      // Wrap raw scalar/null values
       return { set: val };
     };
 
